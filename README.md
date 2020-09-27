@@ -32,7 +32,7 @@
 
 ## Для настройки предназначен пункт Вид
 
-![alt text](images/20.PNG)
+![alt text](https://github.com/vrs000/DMS/edit/master/images/20.PNG)
 
 ## Результат
 ![alt text](images/19.PNG)
