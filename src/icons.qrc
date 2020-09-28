@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/configure.png</file>
+        <file>icons/folder-invoices.png</file>
+        <file>icons/graph.png</file>
+        <file>icons/info.png</file>
+        <file>icons/more.png</file>
+        <file>icons/close.png</file>
+        <file>icons/list.png</file>
+        <file>icons/minus.png</file>
+        <file>icons/plus.png</file>
+        <file>icons/close (2).png</file>
+        <file>icons/Logo.ico</file>
+        <file>icons/Logo.png</file>
+    </qresource>
+</RCC>

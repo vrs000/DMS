@@ -1,0 +1,512 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+#include <io.h>
+#include <dataprocessing.h>
+#include <QMessageBox>
+#include <QThread>
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+{
+    ui->setupUi(this);
+
+    qDebug() << "###########################";
+    qDebug() << "Ideal thread count" << QThread::idealThreadCount();
+
+    ui->ListButton->hide();
+
+
+    ui->InfoButton->setEnabled(false);
+    ui->ConfiugreButton->setEnabled(false);
+    ui->GraphicsButton->setEnabled(false);
+
+    ui->SideBarContext->setMaximumWidth(0);
+
+    OpenProjectsListForm::input = ui->InputTable;
+    OpenProjectsListForm::output = ui->OutputTable;
+
+
+
+    open = new QAction(tr("&Открыть"), this);
+
+
+    ui->treeView->addAction(open);
+
+    ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->treeView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(OpenFile()));
+    connect(ui->treeView, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onCustomContextMenu(const QPoint &)));
+
+
+
+
+    ui->PlusButton->hide();
+    ui->MinusButton->hide();
+
+    QFileSystemModel *model = new QFileSystemModel;
+    model->setRootPath(QDir::currentPath());
+
+
+    ui->treeView->setModel(model);
+    ui->treeView->hideColumn(1);
+    ui->treeView->hideColumn(2);
+    ui->treeView->hideColumn(3);
+    ui->treeView->hideColumn(4);
+
+
+    //--------------------------------------------------------------------------------------------
+    connect(ui->AboutProgramAction, SIGNAL(triggered()), this, SLOT(OpenAboutProgramForm()));
+
+    connect(ui->ExportToExcelAction, SIGNAL(triggered()), this, SLOT(OpenExportFileForm()));
+
+    connect(ui->OpenFileAction, SIGNAL(triggered()), this, SLOT(OpenFileDialog()));
+    connect(ui->DeleteAllAction, SIGNAL(triggered()), this, SLOT(DeleteAllAction()));
+
+    connect(ui->ResizeToWindowInputTableAction, SIGNAL(triggered()), this,  SLOT(ResizeToWindowInputTable()));
+    connect(ui->ResizeToWindowOutputTableAction, SIGNAL(triggered()), this,  SLOT(ResizeToWindowOutputTable()));
+    connect(ui->ResizeToWindowBothTablesAction, SIGNAL(triggered()), this,  SLOT(ResizeToWindowBothTables()));
+
+    connect(ui->ResizeToContentInputTableAction, SIGNAL(triggered()), this, SLOT(ResizeToContentInputTable()));
+    connect(ui->ResizeToContentOutputTableAction, SIGNAL(triggered()), this, SLOT(ResizeToContentOutputTable()));
+    connect(ui->ResizeToContentBothTablesAction, SIGNAL(triggered()), this, SLOT(ResizeToContentBothTables()));
+
+    connect(ui->ToggleFullscreenAction, SIGNAL(triggered()), this, SLOT(ToggleFullscreen()));
+    //--------------------------------------------------------------------------------------------
+
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+
+void MainWindow::on_MoreButton_clicked()
+{
+
+    if (ui->SideBar->width() == 170)
+    {
+        ui->SideBar->setMaximumWidth(38);
+        ui->SideBar->setMinimumWidth(38);
+
+        ui->ExploreButton->setText("");
+        ui->GraphicsButton->setText("");
+        ui->ConfiugreButton->setText("");
+        ui->ListButton->setFlat("");
+        ui->InfoButton->setText("");
+
+    }
+
+    if (ui->SideBar->width() == 38)
+    {
+        ui->SideBar->setMaximumWidth(170);
+        ui->SideBar->setMinimumWidth(170);
+
+        ui->ExploreButton->setText("Обозреватель");
+        ui->GraphicsButton->setText("Графики");
+        ui->ListButton->setText("Проекты");
+        ui->ConfiugreButton->setText("Конфигурация");
+        ui->InfoButton->setText("Инфо");
+    }
+}
+
+void MainWindow::on_CloseMenuButton_clicked()
+{
+    ui->SideBarContext->setMaximumWidth(0);
+}
+
+void MainWindow::on_PlusButton_clicked()
+{
+    ui->SideBarContext->setMaximumWidth(ui->SideBarContext->maximumWidth() + 10);
+}
+
+void MainWindow::on_MinusButton_clicked()
+{
+    ui->SideBarContext->setMaximumWidth(ui->SideBarContext->maximumWidth() - 10);
+}
+
+void MainWindow::on_ExploreButton_clicked()
+{
+
+    if (ui->SideBarContext->width() == 0)
+    {
+
+        ui->SideBarContext->setMinimumWidth(100);
+        ui->SideBarContext->setMaximumWidth(100);
+        ui->SideBarContext->setMinimumWidth(0);
+        ui->SideBarContext->setMaximumWidth(99999);
+    }
+
+}
+
+void MainWindow::on_ConfiugreButton_clicked()
+{
+    delete startupconfigform;
+    startupconfigform = new StartupConfigForm;
+
+    startupconfigform->solutionName = SolutionDB::currentSolutionName;
+
+    startupconfigform->input = ui->InputTable;
+    startupconfigform->output = ui->OutputTable;
+
+    startupconfigform->show();
+}
+
+void MainWindow::OpenFile()
+{
+    QFileSystemModel* model = new QFileSystemModel();
+    QModelIndexList lst = ui->treeView->selectionModel()->selectedIndexes();
+    QString path =  model->filePath(lst.at(0));
+
+    OpenSolution(path);
+}
+
+void MainWindow::onCustomContextMenu(const QPoint &point)
+{
+    QMenu * menu = new QMenu(this);
+    QAction * open = new QAction(tr("Открыть"), this);
+    connect(open, SIGNAL(triggered()), this, SLOT(OpenFile()));
+    menu->addAction(open);
+    menu->popup(ui->treeView->viewport()->mapToGlobal(point));
+}
+
+void MainWindow::MakeToolTip()
+{
+    QString tooltip = "<p>Количество проектов: %1</p>"
+                      "<p>Количество итераций: %2</p>"
+                      "<p>Шаг дробления: %3</p>";
+
+    QString str;
+    for (int i=0; i < IO::IndicatorsNames.size(); i++)
+    {
+        str = DataProcessing::PriorityList[i] == "max" ? "Лучше - больше" : "Лучше - меньше";
+        tooltip.append(QString("<p>%1: %2</p>").arg(IO::IndicatorsNames[i]).arg(str));
+    }
+
+    ui->InputTable->setToolTipDuration(1000);
+    ui->InputTable->setToolTip(tooltip
+                               .arg(IO::ProjectsNames.size())
+                               .arg(DataProcessing::WeightsTable.size())
+                               .arg(DataProcessing::CrushingStep));
+}
+
+void MainWindow::on_InfoButton_clicked()
+{
+    OpenForm(infoform);
+
+//    delete infoform;
+//    infoform = new Info();
+//    infoform->show();
+//    infoform->activateWindow();
+}
+
+void MainWindow::on_GraphicsButton_clicked()
+{
+    OpenForm(preselectionchartsform);
+}
+
+void MainWindow::on_ListButton_clicked()
+{
+
+//    delete openprojectslistform;
+//    openprojectslistform = new OpenProjectsListForm();
+//    openprojectslistform->show();
+
+    //OpenProjectsListForm* form = new OpenProjectsListForm();
+    //form->show();
+}
+
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
+    int key = event->key();
+
+
+    if (key == Qt::Key_L)
+    {
+
+    }
+
+
+
+}
+
+void MainWindow::OpenFileDialog()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Открыть файл"),
+                                                    path,
+                                                    tr("Excel (*.xlsx *.xls)"));
+
+
+    OpenSolution(fileName);
+
+    path = fileName.remove(fileName.split("/").last());
+}
+
+void MainWindow::UpdateDeleteMenu(const QString solutionName)
+{
+    QAction* action = new QAction(solutionName);
+    ui->DeleteMenu->addAction(action);
+    DeleteMenuActions << action;
+    connect(action, SIGNAL(triggered()), this, SLOT(DeleteAction()));
+
+}
+
+void MainWindow::UpdateOpenMenu(const QString solutionName)
+{
+    QAction* action = new QAction(solutionName);
+    ui->OpenMenu->addAction(action);
+    OpenMenuActions << action;
+    connect(action, SIGNAL(triggered()), this, SLOT(OpenAction()));
+}
+
+void MainWindow::OpenAboutProgramForm()
+{
+    OpenForm(aboutProgramForm);
+
+//    delete aboutProgramForm;
+//    aboutProgramForm = new AboutProgramForm();
+//    aboutProgramForm->show();
+//    aboutProgramForm->activateWindow();
+}
+
+void MainWindow::OpenExportFileForm()
+{
+    OpenForm(selectforexportForm);
+
+//    delete selectforexportForm;
+//    selectforexportForm = new SelectForExportForm();
+//    selectforexportForm->show();
+//    selectforexportForm->activateWindow();
+}
+
+void MainWindow::ToggleFullscreen()
+{
+    if (this->isFullScreen())
+    {
+        this->showNormal();
+        return;
+    }
+
+    if (!this->isFullScreen())
+    {
+        this->showFullScreen();
+        return;
+    }
+}
+
+void MainWindow::ResizeToWindowInputTable()
+{
+    ui->InputTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+}
+
+void MainWindow::ResizeToWindowOutputTable()
+{
+    ui->OutputTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+}
+
+void MainWindow::ResizeToWindowBothTables()
+{
+    ui->InputTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->OutputTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+}
+
+void MainWindow::ResizeToContentInputTable()
+{
+    ui->InputTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    ui->InputTable->resizeColumnsToContents();
+}
+
+void MainWindow::ResizeToContentOutputTable()
+{
+    ui->OutputTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    ui->OutputTable->resizeColumnsToContents();
+}
+
+void MainWindow::ResizeToContentBothTables()
+{
+    ui->InputTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    ui->OutputTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+    ui->InputTable->resizeColumnsToContents();
+    ui->OutputTable->resizeColumnsToContents();
+}
+
+void MainWindow::DeleteAction()
+{
+    QAction* action = qobject_cast<QAction*>(QObject::sender());
+
+    //remove from DeleteMenu
+    ui->DeleteMenu->removeAction(action);
+
+    const QString solutionName = action->text();
+
+
+    //remove from OpenMenu
+    for (int i = 0; i < OpenMenuActions.size(); i++)
+    {
+        if (OpenMenuActions[i]->text() == action->text())
+        {
+            ui->OpenMenu->removeAction(OpenMenuActions[i]);
+            delete OpenMenuActions[i];
+            OpenMenuActions.removeAt(i);
+            break;
+        }
+    }
+
+
+    //remove from DB
+    SolutionDB::RemoveSolution(solutionName);
+
+
+    if (SolutionDB::currentSolutionName == solutionName)
+    {
+        if (SolutionDB::DB.size() > 0)
+        {
+            SolutionDB::LoadSolution(SolutionDB::DB.first());
+            IO::FillingTables(ui->InputTable, ui->OutputTable);
+        }
+
+        if (SolutionDB::DB.size() == 0)
+        {
+            ui->InfoButton->setEnabled(false);
+            ui->ConfiugreButton->setEnabled(false);
+            ui->GraphicsButton->setEnabled(false);
+
+            ui->InputTable->setColumnCount(0);
+            ui->InputTable->setRowCount(0);
+
+            ui->OutputTable->setColumnCount(0);
+            ui->OutputTable->setRowCount(0);
+        }
+    }
+
+
+    delete action;
+}
+
+void MainWindow::OpenAction()
+{
+    QAction* action = qobject_cast<QAction*>(QObject::sender());
+    const QString solutionName = action->text();
+
+    SolutionDB::LoadSolution(solutionName);
+    IO::FillingTables(ui->InputTable, ui->OutputTable);
+}
+
+void MainWindow::DeleteAllAction()
+{
+    //Remove from DB
+    SolutionDB::DB.clear();
+
+    //Hide buttons
+    ui->InfoButton->setEnabled(false);
+    ui->ConfiugreButton->setEnabled(false);
+    ui->GraphicsButton->setEnabled(false);
+
+    //Clean IO tables
+    ui->InputTable->setRowCount(0);
+    ui->InputTable->setColumnCount(0);
+
+    ui->OutputTable->setRowCount(0);
+    ui->OutputTable->setColumnCount(0);
+
+
+    const int ActionCount = OpenMenuActions.size();
+
+    //Remove from openMenu and OpenMenuActions
+    for (int i=0; i < ActionCount; i++)
+    {
+        ui->OpenMenu->removeAction(OpenMenuActions[i]);
+        delete OpenMenuActions[i];
+    }
+
+
+    //Remove from deleteMenu and DeleteMenuActions
+
+    for (int i=0; i < ActionCount; i++)
+    {
+        ui->DeleteMenu->removeAction(DeleteMenuActions[i]);
+        delete DeleteMenuActions[i];
+    }
+
+
+    OpenMenuActions.clear();
+    DeleteMenuActions.clear();
+}
+
+
+
+void MainWindow::OpenSolution(const QString fileName)
+{
+    if ((!fileName.contains(".xlsx"))&&(!fileName.contains(".xls"))) return;
+    QString solutionName = fileName.split('/').last().split('.').first();
+
+    auto OpenStartupConfigForm = [&]()
+    {
+        delete startupconfigform;
+        startupconfigform = new StartupConfigForm;
+
+        startupconfigform->solutionName = solutionName;
+
+        startupconfigform->input = ui->InputTable;
+        startupconfigform->output = ui->OutputTable;
+
+        startupconfigform->show();
+        startupconfigform->activateWindow();
+    };
+
+
+    if (SolutionDB::IsContained(solutionName))
+    {
+
+
+        QMessageBox messageBox(QMessageBox::Question,
+                               tr("Файл уже открыт"),
+                               tr("Открыть заново ?"),
+                               QMessageBox::Yes | QMessageBox::No,
+                               this);
+
+        messageBox.setButtonText(QMessageBox::Yes, tr("Да"));
+        messageBox.setButtonText(QMessageBox::No, tr("Нет"));
+
+        int result = messageBox.exec();
+
+
+        if (result == QMessageBox::Yes)
+        {
+            SolutionDB::LoadSolution(solutionName);
+            OpenStartupConfigForm();
+        }
+
+        if (result == QMessageBox::No)
+        {
+            SolutionDB::LoadSolution(solutionName);
+            IO::FillingTables(ui->InputTable, ui->OutputTable);
+        }
+
+
+    }
+
+    if (!SolutionDB::IsContained(solutionName))
+    {
+        IO::OpenExelFile(fileName);
+
+        UpdateDeleteMenu(solutionName);
+        UpdateOpenMenu(solutionName);
+
+        ui->InfoButton->setEnabled(true);
+        ui->ConfiugreButton->setEnabled(true);
+        ui->GraphicsButton->setEnabled(true);
+
+        OpenStartupConfigForm();
+    }
+}
+
+template<typename FormType>
+void MainWindow::OpenForm(FormType* form)
+{
+    delete form;
+    form = new FormType();
+    form->show();
+    form->activateWindow();
+}
