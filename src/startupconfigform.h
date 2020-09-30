@@ -41,7 +41,7 @@ public:
 
      static long double fact(int N);
 private slots:
-     void SetProgressBarValue(int value, int maximum);
+    void SetProgressBarValue(int value, int maximum);
 
     void on_ToggleGroupCheckBox_stateChanged(int arg1);
 
@@ -50,6 +50,8 @@ private slots:
     void on_OkButton_clicked();
 
     void on_StepSpinBox_valueChanged(double arg1);
+
+    void on_progressBar_valueChanged(int value);
 
 private:
     Ui::StartupConfigForm *ui;

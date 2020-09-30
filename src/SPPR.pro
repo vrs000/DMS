@@ -25,6 +25,7 @@ SOURCES += \
     dataprocessing.cpp \
     info.cpp \
     io.cpp \
+    loadingform.cpp \
     main.cpp \
     mainwindow.cpp \
     multi_threading_methods.cpp \
@@ -42,6 +43,7 @@ HEADERS += \
     dataprocessing.h \
     info.h \
     io.h \
+    loadingform.h \
     mainwindow.h \
     multi_threading_methods.h \
     openprojectslistform.h \
@@ -56,6 +58,7 @@ FORMS += \
     aboutprogramform.ui \
     chartsform.ui \
     info.ui \
+    loadingform.ui \
     mainwindow.ui \
     openprojectslistform.ui \
     preselectionchartsform.ui \

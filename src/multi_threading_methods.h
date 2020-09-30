@@ -11,6 +11,8 @@
 #include <QMutex>
 #include <progressbarform.h>
 
+class DataProcessing;
+
 class OpenExcelFileAsync : public QThread
 {
 private:
@@ -40,6 +42,8 @@ protected:
 
 class CalculateRatingsAsync : public QThread
 {
+    Q_OBJECT
+
 private:
     QVector<double> HardRatings;
     QVector<double> SoftRatings;
@@ -59,6 +63,9 @@ public:
     int GetCount();
 
     static QMutex mutex;
+
+signals:
+    void CountChanged(int count);
 
 protected:
     void run() override;

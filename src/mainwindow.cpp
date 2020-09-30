@@ -17,6 +17,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->ListButton->hide();
 
 
+
+
+
     ui->InfoButton->setEnabled(false);
     ui->ConfiugreButton->setEnabled(false);
     ui->GraphicsButton->setEnabled(false);
@@ -26,22 +29,17 @@ MainWindow::MainWindow(QWidget *parent)
     OpenProjectsListForm::input = ui->InputTable;
     OpenProjectsListForm::output = ui->OutputTable;
 
-
+    DataProcessing::inputTable = ui->InputTable;
+    DataProcessing::outputTable = ui->OutputTable;
 
     open = new QAction(tr("&Открыть"), this);
 
 
     ui->treeView->addAction(open);
-
     ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->treeView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(OpenFile()));
     connect(ui->treeView, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onCustomContextMenu(const QPoint &)));
 
-
-
-
-    ui->PlusButton->hide();
-    ui->MinusButton->hide();
 
     QFileSystemModel *model = new QFileSystemModel;
     model->setRootPath(QDir::currentPath());
@@ -53,8 +51,14 @@ MainWindow::MainWindow(QWidget *parent)
     ui->treeView->hideColumn(3);
     ui->treeView->hideColumn(4);
 
+    ui->PlusButton->hide();
+    ui->MinusButton->hide();
+
 
     //--------------------------------------------------------------------------------------------
+    connect(this, SIGNAL(OpenedLoadingForm()), this, SLOT(OpenLoadingForm()));
+    connect(this, SIGNAL(ClosedLoadingForm()), this, SLOT(CloseLoadingForm()));
+
     connect(ui->AboutProgramAction, SIGNAL(triggered()), this, SLOT(OpenAboutProgramForm()));
 
     connect(ui->ExportToExcelAction, SIGNAL(triggered()), this, SLOT(OpenExportFileForm()));
@@ -257,6 +261,20 @@ void MainWindow::UpdateOpenMenu(const QString solutionName)
     ui->OpenMenu->addAction(action);
     OpenMenuActions << action;
     connect(action, SIGNAL(triggered()), this, SLOT(OpenAction()));
+}
+
+void MainWindow::OpenLoadingForm()
+{
+    //loadingForm->show();
+    waitingDialog->show();
+
+}
+
+void MainWindow::CloseLoadingForm()
+{
+    //loadingForm->close();
+    waitingDialog->close();
+
 }
 
 void MainWindow::OpenAboutProgramForm()
@@ -489,6 +507,25 @@ void MainWindow::OpenSolution(const QString fileName)
 
     if (!SolutionDB::IsContained(solutionName))
     {
+
+
+//        QDialog *waitingDialog = new QDialog;
+//        QProgressBar* progressBar = new QProgressBar(waitingDialog);
+//        QVBoxLayout *waitingDialog_layout = new QVBoxLayout;
+
+        progressBar->setRange(0, 0);
+        progressBar->setFormat("Operation");
+
+        QString str = "QProgressBar {border: 2px solid grey;border-radius: 8px;text-align: center;} QProgressBar::chunk {background-color: #05B8CC;width: 20px;}";
+        progressBar->setStyleSheet(str);
+
+
+        waitingDialog_layout->setMargin(0);
+        waitingDialog_layout->addWidget(progressBar);
+        waitingDialog->setLayout(waitingDialog_layout );
+
+        //emit OpenedLoadingForm();
+
         IO::OpenExelFile(fileName);
 
         UpdateDeleteMenu(solutionName);
@@ -497,6 +534,8 @@ void MainWindow::OpenSolution(const QString fileName)
         ui->InfoButton->setEnabled(true);
         ui->ConfiugreButton->setEnabled(true);
         ui->GraphicsButton->setEnabled(true);
+
+        //emit ClosedLoadingForm();
 
         OpenStartupConfigForm();
     }

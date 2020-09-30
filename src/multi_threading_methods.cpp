@@ -117,7 +117,7 @@ void CalculateRatingsAsync::run()
 
         Count++;
 
-
+        emit CountChanged(Count);
     }
 
     HardRatings = hardRatings;

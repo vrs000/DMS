@@ -106,37 +106,38 @@ void StartupConfigForm::on_OkButton_clicked()
 
 
     DataProcessing::CrushingStep = ui->StepSpinBox->value();
+    DataProcessing::OpenedSolutionName = solutionName;
     DataProcessing::MakeCalculations(priority, prefered, rejected);
     DataProcessing::bar = ui->progressBar;
+    setEnabled(false);
+//    IO::FillingTables(input, output);
 
-    IO::FillingTables(input, output);
-
-    Solution solution(
-                solutionName, DataProcessing::CrushingStep,
-                IO::IndicatorsNames, IO::ProjectsNames,
-                IO::BaseTable, DataProcessing::NormalizedTable,
-                DataProcessing::HardRatings, DataProcessing::SoftRatings,
-                DataProcessing::PriorityList,
-                DataProcessing::PrefferedMetrics, DataProcessing::RejectedMetrics
-                );
+//    Solution solution(
+//                solutionName, DataProcessing::CrushingStep,
+//                IO::IndicatorsNames, IO::ProjectsNames,
+//                IO::BaseTable, DataProcessing::NormalizedTable,
+//                DataProcessing::HardRatings, DataProcessing::SoftRatings,
+//                DataProcessing::PriorityList,
+//                DataProcessing::PrefferedMetrics, DataProcessing::RejectedMetrics
+//                );
 
 
-    //?????????????????????????????????????????????????????????
-    if (SolutionDB::IsContained(solutionName))
-    {
-        auto oldSolution = SolutionDB::GetSolution(solutionName);
-        SolutionDB::UpdateSolution(oldSolution, solution);
-        qDebug() << "Solution updated";
-    }
-    else
-    {
-        SolutionDB::AddSolution(solution);
-    }
-    //?????????????????????????????????????????????????????????
+//    //?????????????????????????????????????????????????????????
+//    if (SolutionDB::IsContained(solutionName))
+//    {
+//        auto oldSolution = SolutionDB::GetSolution(solutionName);
+//        SolutionDB::UpdateSolution(oldSolution, solution);
+//        qDebug() << "Solution updated";
+//    }
+//    else
+//    {
+//        SolutionDB::AddSolution(solution);
+//    }
+//    //?????????????????????????????????????????????????????????
 
 
     //SolutionDB::AddSolution(solution);
-    close();
+   // close();
 }
 
 long double StartupConfigForm::fact(int N)
@@ -149,13 +150,12 @@ long double StartupConfigForm::fact(int N)
 
 void StartupConfigForm::SetProgressBarValue(int value, int maximum)
 {
+    Q_UNUSED(value);
+    Q_UNUSED(maximum);
+
     if (ui->progressBar->isHidden())
         ui->progressBar->show();
-//qDebug() << "SetProgressBarValue(int value, int maximum)";
-//    if (ui->progressBar->maximum() != maximum)
-//        ui->progressBar->setMaximum(maximum);
 
-//    ui->progressBar->setValue(value);
 }
 
 void StartupConfigForm::on_StepSpinBox_valueChanged(double arg1)
@@ -164,4 +164,12 @@ void StartupConfigForm::on_StepSpinBox_valueChanged(double arg1)
     int m = IO::IndicatorsNames.size();
     uint K = fact(m + 1/arg1 - 1)/fact(1/arg1)/fact(m-1);
     ui->IterationCountLabel->setText(QString("Количество итераций: %1").arg(K));
+}
+
+void StartupConfigForm::on_progressBar_valueChanged(int value)
+{
+    if (value == ui->progressBar->maximum())
+    {
+        close();
+    }
 }

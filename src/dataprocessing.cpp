@@ -21,6 +21,34 @@ QProgressBar* DataProcessing::bar = nullptr;
 
 int DataProcessing::CurrentIterationCount = 0;
 
+CalculateRatingsAsync* DataProcessing::thread1 = nullptr;
+CalculateRatingsAsync* DataProcessing::thread2 = nullptr;
+CalculateRatingsAsync* DataProcessing::thread3 = nullptr;
+CalculateRatingsAsync* DataProcessing::thread4 = nullptr;
+CalculateRatingsAsync* DataProcessing::thread5 = nullptr;
+CalculateRatingsAsync* DataProcessing::thread6 = nullptr;
+CalculateRatingsAsync* DataProcessing::thread7 = nullptr;
+CalculateRatingsAsync* DataProcessing::thread8 = nullptr;
+
+
+int DataProcessing::Count1 = -1;
+int DataProcessing::Count2 = -1;
+int DataProcessing::Count3 = -1;
+int DataProcessing::Count4 = -1;
+int DataProcessing::Count5 = -1;
+int DataProcessing::Count6 = -1;
+int DataProcessing::Count7 = -1;
+int DataProcessing::Count8 = -1;
+
+
+
+QTableWidget* DataProcessing::inputTable = nullptr;
+QTableWidget* DataProcessing::outputTable = nullptr;
+
+QString DataProcessing::OpenedSolutionName = "";
+
+DataProcessing* DataProcessing::instance = new DataProcessing;
+
 void DataProcessing::FindMaxMinIndicators(QVector<QVector<double> > BaseTable)
 {
     MaximumIndicators.clear();
@@ -117,6 +145,270 @@ double DataProcessing::Sum(QVector<double> set, int elementsCount)
     return Sum;
 }
 
+void DataProcessing::UpdateProgressBar()
+{
+    if (bar->isHidden())
+        bar->show();
+
+    if (bar->maximum() != WeightsTable.size())
+        bar->setMaximum(WeightsTable.size());
+
+    int res = 0;
+
+    if (Count1 != -1) res += Count1;
+    if (Count2 != -1) res += Count2;
+    if (Count3 != -1) res += Count3;
+    if (Count4 != -1) res += Count4;
+    if (Count5 != -1) res += Count5;
+    if (Count6 != -1) res += Count6;
+    if (Count7 != -1) res += Count7;
+    if (Count8 != -1) res += Count8;
+
+    bar->setValue(res);
+
+}
+
+void DataProcessing::UpdateCount1(int count)
+{
+    Count1 = count;
+}
+
+void DataProcessing::UpdateCount2(int count)
+{
+    Count2 = count;
+}
+
+void DataProcessing::UpdateCount3(int count)
+{
+    Count3 = count;
+}
+
+void DataProcessing::UpdateCount4(int count)
+{
+    Count4 = count;
+}
+
+void DataProcessing::UpdateCount5(int count)
+{
+    Count5 = count;
+}
+
+void DataProcessing::UpdateCount6(int count)
+{
+    Count6 = count;
+}
+
+void DataProcessing::UpdateCount7(int count)
+{
+    Count7 = count;
+}
+
+void DataProcessing::UpdateCount8(int count)
+{
+    Count8 = count;
+}
+
+void DataProcessing::Finished2Threads()
+{
+    if (thread1->isFinished() && thread2->isFinished())
+    {
+        bar->setValue(bar->maximum());
+
+        auto hard1 = thread1->GetHardRatings();
+        auto soft1 = thread1->GetSoftRatings();
+
+        auto hard2 = thread2->GetHardRatings();
+        auto soft2 = thread2->GetSoftRatings();
+
+        QVector<double> hardRatings(hard1.size(), 0);
+        QVector<double> softRatings(soft1.size(), 0);
+
+
+        for (int i=0; i < IO::ProjectsNames.size(); i++)
+        {
+            hardRatings[i] = hard1[i] + hard2[i];
+            softRatings[i] = soft1[i] + soft2[i];
+        }
+
+
+        for (int i = 0; i < IO::ProjectsNames.size(); i++)
+        {
+            hardRatings[i] *= 1.0 / (WeightsTable.size() - missed_variation);
+            softRatings[i] *= 1.0 / (WeightsTable.size() - missed_variation);
+        }
+
+        qDebug() << thread1->GetCount() << thread2->GetCount() << thread1->GetCount() + thread2->GetCount();
+        qDebug() << hardRatings;
+        qDebug() << softRatings;
+
+
+        //###########BETA
+        HardRatings = hardRatings;
+        SoftRatings = softRatings;
+
+
+        IO::FillingTables(inputTable, outputTable);
+
+        Solution solution(
+                    OpenedSolutionName, DataProcessing::CrushingStep,
+                    IO::IndicatorsNames, IO::ProjectsNames,
+                    IO::BaseTable, DataProcessing::NormalizedTable,
+                    DataProcessing::HardRatings, DataProcessing::SoftRatings,
+                    DataProcessing::PriorityList,
+                    DataProcessing::PrefferedMetrics, DataProcessing::RejectedMetrics
+                    );
+
+
+        if (SolutionDB::IsContained(OpenedSolutionName))
+            SolutionDB::UpdateSolution(SolutionDB::GetSolution(OpenedSolutionName),
+                                       solution);
+        else
+            SolutionDB::AddSolution(solution);
+    }
+
+
+}
+void DataProcessing::Finished4Threads()
+{
+    if (thread1->isFinished() && thread2->isFinished()
+            && thread3->isFinished() && thread4->isFinished())
+    {
+        bar->setValue(bar->maximum());
+
+        auto hard1 = thread1->GetHardRatings();
+        auto soft1 = thread1->GetSoftRatings();
+
+        auto hard2 = thread2->GetHardRatings();
+        auto soft2 = thread2->GetSoftRatings();
+
+        auto hard3 = thread3->GetHardRatings();
+        auto soft3 = thread3->GetSoftRatings();
+
+        auto hard4 = thread4->GetHardRatings();
+        auto soft4 = thread4->GetSoftRatings();
+
+        QVector<double> hardRatings(hard1.size(), 0);
+        QVector<double> softRatings(soft1.size(), 0);
+
+
+        for (int i=0; i < IO::ProjectsNames.size(); i++)
+        {
+            hardRatings[i] = hard1[i] + hard2[i] + hard3[i] + hard4[i];
+            softRatings[i] = soft1[i] + soft2[i] + soft3[i] + soft4[i];
+        }
+
+
+
+
+        for (int i = 0; i < IO::ProjectsNames.size(); i++)
+        {
+            hardRatings[i] *= 1.0 / (WeightsTable.size() - missed_variation);
+            softRatings[i] *= 1.0 / (WeightsTable.size() - missed_variation);
+        }
+
+        HardRatings = hardRatings;
+        SoftRatings = softRatings;
+
+        IO::FillingTables(inputTable, outputTable);
+
+        Solution solution(
+                    OpenedSolutionName, DataProcessing::CrushingStep,
+                    IO::IndicatorsNames, IO::ProjectsNames,
+                    IO::BaseTable, DataProcessing::NormalizedTable,
+                    DataProcessing::HardRatings, DataProcessing::SoftRatings,
+                    DataProcessing::PriorityList,
+                    DataProcessing::PrefferedMetrics, DataProcessing::RejectedMetrics
+                    );
+
+
+        if (SolutionDB::IsContained(OpenedSolutionName))
+            SolutionDB::UpdateSolution(SolutionDB::GetSolution(OpenedSolutionName),
+                                       solution);
+        else
+            SolutionDB::AddSolution(solution);
+    }
+
+}
+void DataProcessing::Finished8Threads()
+{
+    if (thread1->isFinished() && thread2->isFinished()
+            && thread3->isFinished() && thread4->isFinished()
+            && thread5->isFinished() && thread6->isFinished()
+            && thread7->isFinished() && thread8->isFinished())
+    {
+        bar->setValue(bar->maximum());
+
+        auto hard1 = thread1->GetHardRatings();
+        auto soft1 = thread1->GetSoftRatings();
+
+        auto hard2 = thread2->GetHardRatings();
+        auto soft2 = thread2->GetSoftRatings();
+
+        auto hard3 = thread3->GetHardRatings();
+        auto soft3 = thread3->GetSoftRatings();
+
+        auto hard4 = thread4->GetHardRatings();
+        auto soft4 = thread4->GetSoftRatings();
+
+        auto hard5 = thread5->GetHardRatings();
+        auto soft5 = thread5->GetSoftRatings();
+
+        auto hard6 = thread6->GetHardRatings();
+        auto soft6 = thread6->GetSoftRatings();
+
+        auto hard7 = thread7->GetHardRatings();
+        auto soft7 = thread7->GetSoftRatings();
+
+        auto hard8 = thread8->GetHardRatings();
+        auto soft8 = thread8->GetSoftRatings();
+
+
+        QVector<double> hardRatings(hard1.size(), 0);
+        QVector<double> softRatings(soft1.size(), 0);
+
+
+        for (int i=0; i < IO::ProjectsNames.size(); i++)
+        {
+            hardRatings[i] = hard1[i] + hard2[i] + hard3[i] + hard4[i]
+                    + hard5[i] + hard6[i] + hard7[i] + hard8[i];
+
+            softRatings[i] = soft1[i] + soft2[i] + soft3[i] + soft4[i]
+                    + soft5[i] + soft6[i] + soft7[i] + soft8[i];
+        }
+
+
+
+
+        for (int i = 0; i < IO::ProjectsNames.size(); i++)
+        {
+            hardRatings[i] *= 1.0 / (WeightsTable.size() - missed_variation);
+            softRatings[i] *= 1.0 / (WeightsTable.size() - missed_variation);
+        }
+
+        HardRatings = hardRatings;
+        SoftRatings = softRatings;
+
+
+        IO::FillingTables(inputTable, outputTable);
+
+        Solution solution(
+                    OpenedSolutionName, DataProcessing::CrushingStep,
+                    IO::IndicatorsNames, IO::ProjectsNames,
+                    IO::BaseTable, DataProcessing::NormalizedTable,
+                    DataProcessing::HardRatings, DataProcessing::SoftRatings,
+                    DataProcessing::PriorityList,
+                    DataProcessing::PrefferedMetrics, DataProcessing::RejectedMetrics
+                    );
+
+
+        if (SolutionDB::IsContained(OpenedSolutionName))
+            SolutionDB::UpdateSolution(SolutionDB::GetSolution(OpenedSolutionName),
+                                       solution);
+        else
+            SolutionDB::AddSolution(solution);
+    }
+}
+
 void DataProcessing::GenerateWeightsList()
 {
     WeightsTable.clear();
@@ -134,6 +426,8 @@ void DataProcessing::SetMetrics(QVector<int> Preferred, QVector<int> Rejected)
 
 void DataProcessing::CalculateRatings()
 {
+    bar->setValue(bar->maximum());
+
     bool isSuitable;
     QVector<double> hardRatings(IO::ProjectsNames.size());
     QVector<double> softRatings(IO::ProjectsNames.size());
@@ -215,90 +509,60 @@ void DataProcessing::CalculateRatings()
 
     HardRatings = hardRatings;
     SoftRatings = softRatings;
-}
 
+    IO::FillingTables(inputTable, outputTable);
+
+    Solution solution(
+                OpenedSolutionName, DataProcessing::CrushingStep,
+                IO::IndicatorsNames, IO::ProjectsNames,
+                IO::BaseTable, DataProcessing::NormalizedTable,
+                DataProcessing::HardRatings, DataProcessing::SoftRatings,
+                DataProcessing::PriorityList,
+                DataProcessing::PrefferedMetrics, DataProcessing::RejectedMetrics
+                );
+
+
+    if (SolutionDB::IsContained(OpenedSolutionName))
+        SolutionDB::UpdateSolution(SolutionDB::GetSolution(OpenedSolutionName),
+                                   solution);
+    else
+        SolutionDB::AddSolution(solution);
+}
 void DataProcessing::CalculateRatingsIn2Threads()
 {
     missed_variation = 0;
+    ResetCounts();
+    Count1 = 0;
+    Count2 = 0;
+
+    // DataProcessing* dp = new DataProcessing;
+
+    thread1 = new CalculateRatingsAsync(0, WeightsTable.size()/2);
+    thread2 = new CalculateRatingsAsync(WeightsTable.size()/2 + 1, WeightsTable.size()-1);
 
 
-    CalculateRatingsAsync thread1(0, WeightsTable.size()/2);
-    CalculateRatingsAsync thread2(WeightsTable.size()/2 + 1, WeightsTable.size()-1);
-
-    thread1.start();
-    thread2.start();
+    connect(thread1, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
+    connect(thread2, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
 
 
-//        bar->show();
-//        bar->setMaximum(WeightsTable.size());
-
-//        while (bar->value() != WeightsTable.size())
-//        {
-//            QThread::sleep(1);
-//            int res =  thread1.GetCount() + thread2.GetCount();
-
-//            int count = WeightsTable.size();
+    connect(thread1, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount1(int)));
+    connect(thread2, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount2(int)));
 
 
-//            bar->setValue(res);
+    connect(thread1, SIGNAL(finished()), instance, SLOT(Finished2Threads()));
+    connect(thread2, SIGNAL(finished()), instance, SLOT(Finished2Threads()));
 
-//        }
-
-
-
-    //    bar->setMaximum(WeightsTable.size());
-    //    bar->show();
-
-    //    std::thread b([&]()
-    //    {
-    //        while(bar->value() != WeightsTable.size())
-    //        {
-    //            int res =  thread1.GetCount() + thread2.GetCount();
-    //            std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    //        }
-
-    //    });
-
-    thread1.wait();
-    thread2.wait();
-    //b.join();
-
-    //b.wait();
-
-    qDebug() << "###" << thread1.GetCount() + thread2.GetCount();
-
-    auto hard1 = thread1.GetHardRatings();
-    auto soft1 = thread1.GetSoftRatings();
-
-    auto hard2 = thread2.GetHardRatings();
-    auto soft2 = thread2.GetSoftRatings();
-
-    QVector<double> hardRatings(hard1.size(), 0);
-    QVector<double> softRatings(soft1.size(), 0);
-
-
-    for (int i=0; i < IO::ProjectsNames.size(); i++)
-    {
-        hardRatings[i] = hard1[i] + hard2[i];
-        softRatings[i] = soft1[i] + soft2[i];
-    }
-
-
-
-
-    for (int i = 0; i < IO::ProjectsNames.size(); i++)
-    {
-        hardRatings[i] *= 1.0 / (WeightsTable.size() - missed_variation);
-        softRatings[i] *= 1.0 / (WeightsTable.size() - missed_variation);
-    }
-
-    HardRatings = hardRatings;
-    SoftRatings = softRatings;
-
+    thread1->start();
+    thread2->start();
 }
 void DataProcessing::CalculateRatingsIn4Threads()
 {
     missed_variation = 0;
+    ResetCounts();
+    Count1 = 0;
+    Count2 = 0;
+    Count3 = 0;
+    Count4 = 0;
 
 
     int a1 = 0;
@@ -314,63 +578,48 @@ void DataProcessing::CalculateRatingsIn4Threads()
     int b4 = WeightsTable.size() - 1;
 
 
-    CalculateRatingsAsync thread1(a1, b1);
-    CalculateRatingsAsync thread2(a2, b2);
-    CalculateRatingsAsync thread3(a3, b3);
-    CalculateRatingsAsync thread4(a4, b4);
+    thread1 = new CalculateRatingsAsync(a1, b1);
+    thread2 = new CalculateRatingsAsync(a2, b2);
+    thread3 = new CalculateRatingsAsync(a3, b3);
+    thread4 = new CalculateRatingsAsync(a4, b4);
 
 
-    thread1.start();
-    thread2.start();
-    thread3.start();
-    thread4.start();
+    connect(thread1, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
+    connect(thread2, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
+    connect(thread3, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
+    connect(thread4, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
 
 
-    thread1.wait();
-    thread2.wait();
-    thread3.wait();
-    thread4.wait();
-
-    qDebug() << "###" << thread1.GetCount() + thread2.GetCount() + thread3.GetCount() + thread4.GetCount();
-
-    auto hard1 = thread1.GetHardRatings();
-    auto soft1 = thread1.GetSoftRatings();
-
-    auto hard2 = thread2.GetHardRatings();
-    auto soft2 = thread2.GetSoftRatings();
-
-    auto hard3 = thread3.GetHardRatings();
-    auto soft3 = thread3.GetSoftRatings();
-
-    auto hard4 = thread4.GetHardRatings();
-    auto soft4 = thread4.GetSoftRatings();
-
-    QVector<double> hardRatings(hard1.size(), 0);
-    QVector<double> softRatings(soft1.size(), 0);
+    connect(thread1, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount1(int)));
+    connect(thread2, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount2(int)));
+    connect(thread3, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount3(int)));
+    connect(thread4, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount4(int)));
 
 
-    for (int i=0; i < IO::ProjectsNames.size(); i++)
-    {
-        hardRatings[i] = hard1[i] + hard2[i] + hard3[i] + hard4[i];
-        softRatings[i] = soft1[i] + soft2[i] + soft3[i] + soft4[i];
-    }
+    connect(thread1, SIGNAL(finished()), instance, SLOT(Finished4Threads()));
+    connect(thread2, SIGNAL(finished()), instance, SLOT(Finished4Threads()));
+    connect(thread3, SIGNAL(finished()), instance, SLOT(Finished4Threads()));
+    connect(thread4, SIGNAL(finished()), instance, SLOT(Finished4Threads()));
 
 
+    thread1->start();
+    thread2->start();
+    thread3->start();
+    thread4->start();
 
-
-    for (int i = 0; i < IO::ProjectsNames.size(); i++)
-    {
-        hardRatings[i] *= 1.0 / (WeightsTable.size() - missed_variation);
-        softRatings[i] *= 1.0 / (WeightsTable.size() - missed_variation);
-    }
-
-    HardRatings = hardRatings;
-    SoftRatings = softRatings;
 }
 void DataProcessing::CalculateRatingsIn8Threads()
 {
     missed_variation = 0;
-
+    ResetCounts();
+    Count1 = 0;
+    Count2 = 0;
+    Count3 = 0;
+    Count4 = 0;
+    Count5 = 0;
+    Count6 = 0;
+    Count7 = 0;
+    Count8 = 0;
 
     int a1 = 0;
     int b1 = WeightsTable.size() / 8;
@@ -396,132 +645,57 @@ void DataProcessing::CalculateRatingsIn8Threads()
     int a8 = b7 + 1;
     int b8 = WeightsTable.size() - 1;
 
-    CalculateRatingsAsync thread1(a1, b1);
-    CalculateRatingsAsync thread2(a2, b2);
-    CalculateRatingsAsync thread3(a3, b3);
-    CalculateRatingsAsync thread4(a4, b4);
-    CalculateRatingsAsync thread5(a5, b5);
-    CalculateRatingsAsync thread6(a6, b6);
-    CalculateRatingsAsync thread7(a7, b7);
-    CalculateRatingsAsync thread8(a8, b8);
+
+    thread1 = new CalculateRatingsAsync(a1, b1);
+    thread2 = new CalculateRatingsAsync(a2, b2);
+    thread3 = new CalculateRatingsAsync(a3, b3);
+    thread4 = new CalculateRatingsAsync(a4, b4);
+    thread5 = new CalculateRatingsAsync(a5, b5);
+    thread6 = new CalculateRatingsAsync(a6, b6);
+    thread7 = new CalculateRatingsAsync(a7, b7);
+    thread8 = new CalculateRatingsAsync(a8, b8);
 
 
-    thread1.start();
-    thread2.start();
-    thread3.start();
-    thread4.start();
-    thread5.start();
-    thread6.start();
-    thread7.start();
-    thread8.start();
-
-auto f = [&]()
-{
-    bar->show();
-    bar->setMaximum(WeightsTable.size());
-
-    while (bar->value() != WeightsTable.size())
-    {
-        int res =  thread1.GetCount() + thread2.GetCount() + thread3.GetCount() + thread4.GetCount()
-                + thread5.GetCount() + thread6.GetCount() + thread7.GetCount() + thread8.GetCount();
-
-        int count = WeightsTable.size();
-        bar->setValue(res);
-
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-};
+    connect(thread1, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
+    connect(thread2, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
+    connect(thread3, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
+    connect(thread4, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
+    connect(thread5, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
+    connect(thread6, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
+    connect(thread7, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
+    connect(thread8, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
 
 
-  //  std::thread th(f);
+    connect(thread1, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount1(int)));
+    connect(thread2, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount2(int)));
+    connect(thread3, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount3(int)));
+    connect(thread4, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount4(int)));
+    connect(thread5, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount5(int)));
+    connect(thread6, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount6(int)));
+    connect(thread7, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount7(int)));
+    connect(thread8, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount8(int)));
 
 
-
-//    bar->show();
-//    bar->setMaximum(WeightsTable.size());
-
-//    while (bar->value() != WeightsTable.size())
-//    {
-//        QThread::sleep(1);
-//        int res =  thread1.GetCount() + thread2.GetCount() + thread3.GetCount() + thread4.GetCount()
-//                + thread5.GetCount() + thread6.GetCount() + thread7.GetCount() + thread8.GetCount();
-
-//        int count = WeightsTable.size();
+    connect(thread1, SIGNAL(finished()), instance, SLOT(Finished8Threads()));
+    connect(thread2, SIGNAL(finished()), instance, SLOT(Finished8Threads()));
+    connect(thread3, SIGNAL(finished()), instance, SLOT(Finished8Threads()));
+    connect(thread4, SIGNAL(finished()), instance, SLOT(Finished8Threads()));
+    connect(thread5, SIGNAL(finished()), instance, SLOT(Finished8Threads()));
+    connect(thread6, SIGNAL(finished()), instance, SLOT(Finished8Threads()));
+    connect(thread7, SIGNAL(finished()), instance, SLOT(Finished8Threads()));
+    connect(thread8, SIGNAL(finished()), instance, SLOT(Finished8Threads()));
 
 
-//        bar->setValue(res);
+    thread1->start();
+    thread2->start();
+    thread3->start();
+    thread4->start();
+    thread5->start();
+    thread6->start();
+    thread7->start();
+    thread8->start();
 
-//    }
-
-
-
-//th.join();
-    thread1.wait();
-    thread2.wait();
-    thread3.wait();
-    thread4.wait();
-    thread5.wait();
-    thread6.wait();
-    thread7.wait();
-    thread8.wait();
-
-
-
-    qDebug() << "###" << thread1.GetCount() + thread2.GetCount() + thread3.GetCount() + thread4.GetCount()
-                + thread5.GetCount() + thread6.GetCount() + thread7.GetCount() + thread8.GetCount();
-
-
-    auto hard1 = thread1.GetHardRatings();
-    auto soft1 = thread1.GetSoftRatings();
-
-    auto hard2 = thread2.GetHardRatings();
-    auto soft2 = thread2.GetSoftRatings();
-
-    auto hard3 = thread3.GetHardRatings();
-    auto soft3 = thread3.GetSoftRatings();
-
-    auto hard4 = thread4.GetHardRatings();
-    auto soft4 = thread4.GetSoftRatings();
-
-    auto hard5 = thread5.GetHardRatings();
-    auto soft5 = thread5.GetSoftRatings();
-
-    auto hard6 = thread6.GetHardRatings();
-    auto soft6 = thread6.GetSoftRatings();
-
-    auto hard7 = thread7.GetHardRatings();
-    auto soft7 = thread7.GetSoftRatings();
-
-    auto hard8 = thread8.GetHardRatings();
-    auto soft8 = thread8.GetSoftRatings();
-
-
-    QVector<double> hardRatings(hard1.size(), 0);
-    QVector<double> softRatings(soft1.size(), 0);
-
-
-    for (int i=0; i < IO::ProjectsNames.size(); i++)
-    {
-        hardRatings[i] = hard1[i] + hard2[i] + hard3[i] + hard4[i]
-                + hard5[i] + hard6[i] + hard7[i] + hard8[i];
-
-        softRatings[i] = soft1[i] + soft2[i] + soft3[i] + soft4[i]
-                + soft5[i] + soft6[i] + soft7[i] + soft8[i];
-    }
-
-
-
-
-    for (int i = 0; i < IO::ProjectsNames.size(); i++)
-    {
-        hardRatings[i] *= 1.0 / (WeightsTable.size() - missed_variation);
-        softRatings[i] *= 1.0 / (WeightsTable.size() - missed_variation);
-    }
-
-    HardRatings = hardRatings;
-    SoftRatings = softRatings;
 }
-
 
 
 QVector<double> DataProcessing::GetLinearConvolutionResult(QVector<double> weights)
@@ -543,6 +717,17 @@ QVector<double> DataProcessing::GetLinearConvolutionResult(QVector<double> weigh
 }
 
 
+void DataProcessing::ResetCounts()
+{
+    Count1 = -1;
+    Count2 = -1;
+    Count3 = -1;
+    Count4 = -1;
+    Count5 = -1;
+    Count6 = -1;
+    Count7 = -1;
+    Count8 = -1;
+}
 
 
 void DataProcessing::MakeCalculations(QVector<QString> priorityList, QVector<int> Preferred, QVector<int> Rejected)
@@ -564,8 +749,6 @@ void DataProcessing::MakeCalculations(QVector<QString> priorityList, QVector<int
     qDebug() << "WeightList generated";
 
 
-    QTime timer;
-    timer.start();
 
 
     const int AlgorithmComplexity = WeightsTable.size() * IO::ProjectsNames.size() * IO::IndicatorsNames.size();
@@ -606,14 +789,13 @@ void DataProcessing::MakeCalculations(QVector<QString> priorityList, QVector<int
     }
 
 
-    qDebug() << CurrentIterationCount << WeightsTable.size();
-    qDebug() << "Ratings calced";
+
+
     qDebug() << "#############";
     qDebug() << QString("%1 x %2 x %3 = %4").arg(WeightsTable.size())
                 .arg(IO::ProjectsNames.size())
                 .arg(IO::IndicatorsNames.size())
                 .arg(WeightsTable.size()*IO::ProjectsNames.size()*IO::IndicatorsNames.size());
-    qDebug() << "|"<< timer.elapsed()<<"ms |";
     qDebug() << "#############";
     qDebug() << "-------------------------\n";
 

@@ -15,6 +15,8 @@
 #include <preselectionchartsform.h>
 #include <selectforexportform.h>
 #include <aboutprogramform.h>
+#include <loadingform.h>
+#include <QDialog>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -48,6 +50,9 @@ private:
 
     template<typename FormType> void OpenForm(FormType* form);
 
+    QDialog *waitingDialog = new QDialog;
+    QProgressBar* progressBar = new QProgressBar(waitingDialog);
+    QVBoxLayout *waitingDialog_layout = new QVBoxLayout;
 
     //forms
 private:
@@ -56,8 +61,16 @@ private:
     SelectForExportForm* selectforexportForm = new SelectForExportForm();
     PreSelectionChartsForm* preselectionchartsform = new PreSelectionChartsForm();
     AboutProgramForm* aboutProgramForm = new AboutProgramForm();
+    LoadingForm* loadingForm = new LoadingForm();
+
+signals:
+    void OpenedLoadingForm();
+    void ClosedLoadingForm();
 
 private slots:
+    void OpenLoadingForm();
+    void CloseLoadingForm();
+
     void OpenAboutProgramForm();
 
     void OpenExportFileForm();

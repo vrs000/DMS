@@ -12,5 +12,11 @@
         <file>icons/close (2).png</file>
         <file>icons/Logo.ico</file>
         <file>icons/Logo.png</file>
+        <file>icons/WaitBar.gif</file>
+        <file>icons/WaitBar1.gif</file>
+        <file>icons/WaitBar2.gif</file>
+        <file>icons/WaitBar3.gif</file>
+        <file>icons/WaitBar11.gif</file>
+        <file>icons/Logo-resized.png</file>
     </qresource>
 </RCC>
