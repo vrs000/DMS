@@ -5,6 +5,8 @@ QVector<QString> DataProcessing::PriorityList;
 QVector<double> DataProcessing::MaximumIndicators;
 QVector<double> DataProcessing::MinimumIndicators;
 
+double** DataProcessing::normTable = nullptr;
+
 QVector<QVector<double>> DataProcessing::NormalizedTable;
 QVector<QVector<double>> DataProcessing::WeightsTable;
 
@@ -19,7 +21,9 @@ QVector<int> DataProcessing::RejectedMetrics;
 
 QProgressBar* DataProcessing::bar = nullptr;
 
-int DataProcessing::CurrentIterationCount = 0;
+uint DataProcessing::CurrentIterationCount = 0;
+
+QTime DataProcessing::time = QTime();
 
 CalculateRatingsAsync* DataProcessing::thread1 = nullptr;
 CalculateRatingsAsync* DataProcessing::thread2 = nullptr;
@@ -31,6 +35,17 @@ CalculateRatingsAsync* DataProcessing::thread7 = nullptr;
 CalculateRatingsAsync* DataProcessing::thread8 = nullptr;
 
 
+GenerateWeightsAndCalculateRatingsAsync* DataProcessing::th1 = nullptr;
+GenerateWeightsAndCalculateRatingsAsync* DataProcessing::th2 = nullptr;
+GenerateWeightsAndCalculateRatingsAsync* DataProcessing::th3 = nullptr;
+GenerateWeightsAndCalculateRatingsAsync* DataProcessing::th4 = nullptr;
+GenerateWeightsAndCalculateRatingsAsync* DataProcessing::th5 = nullptr;
+GenerateWeightsAndCalculateRatingsAsync* DataProcessing::th6 = nullptr;
+GenerateWeightsAndCalculateRatingsAsync* DataProcessing::th7 = nullptr;
+GenerateWeightsAndCalculateRatingsAsync* DataProcessing::th8 = nullptr;
+
+CalculateAsyncWithThreadPool* DataProcessing::tp = nullptr;
+
 int DataProcessing::Count1 = -1;
 int DataProcessing::Count2 = -1;
 int DataProcessing::Count3 = -1;
@@ -40,7 +55,12 @@ int DataProcessing::Count6 = -1;
 int DataProcessing::Count7 = -1;
 int DataProcessing::Count8 = -1;
 
+int DataProcessing::NumberOfTriggring = 0;
 
+int DataProcessing::ProjectsCount = 0;
+int DataProcessing::IndicatorsCount = 0;
+
+int DataProcessing::Previous = 0;
 
 QTableWidget* DataProcessing::inputTable = nullptr;
 QTableWidget* DataProcessing::outputTable = nullptr;
@@ -48,6 +68,49 @@ QTableWidget* DataProcessing::outputTable = nullptr;
 QString DataProcessing::OpenedSolutionName = "";
 
 DataProcessing* DataProcessing::instance = new DataProcessing;
+
+double DataProcessing::Fact(double value)
+{
+    double ans = 1;
+    value = qRound(value);
+    for (int i = 1; i <= value; ++i)
+    {
+        ans *= i;
+    }
+    return ans;
+}
+
+unsigned long DataProcessing::f(int n)
+{
+    unsigned  long res = 1;
+
+    for (unsigned long i =1; i <= n; i++)
+    {
+        res *= i;
+    }
+
+    return res;
+}
+
+double DataProcessing::Factorial(double value)
+{
+    double ans = 1;
+
+    value = qRound(value);
+
+    for (int i = 1; i <= value; ++i)
+    {
+        ans *= i;
+    }
+
+    return ans;
+}
+
+int DataProcessing::GetTheoreticalWeightsCount(int ParametersCount, double h)
+{
+    return std::floor(Factorial(std::floor(1 / h) + ParametersCount - 1)
+                      / (Factorial(ParametersCount - 1) * Factorial(std::floor(1 / h))));
+}
 
 void DataProcessing::FindMaxMinIndicators(QVector<QVector<double> > BaseTable)
 {
@@ -84,6 +147,22 @@ void DataProcessing::CalculateNormalizedTable(QVector<QVector<double> > BaseTabl
     QString priority;
     NormalizedTable = QVector<QVector<double>>(Rows, QVector<double>(Columns, 0));
 
+
+    if (normTable != nullptr)
+    {
+        for (int i=0; i < Previous; i++)
+            delete [] normTable[i];
+
+        delete[] normTable;
+    }
+
+
+    normTable = new double*[Rows];
+    for (int i = 0; i < Rows; i++)
+        normTable[i] = new double[Columns];
+    Previous = Rows;
+
+
     for (int j = 0; j < Columns; ++j)
     {
         max = MaximumIndicators[j];
@@ -92,6 +171,9 @@ void DataProcessing::CalculateNormalizedTable(QVector<QVector<double> > BaseTabl
 
         for (int i = 0; i < Rows; i++)
         {
+            normTable[i][j] = priority == "max" ?(BaseTable[i][j] - min)/(max-min) :  normTable[i][j];
+            normTable[i][j] = priority == "min" ? 1 - (BaseTable[i][j] - min)/(max-min) :  normTable[i][j];
+
             NormalizedTable[i][j] = priority == "max" ?(BaseTable[i][j] - min)/(max-min) :  NormalizedTable[i][j];
             NormalizedTable[i][j] = priority == "min" ? 1 - (BaseTable[i][j] - min)/(max-min) :  NormalizedTable[i][j];
         }
@@ -103,9 +185,10 @@ void DataProcessing::SetPriorityList(QVector<QString> list)
     PriorityList = list;
 }
 
+
 void DataProcessing::GetNextNum(QVector<double>& currentSet, int maxN, int curPosIndex)
 {
-    if (curPosIndex<maxN - 1)
+    if (curPosIndex < maxN - 1)
     {
         double lim = 1  - Sum(currentSet, curPosIndex);
         for (double i = 0; i <= lim + 0.00001; i += CrushingStep)
@@ -132,6 +215,42 @@ void DataProcessing::GetNextNum(QVector<double>& currentSet, int maxN, int curPo
 
 }
 
+void DataProcessing::GetNextNum(double currentSet[], int maxN, int curPosIndex)
+{
+    if (curPosIndex < maxN - 1)
+    {
+        double lim = 1  - Sum(currentSet, curPosIndex);
+        for (double i = 0; i <= lim + 0.00001; i += CrushingStep)
+        {
+            currentSet[curPosIndex] = i;
+            GetNextNum(currentSet, maxN, curPosIndex + 1);
+        }
+    }
+    else
+        if (curPosIndex == maxN - 1)
+        {
+            double rest = 1 - Sum(currentSet, curPosIndex);
+            if (rest < 0.00001)
+                rest = 0;
+
+            if (fabs(static_cast<double>(rest - CrushingStep)) < 0.00001)
+                rest = CrushingStep;
+
+
+            currentSet[curPosIndex] = rest;
+
+            QVector<double> s;
+            for (int i=0; i<maxN; i++)
+            {
+                s << currentSet[i];
+            }
+
+            WeightsTable.append(s);
+
+        }
+}
+
+
 double DataProcessing::Sum(QVector<double> set, int elementsCount)
 {
     double Sum = 0.0;
@@ -144,14 +263,54 @@ double DataProcessing::Sum(QVector<double> set, int elementsCount)
     }
     return Sum;
 }
+double DataProcessing::Sum(double set[], int elementsCount)
+{
+    double Sum = 0.0;
+
+    for (int i = 0; i < elementsCount; ++i)
+    {
+        Sum += set[i];
+    }
+
+    return Sum;
+}
+
+void DataProcessing::DeleteThreadInstances()
+{
+    if (th1 != nullptr) delete th1;
+    if (th2 != nullptr) delete th2;
+    if (th3 != nullptr) delete th3;
+    if (th4 != nullptr) delete th4;
+    if (th5 != nullptr) delete th5;
+    if (th6 != nullptr) delete th6;
+    if (th7 != nullptr) delete th7;
+    if (th8 != nullptr) delete th8;
+
+
+    th1 = nullptr;
+    th2 = nullptr;
+    th3 = nullptr;
+    th4 = nullptr;
+    th5 = nullptr;
+    th6 = nullptr;
+    th7 = nullptr;
+    th8 = nullptr;
+}
+
 
 void DataProcessing::UpdateProgressBar()
 {
     if (bar->isHidden())
         bar->show();
 
-    if (bar->maximum() != WeightsTable.size())
-        bar->setMaximum(WeightsTable.size());
+    if (WeightsTable.size() == 0)
+    {
+        if (bar->maximum() != CurrentIterationCount)
+            bar->setMaximum(CurrentIterationCount);
+    }
+    else
+        if (bar->maximum() != WeightsTable.size())
+            bar->setMaximum(WeightsTable.size());
 
     int res = 0;
 
@@ -164,258 +323,418 @@ void DataProcessing::UpdateProgressBar()
     if (Count7 != -1) res += Count7;
     if (Count8 != -1) res += Count8;
 
-    bar->setValue(res);
 
+    bar->setValue(res);
 }
+
 
 void DataProcessing::UpdateCount1(int count)
 {
     Count1 = count;
 }
-
 void DataProcessing::UpdateCount2(int count)
 {
     Count2 = count;
 }
-
 void DataProcessing::UpdateCount3(int count)
 {
     Count3 = count;
 }
-
 void DataProcessing::UpdateCount4(int count)
 {
     Count4 = count;
 }
-
 void DataProcessing::UpdateCount5(int count)
 {
     Count5 = count;
 }
-
 void DataProcessing::UpdateCount6(int count)
 {
     Count6 = count;
 }
-
 void DataProcessing::UpdateCount7(int count)
 {
     Count7 = count;
 }
-
 void DataProcessing::UpdateCount8(int count)
 {
     Count8 = count;
 }
 
+void DataProcessing::Finished1Threads()
+{
+    if (NumberOfTriggring == 0)
+        if (th1->isFinished())
+        {
+            NumberOfTriggring++;
+
+            qDebug() << time.elapsed() << "ms";
+
+            bar->setValue(bar->maximum());
+
+
+            auto hard1 = th1->GetHardRatings();
+
+            auto soft1 = th1->GetSoftRatings();
+
+
+            QVector<double> hardRatings(hard1.size(), 0);
+            QVector<double> softRatings(soft1.size(), 0);
+
+
+            for (int i=0; i < IO::ProjectsNames.size(); i++)
+            {
+                hardRatings[i] = hard1[i];
+                softRatings[i] = soft1[i];
+            }
+
+            int WeightCount = th1->GetCount();
+
+
+            qDebug() << WeightCount <<  missed_variation;
+            for (int i = 0; i < IO::ProjectsNames.size(); i++)
+            {
+                hardRatings[i] *= 1.0 / (WeightCount - missed_variation);
+                softRatings[i] *= 1.0 / (WeightCount - missed_variation);
+            }
+
+            qDebug() << th1->GetCount() << WeightCount;
+
+
+
+            //###########BETA
+            HardRatings = hardRatings;
+            SoftRatings = softRatings;
+
+
+            IO::FillingTables(inputTable, outputTable);
+
+            Solution solution(
+                        OpenedSolutionName, DataProcessing::CrushingStep,
+                        IO::IndicatorsNames, IO::ProjectsNames,
+                        IO::BaseTable, DataProcessing::NormalizedTable,
+                        DataProcessing::HardRatings, DataProcessing::SoftRatings,
+                        DataProcessing::PriorityList,
+                        DataProcessing::PrefferedMetrics, DataProcessing::RejectedMetrics
+                        );
+
+
+            if (SolutionDB::IsContained(OpenedSolutionName))
+                SolutionDB::UpdateSolution(SolutionDB::GetSolution(OpenedSolutionName),
+                                           solution);
+            else
+                SolutionDB::AddSolution(solution);
+
+
+            DeleteThreadInstances();
+        }
+}
 void DataProcessing::Finished2Threads()
 {
-    if (thread1->isFinished() && thread2->isFinished())
-    {
-        bar->setValue(bar->maximum());
-
-        auto hard1 = thread1->GetHardRatings();
-        auto soft1 = thread1->GetSoftRatings();
-
-        auto hard2 = thread2->GetHardRatings();
-        auto soft2 = thread2->GetSoftRatings();
-
-        QVector<double> hardRatings(hard1.size(), 0);
-        QVector<double> softRatings(soft1.size(), 0);
-
-
-        for (int i=0; i < IO::ProjectsNames.size(); i++)
+    if (NumberOfTriggring == 0)
+        if (th1->isFinished() && th2->isFinished())
         {
-            hardRatings[i] = hard1[i] + hard2[i];
-            softRatings[i] = soft1[i] + soft2[i];
+            NumberOfTriggring++;
+
+            qDebug() << time.elapsed() << "ms";
+
+            bar->setValue(bar->maximum());
+
+            auto hard1 = th1->GetHardRatings();
+            auto soft1 = th2->GetSoftRatings();
+
+            auto hard2 = th1->GetHardRatings();
+            auto soft2 = th2->GetSoftRatings();
+
+            QVector<double> hardRatings(hard1.size(), 0);
+            QVector<double> softRatings(soft1.size(), 0);
+
+
+            for (int i=0; i < IO::ProjectsNames.size(); i++)
+            {
+                hardRatings[i] = hard1[i] + hard2[i];
+                softRatings[i] = soft1[i] + soft2[i];
+            }
+
+            int WeightCount = th1->GetCount()+th2->GetCount();
+
+            qDebug() << WeightCount <<  missed_variation;
+            for (int i = 0; i < IO::ProjectsNames.size(); i++)
+            {
+                hardRatings[i] *= 1.0 / (WeightCount - missed_variation);
+                softRatings[i] *= 1.0 / (WeightCount - missed_variation);
+            }
+
+            qDebug() << th1->GetCount() << th2->GetCount() << WeightCount;
+
+
+
+            //###########BETA
+            HardRatings = hardRatings;
+            SoftRatings = softRatings;
+
+
+            IO::FillingTables(inputTable, outputTable);
+
+            Solution solution(
+                        OpenedSolutionName, DataProcessing::CrushingStep,
+                        IO::IndicatorsNames, IO::ProjectsNames,
+                        IO::BaseTable, DataProcessing::NormalizedTable,
+                        DataProcessing::HardRatings, DataProcessing::SoftRatings,
+                        DataProcessing::PriorityList,
+                        DataProcessing::PrefferedMetrics, DataProcessing::RejectedMetrics
+                        );
+
+
+            if (SolutionDB::IsContained(OpenedSolutionName))
+                SolutionDB::UpdateSolution(SolutionDB::GetSolution(OpenedSolutionName),
+                                           solution);
+            else
+                SolutionDB::AddSolution(solution);
+
+
+            DeleteThreadInstances();
         }
-
-
-        for (int i = 0; i < IO::ProjectsNames.size(); i++)
-        {
-            hardRatings[i] *= 1.0 / (WeightsTable.size() - missed_variation);
-            softRatings[i] *= 1.0 / (WeightsTable.size() - missed_variation);
-        }
-
-        qDebug() << thread1->GetCount() << thread2->GetCount() << thread1->GetCount() + thread2->GetCount();
-        qDebug() << hardRatings;
-        qDebug() << softRatings;
-
-
-        //###########BETA
-        HardRatings = hardRatings;
-        SoftRatings = softRatings;
-
-
-        IO::FillingTables(inputTable, outputTable);
-
-        Solution solution(
-                    OpenedSolutionName, DataProcessing::CrushingStep,
-                    IO::IndicatorsNames, IO::ProjectsNames,
-                    IO::BaseTable, DataProcessing::NormalizedTable,
-                    DataProcessing::HardRatings, DataProcessing::SoftRatings,
-                    DataProcessing::PriorityList,
-                    DataProcessing::PrefferedMetrics, DataProcessing::RejectedMetrics
-                    );
-
-
-        if (SolutionDB::IsContained(OpenedSolutionName))
-            SolutionDB::UpdateSolution(SolutionDB::GetSolution(OpenedSolutionName),
-                                       solution);
-        else
-            SolutionDB::AddSolution(solution);
-    }
-
-
 }
 void DataProcessing::Finished4Threads()
 {
-    if (thread1->isFinished() && thread2->isFinished()
-            && thread3->isFinished() && thread4->isFinished())
-    {
-        bar->setValue(bar->maximum());
 
-        auto hard1 = thread1->GetHardRatings();
-        auto soft1 = thread1->GetSoftRatings();
-
-        auto hard2 = thread2->GetHardRatings();
-        auto soft2 = thread2->GetSoftRatings();
-
-        auto hard3 = thread3->GetHardRatings();
-        auto soft3 = thread3->GetSoftRatings();
-
-        auto hard4 = thread4->GetHardRatings();
-        auto soft4 = thread4->GetSoftRatings();
-
-        QVector<double> hardRatings(hard1.size(), 0);
-        QVector<double> softRatings(soft1.size(), 0);
-
-
-        for (int i=0; i < IO::ProjectsNames.size(); i++)
+    if (NumberOfTriggring == 0)
+        if (th1->isFinished() && th2->isFinished()
+                && th3->isFinished() && th4->isFinished())
         {
-            hardRatings[i] = hard1[i] + hard2[i] + hard3[i] + hard4[i];
-            softRatings[i] = soft1[i] + soft2[i] + soft3[i] + soft4[i];
+            NumberOfTriggring++;
+
+            qDebug() << "########Elapsed time:" << time.elapsed();
+
+            bar->setValue(bar->maximum());
+
+            auto hard1 = th1->GetHardRatings();
+            auto soft1 = th1->GetSoftRatings();
+
+            auto hard2 = th2->GetHardRatings();
+            auto soft2 = th2->GetSoftRatings();
+
+            auto hard3 = th3->GetHardRatings();
+            auto soft3 = th3->GetSoftRatings();
+
+            auto hard4 = th4->GetHardRatings();
+            auto soft4 = th4->GetSoftRatings();
+
+
+            QVector<double> hardRatings(hard1.size(), 0);
+            QVector<double> softRatings(soft1.size(), 0);
+
+
+
+
+            for (int i=0; i < IO::ProjectsNames.size(); i++)
+            {
+                hardRatings[i] = hard1[i] + hard2[i] + hard3[i] + hard4[i];
+                softRatings[i] = soft1[i] + soft2[i] + soft3[i] + soft4[i];
+            }
+
+            int WeightCount = th1->GetCount() + th2->GetCount()
+                    + th3->GetCount() + th4->GetCount();
+
+            for (int i = 0; i < IO::ProjectsNames.size(); i++)
+            {
+                hardRatings[i] *= 1.0 / (WeightCount - missed_variation);
+                softRatings[i] *= 1.0 / (WeightCount - missed_variation);
+            }
+
+
+
+            //###########BETA
+            HardRatings = hardRatings;
+            SoftRatings = softRatings;
+
+
+            IO::FillingTables(inputTable, outputTable);
+
+            Solution solution(
+                        OpenedSolutionName, DataProcessing::CrushingStep,
+                        IO::IndicatorsNames, IO::ProjectsNames,
+                        IO::BaseTable, DataProcessing::NormalizedTable,
+                        DataProcessing::HardRatings, DataProcessing::SoftRatings,
+                        DataProcessing::PriorityList,
+                        DataProcessing::PrefferedMetrics, DataProcessing::RejectedMetrics
+                        );
+
+
+            if (SolutionDB::IsContained(OpenedSolutionName))
+                SolutionDB::UpdateSolution(SolutionDB::GetSolution(OpenedSolutionName),
+                                           solution);
+            else
+                SolutionDB::AddSolution(solution);
+
+
+            DeleteThreadInstances();
         }
-
-
-
-
-        for (int i = 0; i < IO::ProjectsNames.size(); i++)
-        {
-            hardRatings[i] *= 1.0 / (WeightsTable.size() - missed_variation);
-            softRatings[i] *= 1.0 / (WeightsTable.size() - missed_variation);
-        }
-
-        HardRatings = hardRatings;
-        SoftRatings = softRatings;
-
-        IO::FillingTables(inputTable, outputTable);
-
-        Solution solution(
-                    OpenedSolutionName, DataProcessing::CrushingStep,
-                    IO::IndicatorsNames, IO::ProjectsNames,
-                    IO::BaseTable, DataProcessing::NormalizedTable,
-                    DataProcessing::HardRatings, DataProcessing::SoftRatings,
-                    DataProcessing::PriorityList,
-                    DataProcessing::PrefferedMetrics, DataProcessing::RejectedMetrics
-                    );
-
-
-        if (SolutionDB::IsContained(OpenedSolutionName))
-            SolutionDB::UpdateSolution(SolutionDB::GetSolution(OpenedSolutionName),
-                                       solution);
-        else
-            SolutionDB::AddSolution(solution);
-    }
-
 }
 void DataProcessing::Finished8Threads()
 {
-    if (thread1->isFinished() && thread2->isFinished()
-            && thread3->isFinished() && thread4->isFinished()
-            && thread5->isFinished() && thread6->isFinished()
-            && thread7->isFinished() && thread8->isFinished())
-    {
-        bar->setValue(bar->maximum());
-
-        auto hard1 = thread1->GetHardRatings();
-        auto soft1 = thread1->GetSoftRatings();
-
-        auto hard2 = thread2->GetHardRatings();
-        auto soft2 = thread2->GetSoftRatings();
-
-        auto hard3 = thread3->GetHardRatings();
-        auto soft3 = thread3->GetSoftRatings();
-
-        auto hard4 = thread4->GetHardRatings();
-        auto soft4 = thread4->GetSoftRatings();
-
-        auto hard5 = thread5->GetHardRatings();
-        auto soft5 = thread5->GetSoftRatings();
-
-        auto hard6 = thread6->GetHardRatings();
-        auto soft6 = thread6->GetSoftRatings();
-
-        auto hard7 = thread7->GetHardRatings();
-        auto soft7 = thread7->GetSoftRatings();
-
-        auto hard8 = thread8->GetHardRatings();
-        auto soft8 = thread8->GetSoftRatings();
-
-
-        QVector<double> hardRatings(hard1.size(), 0);
-        QVector<double> softRatings(soft1.size(), 0);
-
-
-        for (int i=0; i < IO::ProjectsNames.size(); i++)
+    if (NumberOfTriggring == 0)
+        if (th1->isFinished() && th2->isFinished()
+                && th3->isFinished() && th4->isFinished()
+                && th5->isFinished() && th6->isFinished()
+                && th7->isFinished() && th8->isFinished())
         {
-            hardRatings[i] = hard1[i] + hard2[i] + hard3[i] + hard4[i]
-                    + hard5[i] + hard6[i] + hard7[i] + hard8[i];
+            NumberOfTriggring++;
 
-            softRatings[i] = soft1[i] + soft2[i] + soft3[i] + soft4[i]
-                    + soft5[i] + soft6[i] + soft7[i] + soft8[i];
+            qDebug() << time.elapsed() << "ms";
+
+            bar->setValue(bar->maximum());
+
+            auto hard1 = th1->GetHardRatings();
+            auto soft1 = th2->GetSoftRatings();
+
+            auto hard2 = th1->GetHardRatings();
+            auto soft2 = th2->GetSoftRatings();
+
+            auto hard3 = th3->GetHardRatings();
+            auto soft3 = th3->GetSoftRatings();
+
+            auto hard4 = th4->GetHardRatings();
+            auto soft4 = th4->GetSoftRatings();
+
+            auto hard5 = th5->GetHardRatings();
+            auto soft5 = th5->GetSoftRatings();
+
+            auto hard6 = th6->GetHardRatings();
+            auto soft6 = th6->GetSoftRatings();
+
+            auto hard7 = th7->GetHardRatings();
+            auto soft7 = th7->GetSoftRatings();
+
+            auto hard8 = th8->GetHardRatings();
+            auto soft8 = th8->GetSoftRatings();
+
+
+            QVector<double> hardRatings(hard1.size(), 0);
+            QVector<double> softRatings(soft1.size(), 0);
+
+
+            for (int i=0; i < IO::ProjectsNames.size(); i++)
+            {
+                hardRatings[i] = hard1[i] + hard2[i] + hard3[i] + hard4[i]
+                        + hard5[i] + hard6[i] + hard7[i] + hard8[i];
+
+                softRatings[i] = soft1[i] + soft2[i] + soft3[i] + soft4[i]
+                        + soft5[i] + soft6[i] + soft7[i] + soft8[i];
+            }
+
+
+            int WeightCount = th1->GetCount() + th2->GetCount()
+                    + th3->GetCount() + th4->GetCount()
+                    + th5->GetCount() + th6->GetCount()
+                    + th7->GetCount() + th8->GetCount();
+
+
+            for (int i = 0; i < IO::ProjectsNames.size(); i++)
+            {
+                hardRatings[i] *= 1.0 / (WeightCount - missed_variation);
+                softRatings[i] *= 1.0 / (WeightCount - missed_variation);
+            }
+
+            qDebug() << th1->GetCount() << th2->GetCount()
+                     << th3->GetCount() << th4->GetCount()
+                     << th5->GetCount() << th6->GetCount()
+                     << th7->GetCount() << th8->GetCount()
+                     << WeightCount;
+
+
+
+            //###########BETA
+            HardRatings = hardRatings;
+            SoftRatings = softRatings;
+
+
+            IO::FillingTables(inputTable, outputTable);
+
+            Solution solution(
+                        OpenedSolutionName, DataProcessing::CrushingStep,
+                        IO::IndicatorsNames, IO::ProjectsNames,
+                        IO::BaseTable, DataProcessing::NormalizedTable,
+                        DataProcessing::HardRatings, DataProcessing::SoftRatings,
+                        DataProcessing::PriorityList,
+                        DataProcessing::PrefferedMetrics, DataProcessing::RejectedMetrics
+                        );
+
+
+            if (SolutionDB::IsContained(OpenedSolutionName))
+                SolutionDB::UpdateSolution(SolutionDB::GetSolution(OpenedSolutionName),
+                                           solution);
+            else
+                SolutionDB::AddSolution(solution);
+
+            DeleteThreadInstances();
         }
-
-
-
-
-        for (int i = 0; i < IO::ProjectsNames.size(); i++)
-        {
-            hardRatings[i] *= 1.0 / (WeightsTable.size() - missed_variation);
-            softRatings[i] *= 1.0 / (WeightsTable.size() - missed_variation);
-        }
-
-        HardRatings = hardRatings;
-        SoftRatings = softRatings;
-
-
-        IO::FillingTables(inputTable, outputTable);
-
-        Solution solution(
-                    OpenedSolutionName, DataProcessing::CrushingStep,
-                    IO::IndicatorsNames, IO::ProjectsNames,
-                    IO::BaseTable, DataProcessing::NormalizedTable,
-                    DataProcessing::HardRatings, DataProcessing::SoftRatings,
-                    DataProcessing::PriorityList,
-                    DataProcessing::PrefferedMetrics, DataProcessing::RejectedMetrics
-                    );
-
-
-        if (SolutionDB::IsContained(OpenedSolutionName))
-            SolutionDB::UpdateSolution(SolutionDB::GetSolution(OpenedSolutionName),
-                                       solution);
-        else
-            SolutionDB::AddSolution(solution);
-    }
 }
 
+void DataProcessing::ThreadPoolFinished()
+{
+    qDebug() << time.elapsed() << "ms";
+
+    bar->setValue(bar->maximum());
+
+    auto hard = tp->hardRatingPart;
+    auto soft = tp->softRatingPart;
+
+
+    int WeightCount = tp->count;
+
+
+    qDebug() << WeightCount <<  missed_variation;
+    for (int i = 0; i < IO::ProjectsNames.size(); i++)
+    {
+        hard[i] *= 1.0 / (WeightCount - missed_variation);
+        soft[i] *= 1.0 / (WeightCount - missed_variation);
+    }
+
+
+
+    //###########BETA
+    HardRatings = hard;
+    SoftRatings = soft;
+
+
+    IO::FillingTables(inputTable, outputTable);
+
+    Solution solution(
+                OpenedSolutionName, DataProcessing::CrushingStep,
+                IO::IndicatorsNames, IO::ProjectsNames,
+                IO::BaseTable, DataProcessing::NormalizedTable,
+                DataProcessing::HardRatings, DataProcessing::SoftRatings,
+                DataProcessing::PriorityList,
+                DataProcessing::PrefferedMetrics, DataProcessing::RejectedMetrics
+                );
+
+
+    if (SolutionDB::IsContained(OpenedSolutionName))
+        SolutionDB::UpdateSolution(SolutionDB::GetSolution(OpenedSolutionName),
+                                   solution);
+    else
+        SolutionDB::AddSolution(solution);
+
+
+    delete tp;
+}
+
+//CHANGED!!!!!!!!!!!!!!!!!
 void DataProcessing::GenerateWeightsList()
 {
     WeightsTable.clear();
     int weight_count = IO::IndicatorsNames.size();
     QVector<double> arr(weight_count, 0);
 
-    GetNextNum(arr, weight_count, 0);
+    double* set = new double[weight_count];
+    for (int i=0; i<weight_count; i++)
+        set[i] = 0;
+
+
+    //    GetNextNum(arr, weight_count, 0);
+    GetNextNum(set, weight_count, 0);
 }
 
 void DataProcessing::SetMetrics(QVector<int> Preferred, QVector<int> Rejected)
@@ -697,6 +1016,237 @@ void DataProcessing::CalculateRatingsIn8Threads()
 
 }
 
+void DataProcessing::CalculateRatingsIn1ThreadsWithWeights()
+{
+    missed_variation = 0;
+
+    ResetCounts();
+
+    Count1 = 0;
+
+
+
+    CurrentIterationCount = GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), CrushingStep);
+
+
+    th1 = new GenerateWeightsAndCalculateRatingsAsync(1, CurrentIterationCount, DataProcessing::CrushingStep);
+
+
+
+    connect(th1, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
+
+
+    connect(th1, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount1(int)));
+
+
+    connect(th1, SIGNAL(finished()), instance, SLOT(Finished1Threads()));
+
+
+    th1->start();
+}
+void DataProcessing::CalculateRatingsIn2ThreadsWithWeights()
+{
+    missed_variation = 0;
+
+    ResetCounts();
+
+    Count1 = 0;
+    Count2 = 0;
+
+
+    CurrentIterationCount = GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), CrushingStep);
+
+
+    th1 = new GenerateWeightsAndCalculateRatingsAsync(1, CurrentIterationCount/2, DataProcessing::CrushingStep);
+    th2 = new GenerateWeightsAndCalculateRatingsAsync(CurrentIterationCount/2 + 1, CurrentIterationCount, DataProcessing::CrushingStep);
+
+
+    connect(th1, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
+    connect(th2, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
+
+
+    connect(th1, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount1(int)));
+    connect(th2, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount2(int)));
+
+
+    connect(th1, SIGNAL(finished()), instance, SLOT(Finished2Threads()));
+    connect(th2, SIGNAL(finished()), instance, SLOT(Finished2Threads()));
+
+
+    th1->start();
+    th2->start();
+}
+void DataProcessing::CalculateRatingsIn4ThreadsWithWeights()
+{
+
+
+    missed_variation = 0;
+
+    ResetCounts();
+
+    Count1 = 0;
+    Count2 = 0;
+    Count3 = 0;
+    Count4 = 0;
+
+    CurrentIterationCount = GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), CrushingStep);
+
+    int k = CurrentIterationCount;
+
+
+    int a1 = 1;
+    int b1 = k / 4;
+
+    int a2 = b1 + 1;
+    int b2 =  k / 4 * 2;
+
+    int a3 = b2 + 1;
+    int b3 =  k / 4 * 3;
+
+    int a4 = b3 + 1;
+    int b4 = k;
+
+
+    th1 = new GenerateWeightsAndCalculateRatingsAsync(a1, b1, DataProcessing::CrushingStep);
+    th2 = new GenerateWeightsAndCalculateRatingsAsync(a2, b2, DataProcessing::CrushingStep);
+    th3 = new GenerateWeightsAndCalculateRatingsAsync(a3, b3, DataProcessing::CrushingStep);
+    th4 = new GenerateWeightsAndCalculateRatingsAsync(a4, b4, DataProcessing::CrushingStep);
+
+
+    connect(th1, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
+    connect(th2, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
+    connect(th3, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
+    connect(th4, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
+
+
+    connect(th1, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount1(int)));
+    connect(th2, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount2(int)));
+    connect(th3, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount3(int)));
+    connect(th4, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount4(int)));
+
+
+    connect(th1, SIGNAL(finished()), instance, SLOT(Finished4Threads()));
+    connect(th2, SIGNAL(finished()), instance, SLOT(Finished4Threads()));
+    connect(th3, SIGNAL(finished()), instance, SLOT(Finished4Threads()));
+    connect(th4, SIGNAL(finished()), instance, SLOT(Finished4Threads()));
+
+
+    th1->start();
+    th2->start();
+    th3->start();
+    th4->start();
+}
+void DataProcessing::CalculateRatingsIn8ThreadsWithWeights()
+{
+    missed_variation = 0;
+
+    ResetCounts();
+
+    Count1 = 0;
+    Count2 = 0;
+    Count3 = 0;
+    Count4 = 0;
+    Count5 = 0;
+    Count6 = 0;
+    Count7 = 0;
+    Count8 = 0;
+
+    CurrentIterationCount = GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), CrushingStep);
+
+    int k = CurrentIterationCount;
+
+    int a1 = 0;
+    int b1 = k / 8;
+
+    int a2 = b1 + 1;
+    int b2 = k /8 * 2;
+
+    int a3 = b2 + 1;
+    int b3 = k / 8 * 3;
+
+    int a4 = b3 + 1;
+    int b4 = k /8 * 4;
+
+    int a5 = b4 + 1;
+    int b5 = k/8 * 5;
+
+    int a6 = b5 + 1;
+    int b6 = k/8 * 6;
+
+    int a7 = b6 + 1;
+    int b7 = k /8 * 7;
+
+    int a8 = b7 + 1;
+    int b8 = k;
+
+
+    th1 = new GenerateWeightsAndCalculateRatingsAsync(a1, b1, DataProcessing::CrushingStep);
+    th2 = new GenerateWeightsAndCalculateRatingsAsync(a2, b2, DataProcessing::CrushingStep);
+    th3 = new GenerateWeightsAndCalculateRatingsAsync(a3, b3, DataProcessing::CrushingStep);
+    th4 = new GenerateWeightsAndCalculateRatingsAsync(a4, b4, DataProcessing::CrushingStep);
+    th5 = new GenerateWeightsAndCalculateRatingsAsync(a5, b5, DataProcessing::CrushingStep);
+    th6 = new GenerateWeightsAndCalculateRatingsAsync(a6, b6, DataProcessing::CrushingStep);
+    th7 = new GenerateWeightsAndCalculateRatingsAsync(a7, b7, DataProcessing::CrushingStep);
+    th8 = new GenerateWeightsAndCalculateRatingsAsync(a8, b8, DataProcessing::CrushingStep);
+
+
+    connect(th1, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
+    connect(th2, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
+    connect(th3, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
+    connect(th4, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
+    connect(th5, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
+    connect(th6, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
+    connect(th7, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
+    connect(th8, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
+
+
+    connect(th1, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount1(int)));
+    connect(th2, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount2(int)));
+    connect(th3, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount3(int)));
+    connect(th4, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount4(int)));
+    connect(th5, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount5(int)));
+    connect(th6, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount6(int)));
+    connect(th7, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount7(int)));
+    connect(th8, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount8(int)));
+
+
+    connect(th1, SIGNAL(finished()), instance, SLOT(Finished8Threads()));
+    connect(th2, SIGNAL(finished()), instance, SLOT(Finished8Threads()));
+    connect(th3, SIGNAL(finished()), instance, SLOT(Finished8Threads()));
+    connect(th4, SIGNAL(finished()), instance, SLOT(Finished8Threads()));
+    connect(th5, SIGNAL(finished()), instance, SLOT(Finished8Threads()));
+    connect(th6, SIGNAL(finished()), instance, SLOT(Finished8Threads()));
+    connect(th7, SIGNAL(finished()), instance, SLOT(Finished8Threads()));
+    connect(th8, SIGNAL(finished()), instance, SLOT(Finished8Threads()));
+
+
+    th1->start();
+    th2->start();
+    th3->start();
+    th4->start();
+    th5->start();
+    th6->start();
+    th7->start();
+    th8->start();
+}
+
+void DataProcessing::CalculateRatingsWithPool()
+{
+    missed_variation = 0;
+
+    ResetCounts();
+    Count1 = 0;
+
+    tp = new CalculateAsyncWithThreadPool();
+    tp->start();
+
+    connect(tp, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
+    connect(tp, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount1(int)));
+    connect(tp, SIGNAL(finished()), instance, SLOT(ThreadPoolFinished()));
+
+
+}
+
 
 QVector<double> DataProcessing::GetLinearConvolutionResult(QVector<double> weights)
 {
@@ -711,6 +1261,25 @@ QVector<double> DataProcessing::GetLinearConvolutionResult(QVector<double> weigh
         }
 
         results.append(sum);
+    }
+
+    return results;
+}
+
+double* DataProcessing::GetLinearConvolutionResult(double *weights)
+{
+    double* results = new double[ProjectsCount];
+
+    double sum;
+    for (int i = 0; i < ProjectsCount; i++)
+    {
+        sum = 0;
+        for (int j = 0; j < IndicatorsCount; j++)
+        {
+            sum += normTable[i][j] * weights[j];
+        }
+
+        results[i] = sum;
     }
 
     return results;
@@ -733,7 +1302,10 @@ void DataProcessing::ResetCounts()
 void DataProcessing::MakeCalculations(QVector<QString> priorityList, QVector<int> Preferred, QVector<int> Rejected)
 {
     CurrentIterationCount = 0;
+    NumberOfTriggring = 0;
 
+    ProjectsCount = IO::ProjectsNames.size();
+    IndicatorsCount = IO::IndicatorsNames.size();
 
     QVector<QString> priority = priorityList.size() == 0
             ?QVector<QString>(IO::IndicatorsNames.size(), "max")
@@ -745,71 +1317,56 @@ void DataProcessing::MakeCalculations(QVector<QString> priorityList, QVector<int
     FindMaxMinIndicators(IO::BaseTable);
     CalculateNormalizedTable(IO::BaseTable);
 
-    GenerateWeightsList();
-    qDebug() << "WeightList generated";
+
+    WeightsTable.clear();
+    DataProcessing::CurrentIterationCount = GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), CrushingStep);
 
 
-
-
-    const int AlgorithmComplexity = WeightsTable.size() * IO::ProjectsNames.size() * IO::IndicatorsNames.size();
+    const int AlgorithmComplexity =  CurrentIterationCount * IO::ProjectsNames.size() * IO::IndicatorsNames.size();
     const int AvailableThreadCount = QThread::idealThreadCount();
+
+
+
+    qDebug() << "#################################";
+    qDebug() << CurrentIterationCount;
+    qDebug() << IO::ProjectsNames.size() << "x" << IO::IndicatorsNames.size();
+    qDebug() << "#################################";
+
+    time.start();
+
+   // CalculateRatingsIn4ThreadsWithWeights();
+    //CalculateRatingsIn8ThreadsWithWeights();
 
 
     if ((AlgorithmComplexity < 500000) || (AvailableThreadCount == 1))
     {
-        CalculateRatings();
-        qDebug() << "#" << "1 thread" << "AlgorithmComplexity:"
-                 << AlgorithmComplexity << "AvailableThreadCount:" << AvailableThreadCount;
+        qDebug() << "Running in 1 thread";
+        CalculateRatingsIn1ThreadsWithWeights();
     }
 
 
     if ((AlgorithmComplexity >= 500000 && AlgorithmComplexity < 1000000 && AvailableThreadCount >= 2)
             || (AlgorithmComplexity >= 1000000 && AvailableThreadCount == 2))
     {
-        CalculateRatingsIn2Threads();
-        qDebug() << "#" << "2 threads" << "AlgorithmComplexity:"
-                 << AlgorithmComplexity << "AvailableThreadCount:" << AvailableThreadCount;
+        qDebug() << "Running in 2 threads";
+        CalculateRatingsIn2ThreadsWithWeights();
     }
 
 
     if ((AlgorithmComplexity >= 1000000 && AlgorithmComplexity < 2000000 && AvailableThreadCount >= 4)
             || (AlgorithmComplexity >= 2000000 && AvailableThreadCount == 4))
     {
-        CalculateRatingsIn4Threads();
-        qDebug() << "#" << "4 threads" << "AlgorithmComplexity:"
-                 << AlgorithmComplexity << "AvailableThreadCount:" << AvailableThreadCount;
+        qDebug() << "Running in 4 threads";
+        CalculateRatingsIn4ThreadsWithWeights();
     }
 
 
     if ((AlgorithmComplexity >= 2000000 && AvailableThreadCount >= 8))
     {
-        CalculateRatingsIn8Threads();
+
+        CalculateRatingsIn8ThreadsWithWeights();
         qDebug() << "#" << "8 threads" << "AlgorithmComplexity:"
                  << AlgorithmComplexity << "AvailableThreadCount:" << AvailableThreadCount;
     }
-
-
-
-
-    qDebug() << "#############";
-    qDebug() << QString("%1 x %2 x %3 = %4").arg(WeightsTable.size())
-                .arg(IO::ProjectsNames.size())
-                .arg(IO::IndicatorsNames.size())
-                .arg(WeightsTable.size()*IO::ProjectsNames.size()*IO::IndicatorsNames.size());
-    qDebug() << "#############";
-    qDebug() << "-------------------------\n";
-
-
-    //    QFile file("D://log_sppr.txt");
-    //    if (file.open(QIODevice::Append))
-    //    {
-    //        const QString ThreadCount = "1";
-    //        //const QString ThreadCount = "2";
-    //        //const QString ThreadCount = "4";
-
-    //        QString record = QString("%1;%2;%3").arg(ThreadCount).arg(WeightsTable.size()).arg(timer.elapsed());
-    //        file.write(record.toUtf8() + "\r\n");
-    //        file.close();
-    //    }
 
 }

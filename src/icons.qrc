@@ -18,5 +18,6 @@
         <file>icons/WaitBar3.gif</file>
         <file>icons/WaitBar11.gif</file>
         <file>icons/Logo-resized.png</file>
+        <file>icons/icon.ico</file>
     </qresource>
 </RCC>

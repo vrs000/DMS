@@ -9,7 +9,6 @@
 #include <dataprocessing.h>
 #include <startupconfigform.h>
 #include <QMutex>
-#include <progressbarform.h>
 
 class DataProcessing;
 
@@ -36,8 +35,6 @@ public:
 protected:
     void run() override;
 };
-
-
 
 
 class CalculateRatingsAsync : public QThread
@@ -70,6 +67,43 @@ signals:
 protected:
     void run() override;
 };
+
+
+//class GenerateWeightsAndCalculateRatingsAsync : public QThread
+//{
+//    Q_OBJECT
+
+//private:
+//    QVector<double> HardRatings;
+//    QVector<double> SoftRatings;
+
+//    int FirstIterationIndex;
+//    int LastIterationIndex;
+
+//    int Count = 0;
+
+//public:
+//    GenerateWeightsAndCalculateRatingsAsync();
+//    GenerateWeightsAndCalculateRatingsAsync(int firstIterationIndex,  int lastIterationIndex);
+
+//    QVector<double> GetHardRatings();
+//    QVector<double> GetSoftRatings();
+
+//    int GetCount();
+
+//    void Calculate(QVector<double>& currentSet, int maxN, int curPosIndex);
+
+
+//    static QMutex mutex;
+
+//signals:
+//    void CountChanged(int count);
+
+//protected:
+//    void run() override;
+//};
+
+
 
 
 class BAR : public QThread

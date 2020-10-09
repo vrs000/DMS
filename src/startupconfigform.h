@@ -39,7 +39,10 @@ public:
     QTableWidget* input;
     QTableWidget* output;
 
-     static long double fact(int N);
+
+    static long double fact(int N);
+
+
 private slots:
     void SetProgressBarValue(int value, int maximum);
 

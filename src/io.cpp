@@ -18,12 +18,9 @@ void IO::OpenExelFile(QString Path)
     QAxObject* sheet = sheets->querySubObject("Item(int)", 1);
 
 
-
-
     QAxObject* usedRange = sheet->querySubObject("UsedRange");
     QAxObject* rows = usedRange->querySubObject("Rows");
     int countRows = rows->property("Count").toInt();
-
 
 
     QAxObject* columns = usedRange->querySubObject("Columns");
@@ -118,6 +115,91 @@ void IO::OpenExelFile(QString Path)
     delete workbook;
     delete workbooks;
     delete excel;
+
+//    FileLoadingDialog* loadingFileDialog = new FileLoadingDialog(Path);
+//    loadingFileDialog->setModal(true);
+//    loadingFileDialog->show();
+//    loadingFileDialog->setWindowFlags(Qt::WindowStaysOnTopHint);
+//    loadingFileDialog->show();
+//    loadingFileDialog->close();
+    //    delete loadingFileDialog;
+}
+
+void IO::OpenExelFile1(QString Path)
+{
+    QXlsx::Document xlsx(Path);
+    int RangeX = 1;
+    int RangeY = 1;
+
+    //Ищем x
+    while (true)
+    {
+        QString value = xlsx.read(1, RangeX).toString();
+        RangeX++;
+
+        if (value == "")
+        {
+            RangeX--;
+            break;
+        }
+
+    }
+
+    //Ищем y
+    while (true)
+    {
+        QString value = xlsx.read(RangeY, 1).toString();
+        RangeY++;
+
+        if (value == "")
+        {
+            RangeY--;
+            break;
+        }
+
+    }
+
+
+    RangeX--;
+    RangeY--;
+
+
+    QVector<QString> indicatorsNames;
+    QVector<QString> projectsNames;
+    QVector<QVector<double>> table;
+
+
+
+    //Чтение показателей
+    for (int x = 2; x<=RangeX; x++)
+    {
+        indicatorsNames << xlsx.read(1, x).toString();
+    }
+
+
+    //Чтение названий проектов
+    for (int y = 2; y <=RangeY; y++)
+    {
+        projectsNames << xlsx.read(y, 1).toString();
+    }
+
+
+
+    //Чтение таблицы
+    for (int y = 2; y <= RangeY; y++)
+    {
+        table << QVector<double>();
+
+        for (int x = 2; x <= RangeX; x++)
+        {
+           table.last() << xlsx.read(y, x).toDouble();
+        }
+    }
+
+
+    IndicatorsNames = indicatorsNames;
+    ProjectsNames = projectsNames;
+    BaseTable = table;
 }
 
 void IO::OpenExelFile(QString Path, int StartX, int StartY)
@@ -127,6 +209,8 @@ void IO::OpenExelFile(QString Path, int StartX, int StartY)
 
 void IO::OpenCSVFile(QString Path)
 {
+
+
 
 }
 
@@ -539,11 +623,18 @@ void IO::FillingTables(QTableWidget *input, QTableWidget *output)
 
 
 
+    qDebug() << "###FillingTables###";
+    qDebug() << ProjectsNames.size() << "x" << IndicatorsNames.size();
+    qDebug() << input->rowCount() << "x" << input->columnCount();
+    qDebug() << output->rowCount() << "x" << output->columnCount();
+    qDebug() << "###################";
 
     //Центрирование текста
     for (int row=0; row < input->rowCount(); row++)
         for (int column=0; column < input->columnCount(); column++)
             input->item(row, column)->setTextAlignment(Qt::AlignCenter);
+
+    qDebug() << "OutputTable: " << output->rowCount() << "x" << output->columnCount();
 
     for (int row=0; row < output->rowCount(); row++)
         for (int column=0; column < output->columnCount(); column++)

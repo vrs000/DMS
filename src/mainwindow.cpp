@@ -1,9 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <io.h>
-#include <dataprocessing.h>
-#include <QMessageBox>
-#include <QThread>
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -162,6 +159,8 @@ void MainWindow::OpenFile()
     QModelIndexList lst = ui->treeView->selectionModel()->selectedIndexes();
     QString path =  model->filePath(lst.at(0));
 
+    //emit OpenedLoadingForm();
+    //to future = QtConcurrent::run(OpenSolution, path); //Считывает файл в отдельном потоке
     OpenSolution(path);
 }
 
@@ -198,23 +197,30 @@ void MainWindow::on_InfoButton_clicked()
 {
     OpenForm(infoform);
 
-//    delete infoform;
-//    infoform = new Info();
-//    infoform->show();
-//    infoform->activateWindow();
+    //    delete infoform;
+    //    infoform = new Info();
+    //    infoform->show();
+    //    infoform->activateWindow();
 }
 
 void MainWindow::on_GraphicsButton_clicked()
 {
-    OpenForm(preselectionchartsform);
+
+    delete preselectionchartsform;
+    preselectionchartsform = new PreSelectionChartsForm();
+    preselectionchartsform->show();
+    preselectionchartsform->activateWindow();
+
+    //OpenForm(preselectionchartsform);
+    //OpenForm(preselection);
 }
 
 void MainWindow::on_ListButton_clicked()
 {
 
-//    delete openprojectslistform;
-//    openprojectslistform = new OpenProjectsListForm();
-//    openprojectslistform->show();
+    //    delete openprojectslistform;
+    //    openprojectslistform = new OpenProjectsListForm();
+    //    openprojectslistform->show();
 
     //OpenProjectsListForm* form = new OpenProjectsListForm();
     //form->show();
@@ -265,15 +271,15 @@ void MainWindow::UpdateOpenMenu(const QString solutionName)
 
 void MainWindow::OpenLoadingForm()
 {
-    //loadingForm->show();
-    waitingDialog->show();
-
+    //    FileLoadingDialog* loadingFileDialog = new FileLoadingDialog("fileName");
+    //    loadingFileDialog->setModal(true);
+    //    loadingFileDialog->setWindowFlags(Qt::WindowStaysOnTopHint);
+    //    loadingFileDialog->show();
 }
 
 void MainWindow::CloseLoadingForm()
 {
-    //loadingForm->close();
-    waitingDialog->close();
+
 
 }
 
@@ -281,20 +287,20 @@ void MainWindow::OpenAboutProgramForm()
 {
     OpenForm(aboutProgramForm);
 
-//    delete aboutProgramForm;
-//    aboutProgramForm = new AboutProgramForm();
-//    aboutProgramForm->show();
-//    aboutProgramForm->activateWindow();
+    //    delete aboutProgramForm;
+    //    aboutProgramForm = new AboutProgramForm();
+    //    aboutProgramForm->show();
+    //    aboutProgramForm->activateWindow();
 }
 
 void MainWindow::OpenExportFileForm()
 {
     OpenForm(selectforexportForm);
 
-//    delete selectforexportForm;
-//    selectforexportForm = new SelectForExportForm();
-//    selectforexportForm->show();
-//    selectforexportForm->activateWindow();
+    //    delete selectforexportForm;
+    //    selectforexportForm = new SelectForExportForm();
+    //    selectforexportForm->show();
+    //    selectforexportForm->activateWindow();
 }
 
 void MainWindow::ToggleFullscreen()
@@ -459,6 +465,7 @@ void MainWindow::OpenSolution(const QString fileName)
     if ((!fileName.contains(".xlsx"))&&(!fileName.contains(".xls"))) return;
     QString solutionName = fileName.split('/').last().split('.').first();
 
+
     auto OpenStartupConfigForm = [&]()
     {
         delete startupconfigform;
@@ -507,26 +514,9 @@ void MainWindow::OpenSolution(const QString fileName)
 
     if (!SolutionDB::IsContained(solutionName))
     {
+        //IO::OpenExelFile(fileName);
 
-
-//        QDialog *waitingDialog = new QDialog;
-//        QProgressBar* progressBar = new QProgressBar(waitingDialog);
-//        QVBoxLayout *waitingDialog_layout = new QVBoxLayout;
-
-        progressBar->setRange(0, 0);
-        progressBar->setFormat("Operation");
-
-        QString str = "QProgressBar {border: 2px solid grey;border-radius: 8px;text-align: center;} QProgressBar::chunk {background-color: #05B8CC;width: 20px;}";
-        progressBar->setStyleSheet(str);
-
-
-        waitingDialog_layout->setMargin(0);
-        waitingDialog_layout->addWidget(progressBar);
-        waitingDialog->setLayout(waitingDialog_layout );
-
-        //emit OpenedLoadingForm();
-
-        IO::OpenExelFile(fileName);
+        IO::OpenExelFile1(fileName);
 
         UpdateDeleteMenu(solutionName);
         UpdateOpenMenu(solutionName);
@@ -535,7 +525,6 @@ void MainWindow::OpenSolution(const QString fileName)
         ui->ConfiugreButton->setEnabled(true);
         ui->GraphicsButton->setEnabled(true);
 
-        //emit ClosedLoadingForm();
 
         OpenStartupConfigForm();
     }
@@ -544,8 +533,20 @@ void MainWindow::OpenSolution(const QString fileName)
 template<typename FormType>
 void MainWindow::OpenForm(FormType* form)
 {
-    delete form;
+    if (form != nullptr)
+    {
+        delete form;
+        form = nullptr;
+    }
     form = new FormType();
     form->show();
     form->activateWindow();
+}
+
+template<typename FormType>
+void MainWindow::OpenForm(FormType& form)
+{
+    //form =  FormType();
+    form.show();
+    form.activateWindow();
 }

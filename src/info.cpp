@@ -18,12 +18,15 @@ Info::Info(QWidget *parent) :
 
 
     this->setWindowFlag(Qt::FramelessWindowHint);
+
+
     ui->Step->setText(QString("Шаг дробления: %1").arg(DataProcessing::CrushingStep));
     ui->ProjectsCount->setText(QString("Количество проектов: %1").arg(IO::ProjectsNames.size()));
-    ui->IterationsCount->setText(QString("Количество итераций: %1").arg(DataProcessing::WeightsTable.size() - DataProcessing::missed_variation));
+    ui->IterationsCount->setText(QString("Количество итераций: %1").arg(DataProcessing::CurrentIterationCount - DataProcessing::missed_variation));
 
-    QString priority;
 
+    //Приоритеты
+    QString priority;    
     for (int i=0; i<IO::IndicatorsNames.size(); i++)
     {
         priority = DataProcessing::PriorityList[i] == "max" ? "Больше - лучше" : "Меньше - лучше";
@@ -33,6 +36,7 @@ Info::Info(QWidget *parent) :
         ui->layout->addWidget(label);
     }
 
+    //Группы важности
     for (int i=0; i < DataProcessing::PrefferedMetrics.size(); i++)
     {
         for (int j = 0; j < DataProcessing::RejectedMetrics.size(); j++)

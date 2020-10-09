@@ -5,7 +5,10 @@
 #include <QFileSystemModel>
 #include <QLabel>
 #include <QFileDialog>
-
+#include <io.h>
+#include <dataprocessing.h>
+#include <QMessageBox>
+#include <QThread>
 #include <info.h>
 #include <chartsform.h>
 #include <solution.h>
@@ -15,8 +18,9 @@
 #include <preselectionchartsform.h>
 #include <selectforexportform.h>
 #include <aboutprogramform.h>
-#include <loadingform.h>
+//#include <loadingform.h>
 #include <QDialog>
+#include <QtConcurrent/QtConcurrent>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -49,10 +53,8 @@ private:
 
 
     template<typename FormType> void OpenForm(FormType* form);
+    template<typename FormType> void OpenForm(FormType& form);
 
-    QDialog *waitingDialog = new QDialog;
-    QProgressBar* progressBar = new QProgressBar(waitingDialog);
-    QVBoxLayout *waitingDialog_layout = new QVBoxLayout;
 
     //forms
 private:
@@ -60,12 +62,15 @@ private:
     Info* infoform = new Info();
     SelectForExportForm* selectforexportForm = new SelectForExportForm();
     PreSelectionChartsForm* preselectionchartsform = new PreSelectionChartsForm();
+    PreSelectionChartsForm preselection;
+
     AboutProgramForm* aboutProgramForm = new AboutProgramForm();
-    LoadingForm* loadingForm = new LoadingForm();
+   // LoadingForm* loadingForm = new LoadingForm();
 
 signals:
     void OpenedLoadingForm();
     void ClosedLoadingForm();
+
 
 private slots:
     void OpenLoadingForm();

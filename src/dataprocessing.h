@@ -8,13 +8,17 @@
 #include <QDebug>
 
 #include <multi_threading_methods.h>
+#include <asynccalculation.h>
 #include <QProgressBar>
 #include <QProgressDialog>
-#include <progressbarform.h>
+
+#include <calculateasyncwiththreadpool.h>
 
 
 
 class CalculateRatingsAsync;
+class GenerateWeightsAndCalculateRatingsAsync;
+class CalculateAsyncWithThreadPool;
 
 class DataProcessing : public QObject
 {
@@ -25,6 +29,7 @@ public:
     static QVector<double> MaximumIndicators;
     static QVector<double> MinimumIndicators;
 
+    static double** normTable;
     static QVector<QVector<double>> NormalizedTable;
     static QVector<QVector<double>> WeightsTable;
 
@@ -39,7 +44,7 @@ public:
 
     static QProgressBar* bar;
 
-    static int CurrentIterationCount;
+    static uint CurrentIterationCount;
 
     static QTableWidget* inputTable;
     static QTableWidget* outputTable;
@@ -48,7 +53,17 @@ public:
 
     static DataProcessing* instance;
 
+    static QTime time;
+
+    static int ProjectsCount;
+    static int IndicatorsCount;
+
 public:
+
+    static double Fact(double value);
+    static unsigned long f(int n);
+    static double Factorial(double value);
+    static int GetTheoreticalWeightsCount(int ParametersCount, double h);
 
     static void FindMaxMinIndicators( QVector<QVector<double>> BaseTable);
     static void CalculateNormalizedTable( QVector<QVector<double>> BaseTable);
@@ -60,6 +75,13 @@ public:
     static void CalculateRatingsIn8Threads();
 
 
+    static void CalculateRatingsIn1ThreadsWithWeights();
+    static void CalculateRatingsIn2ThreadsWithWeights();
+    static void CalculateRatingsIn4ThreadsWithWeights();
+    static void CalculateRatingsIn8ThreadsWithWeights();
+
+    static void CalculateRatingsWithPool();
+
     static void SetMetrics(QVector<int> Preferred, QVector<int> Rejected);
     static void SetPriorityList(QVector<QString> list);
 
@@ -70,6 +92,7 @@ public:
 
 
     static QVector<double> GetLinearConvolutionResult(QVector<double> weights);
+    static double* GetLinearConvolutionResult(double *weights);
 
 
     static CalculateRatingsAsync* thread1;
@@ -81,6 +104,18 @@ public:
     static CalculateRatingsAsync* thread7;
     static CalculateRatingsAsync* thread8;
 
+
+    static GenerateWeightsAndCalculateRatingsAsync* th1;
+    static GenerateWeightsAndCalculateRatingsAsync* th2;
+    static GenerateWeightsAndCalculateRatingsAsync* th3;
+    static GenerateWeightsAndCalculateRatingsAsync* th4;
+    static GenerateWeightsAndCalculateRatingsAsync* th5;
+    static GenerateWeightsAndCalculateRatingsAsync* th6;
+    static GenerateWeightsAndCalculateRatingsAsync* th7;
+    static GenerateWeightsAndCalculateRatingsAsync* th8;
+
+    static CalculateAsyncWithThreadPool* tp;
+
     static int Count1;
     static int Count2;
     static int Count3;
@@ -90,14 +125,24 @@ public:
     static int Count7;
     static int Count8;
 
+    static int NumberOfTriggring;
+
     static void ResetCounts();
 
 private:
     static void GetNextNum(QVector<double>& currentSet, int maxN, int curPosIndex);
+    static void GetNextNum(double currentSet[], int maxN, int curPosIndex);
+
+    static int Previous;
+
+public:
     static double Sum(QVector<double> set, int elementsCount);
+    static double Sum(double set[], int elementsCount);
 
 
 private slots:
+    void DeleteThreadInstances();
+
     void UpdateProgressBar();
 
     void UpdateCount1(int count);
@@ -109,14 +154,13 @@ private slots:
     void UpdateCount7(int count);
     void UpdateCount8(int count);
 
-    //OK
+
+    void Finished1Threads();
     void Finished2Threads();
-
-    //Need Test
     void Finished4Threads();
-
-    //Need Test
     void Finished8Threads();
+
+    void ThreadPoolFinished();
 };
 
 

@@ -23,8 +23,11 @@
 #include <QFileDialog>
 #include <QString>
 #include <startupconfigform.h>
+#include <QProgressDialog>
 
 using namespace QXlsx;
+
+class GenerateWeightsAndCalculateRatingsAsync;
 
 class IO
 {
@@ -42,6 +45,7 @@ public:
 
 public:
     static void OpenExelFile(QString Path);
+    static void OpenExelFile1(QString Path);
     static void OpenExelFile(QString Path, int StartX, int StartY);
     static void OpenCSVFile(QString Path);
 

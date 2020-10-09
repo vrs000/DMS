@@ -21,8 +21,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     aboutprogramform.cpp \
+    asynccalculation.cpp \
+    calculateasyncwiththreadpool.cpp \
     chartsform.cpp \
     dataprocessing.cpp \
+    fileloadingdialog.cpp \
     info.cpp \
     io.cpp \
     loadingform.cpp \
@@ -31,7 +34,6 @@ SOURCES += \
     multi_threading_methods.cpp \
     openprojectslistform.cpp \
     preselectionchartsform.cpp \
-    progressbarform.cpp \
     selectforexportform.cpp \
     solution.cpp \
     solutiondb.cpp \
@@ -39,8 +41,11 @@ SOURCES += \
 
 HEADERS += \
     aboutprogramform.h \
+    asynccalculation.h \
+    calculateasyncwiththreadpool.h \
     chartsform.h \
     dataprocessing.h \
+    fileloadingdialog.h \
     info.h \
     io.h \
     loadingform.h \
@@ -48,7 +53,6 @@ HEADERS += \
     multi_threading_methods.h \
     openprojectslistform.h \
     preselectionchartsform.h \
-    progressbarform.h \
     selectforexportform.h \
     solution.h \
     solutiondb.h \
@@ -62,7 +66,6 @@ FORMS += \
     mainwindow.ui \
     openprojectslistform.ui \
     preselectionchartsform.ui \
-    progressbarform.ui \
     selectforexportform.ui \
     startupconfigform.ui
 
