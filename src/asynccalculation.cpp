@@ -60,12 +60,20 @@ GenerateWeightsAndCalculateRatingsAsync::GenerateWeightsAndCalculateRatingsAsync
     hardRatings = QVector<double>(IO::ProjectsNames.size(), 0);
     softRatings = QVector<double>(IO::ProjectsNames.size(), 0);
 
+
+    //----------------------------------------------------------------
     PrefferedMetricsCount = DataProcessing::PrefferedMetrics.size();
     RejectedMetricsCount = DataProcessing::RejectedMetrics.size();
+
+    PrefferedProjectsCount = DataProcessing::PrefferedProjects.size();
+    RejectedProjectsCount = DataProcessing::RejectedProjects.size();
+    //----------------------------------------------------------------
+
 
     ProjectsCount = DataProcessing::ProjectsCount;
 
 
+    //----------------------------------------------------------------
     PrefferedMetrics = new int[PrefferedMetricsCount];
     RejectedMetrics = new int[RejectedMetricsCount];
 
@@ -74,12 +82,28 @@ GenerateWeightsAndCalculateRatingsAsync::GenerateWeightsAndCalculateRatingsAsync
 
     for (int i=0; i<RejectedMetricsCount; i++)
         RejectedMetrics[i] = DataProcessing::RejectedMetrics[i];
+    //----------------------------------------------------------------
+
+
+
+    //----------------------------------------------------------------
+    PrefferedProjects = new int[PrefferedProjectsCount];
+    RejectedProjects = new int[RejectedProjectsCount];
+
+    for (int i=0; i<PrefferedProjectsCount; i++)
+        PrefferedProjects[i] = IO::ProjectsNames.indexOf(DataProcessing::PrefferedProjects[i]);
+
+    for (int i=0; i<RejectedProjectsCount; i++)
+        RejectedProjects[i] = IO::ProjectsNames.indexOf(DataProcessing::RejectedProjects[i]);
+    //----------------------------------------------------------------
 }
 
 GenerateWeightsAndCalculateRatingsAsync::~GenerateWeightsAndCalculateRatingsAsync()
 {
     delete [] PrefferedMetrics;
     delete [] RejectedMetrics;
+    delete [] PrefferedProjects;
+    delete [] RejectedProjects;
 }
 
 QVector<double> GenerateWeightsAndCalculateRatingsAsync::GetHardRatings()
@@ -266,64 +290,37 @@ void GenerateWeightsAndCalculateRatingsAsync::Calculate(double currentSet[], int
 
 
 
-//            auto getMax = [&](double* list)
-//            {
-//                double max = list[0];
-
-//                for (int i = 0; i < ProjectsCount; i++)
-//                    max = list[i] > max ? list[i] : max;
-
-//                return max;
-//            };
-
-
-//            auto getMin = [&](double* list)
-//            {
-//                double min = list[0];
-
-//                for (int i = 0; i < ProjectsCount; i++)
-//                    min = list[i] < min ? list[i] : min;
-
-//                return min;
-//            };
-
-
-//            auto COUNT = [&](double* list, double value)
-//            {
-//                int k = 0;
-
-//                for (int i = 0; i < ProjectsCount; i++)
-//                    if (list[i] == value) k++;
-
-//                return k;
-//            };
-
-//            auto IndexOf = [&](double* list, double value)
-//            {
-//                for (int i = 0; i < ProjectsCount; i++)
-//                    if (list[i] == value) return i;
-
-//                return -1;
-//            };
-
-
-
-
-
 
             double* res = DataProcessing::GetLinearConvolutionResult(currentSet);
 
 
+            //Проверка проектов
+            if ((PrefferedProjectsCount != 0) && (RejectedProjectsCount != 0))
+            {
+                isSuitable = true;
+                for (int i = 0; i < PrefferedProjectsCount; i++)
+                    for (int j = 0; j < RejectedProjectsCount; j++)
+                    {
+                        isSuitable = isSuitable &&
+                                (res[PrefferedProjects[i]] > res[RejectedProjects[j]]);
 
-            //Проверка метрик
+                    }
+                if (!isSuitable)
+                {
+                    DataProcessing::missed_variation++;
+                    missed++;
+                    return;
+                }
+            }
+
+
+            //Проверка показателей
             if ((PrefferedMetricsCount != 0) && (RejectedMetricsCount != 0))
             {
                 isSuitable = true;
                 for (int i = 0; i < PrefferedMetricsCount; i++)
                     for (int j = 0; j < RejectedMetricsCount; j++)
                     {
-//                        isSuitable = isSuitable &&
-//                                (currentSet[DataProcessing::PrefferedMetrics[i]] > currentSet[DataProcessing::RejectedMetrics[j]]);
                         isSuitable = isSuitable &&
                                 (currentSet[PrefferedMetrics[i]] > currentSet[RejectedMetrics[j]]);
 
@@ -332,6 +329,7 @@ void GenerateWeightsAndCalculateRatingsAsync::Calculate(double currentSet[], int
                 if (!isSuitable)
                 {
                     DataProcessing::missed_variation++;
+                    missed++;
                     return;
                 }
             }
@@ -345,9 +343,9 @@ void GenerateWeightsAndCalculateRatingsAsync::Calculate(double currentSet[], int
                 softRatings[i] = res[i] / (1.0 - getMin(res));
 
 
-//                QDebug debug = qDebug();
-//                for (int i=0; i<maxN; i++)
-//                    debug << res[i];
+                //                QDebug debug = qDebug();
+                //                for (int i=0; i<maxN; i++)
+                //                    debug << res[i];
 
 
                 hardRatings[i] = 0;

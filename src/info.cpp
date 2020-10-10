@@ -26,6 +26,7 @@ Info::Info(QWidget *parent) :
 
 
     //Приоритеты
+    //----------------------------------------------------------------------------------------------
     QString priority;    
     for (int i=0; i<IO::IndicatorsNames.size(); i++)
     {
@@ -35,8 +36,14 @@ Info::Info(QWidget *parent) :
         label->setText(QString("%1: %2").arg(IO::IndicatorsNames[i]).arg(priority));
         ui->layout->addWidget(label);
     }
+    //----------------------------------------------------------------------------------------------
+
 
     //Группы важности
+
+
+    // Приоритеты показателей
+    //----------------------------------------------------------------------------------------------
     for (int i=0; i < DataProcessing::PrefferedMetrics.size(); i++)
     {
         for (int j = 0; j < DataProcessing::RejectedMetrics.size(); j++)
@@ -49,6 +56,24 @@ Info::Info(QWidget *parent) :
             ui->layout->addWidget(label);
         }
     }
+    //----------------------------------------------------------------------------------------------
+
+
+    // Приоритеты проектов
+    //----------------------------------------------------------------------------------------------
+    for (int i=0; i < DataProcessing::PrefferedProjects.size(); i++)
+    {
+        for (int j = 0; j < DataProcessing::RejectedProjects.size(); j++)
+        {
+            QString p = DataProcessing::PrefferedProjects[i];
+            QString r = DataProcessing::RejectedProjects[j];
+
+            QLabel *label = new QLabel();
+            label->setText(QString("%1 > %2").arg(p).arg(r));
+            ui->layout->addWidget(label);
+        }
+    }
+    //----------------------------------------------------------------------------------------------
 }
 
 Info::~Info()

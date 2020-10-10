@@ -30,11 +30,15 @@ private:
     int Count = 0;
     int GeneratedIterCount = 0;
 
+
     bool IsNeedToFinish = false;
 
 private:
     int *PrefferedMetrics;
     int *RejectedMetrics;
+
+    int *PrefferedProjects;
+    int *RejectedProjects;
 
     double h;
     double sum(double set[], int index);
@@ -44,6 +48,9 @@ private:
 
     int PrefferedMetricsCount = 0;
     int RejectedMetricsCount = 0;
+
+    int PrefferedProjectsCount = 0;
+    int RejectedProjectsCount = 0;
 
     int ProjectsCount = 0;
 
@@ -66,7 +73,7 @@ public:
     QVector<double> GetSoftRatings();
 
     int GetCount();
-
+    int missed = 0;
     void Calculate(QVector<double>& currentSet, int maxN, int curPosIndex);
     void Calculate(double currentSet[], int maxN, int curPosIndex);
 

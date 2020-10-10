@@ -30,10 +30,15 @@ public:
 
     void SetPrioritiesList(QVector<QString> indicatorsNames);
     void SetMetricsLists(QVector<QString> indicatorsNames);
+    void SetProjectsLists(QVector<QString> projectsNames);
 
     QList<QComboBox*> PrioritiesComboBoxes;
+
     QList<QCheckBox*> PreferredCheckBoxes;
     QList<QCheckBox*> RejectedCheckBoxes;
+
+    QList<QCheckBox*> PreferredProjectsCheckBoxes;
+    QList<QCheckBox*> RejectedProjectsCheckBoxes;
 
     QString solutionName;
     QTableWidget* input;
@@ -55,6 +60,8 @@ private slots:
     void on_StepSpinBox_valueChanged(double arg1);
 
     void on_progressBar_valueChanged(int value);
+
+    void on_ToggleProjectsGroupCheckBox_stateChanged(int arg1);
 
 private:
     Ui::StartupConfigForm *ui;

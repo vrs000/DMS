@@ -10,8 +10,11 @@ StartupConfigForm::StartupConfigForm(QWidget *parent) :
 
     SetPrioritiesList(IO::IndicatorsNames);
     SetMetricsLists(IO::IndicatorsNames);
+    SetProjectsLists(IO::ProjectsNames);
+
 
     DataProcessing::bar = ui->progressBar;
+
 
     ui->progressBar->hide();
 
@@ -58,6 +61,23 @@ void StartupConfigForm::SetMetricsLists(QVector<QString> indicatorsNames)
     }
 }
 
+void StartupConfigForm::SetProjectsLists(QVector<QString> projectsNames)
+{
+    foreach (QString param, projectsNames)
+    {
+        QCheckBox* pref = new QCheckBox(param);
+        QCheckBox* rejec = new QCheckBox(param);
+
+
+        PreferredProjectsCheckBoxes << pref;
+        RejectedProjectsCheckBoxes<< rejec;
+
+
+        ui->PreffredProjectsLayout->addWidget(pref);
+        ui->RejectedProjectsLayout->addWidget(rejec);
+    }
+}
+
 void StartupConfigForm::SetPrioritiesList(QVector<QString> indicatorsNames)
 {
 
@@ -100,6 +120,9 @@ void StartupConfigForm::on_OkButton_clicked()
     QVector<int> prefered;
     QVector<int> rejected;
 
+    QVector<QString> prefferedProjects;
+    QVector<QString> rejectedProjects;
+
     //Считывание данных с чекбоксов и комбобоксов
     //===========================================
     for (auto p : PrioritiesComboBoxes)
@@ -112,27 +135,33 @@ void StartupConfigForm::on_OkButton_clicked()
     for (int i = 0; i < RejectedCheckBoxes.size(); i++)
         if (RejectedCheckBoxes[i]->isChecked())
             rejected << i;
+
+    for (int i = 0; i < PreferredProjectsCheckBoxes.size(); i++)
+        if (PreferredProjectsCheckBoxes[i]->isChecked())
+            prefferedProjects << PreferredProjectsCheckBoxes[i]->text();
+
+    for (int i = 0; i < RejectedProjectsCheckBoxes.size(); i++)
+        if (RejectedProjectsCheckBoxes[i]->isChecked())
+            rejectedProjects << RejectedProjectsCheckBoxes[i]->text();
     //===========================================
+
+
+    qDebug() << prefferedProjects;
+    qDebug() << rejectedProjects;
 
     int m = IO::IndicatorsNames.size();
     int K = std::floor(DataProcessing::Fact(std::floor(1 / ui->StepSpinBox->value()) + m - 1)
                        / (DataProcessing::Fact(m - 1) * DataProcessing::Fact(std::floor(1 / ui->StepSpinBox->value()))));
 
-    //    if (K<0)
-    //    {
-    //        DataProcessing::CrushingStep = 0.3;
-    //        DataProcessing::CurrentIterationCount = DataProcessing::GetTheoreticalWeightsCount(m, DataProcessing::CrushingStep);
 
-    //        qDebug() <<":::::" <<DataProcessing::CurrentIterationCount;
-    //    }
-    //    else
+
     DataProcessing::CurrentIterationCount = K;
 
 
 
     DataProcessing::CrushingStep = ui->StepSpinBox->value();
     DataProcessing::OpenedSolutionName = solutionName;
-    DataProcessing::MakeCalculations(priority, prefered, rejected);
+    DataProcessing::MakeCalculations(priority, prefered, rejected, prefferedProjects, rejectedProjects);
     DataProcessing::bar = ui->progressBar;
     setEnabled(false);
 }
@@ -184,4 +213,9 @@ void StartupConfigForm::on_progressBar_valueChanged(int value)
     {
         close();
     }
+}
+
+void StartupConfigForm::on_ToggleProjectsGroupCheckBox_stateChanged(int arg1)
+{
+    ui->ImportanceProjectsGroups_groupBox->setEnabled(ui->ToggleProjectsGroupCheckBox->isChecked());
 }

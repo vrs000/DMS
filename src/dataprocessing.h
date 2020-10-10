@@ -42,9 +42,13 @@ public:
     static QVector<int> PrefferedMetrics;
     static QVector<int> RejectedMetrics;
 
+    static QVector<QString> PrefferedProjects;
+    static QVector<QString> RejectedProjects;
+
+
     static QProgressBar* bar;
 
-    static uint CurrentIterationCount;
+    static int CurrentIterationCount;
 
     static QTableWidget* inputTable;
     static QTableWidget* outputTable;
@@ -83,12 +87,15 @@ public:
     static void CalculateRatingsWithPool();
 
     static void SetMetrics(QVector<int> Preferred, QVector<int> Rejected);
+    static void SetProjectsPriorities(QVector<QString> Preferred, QVector<QString> Rejected);
     static void SetPriorityList(QVector<QString> list);
 
 
     static void MakeCalculations(QVector<QString> priorityList = QVector<QString>(),
                                  QVector<int> Preferred = QVector<int>(),
-                                 QVector<int> Rejected = QVector<int>());
+                                 QVector<int> Rejected = QVector<int>(),
+                                 QVector<QString> preferredProjects = QVector<QString>(),
+                                 QVector<QString> rejectedProjects = QVector<QString>());
 
 
     static QVector<double> GetLinearConvolutionResult(QVector<double> weights);
@@ -114,7 +121,9 @@ public:
     static GenerateWeightsAndCalculateRatingsAsync* th7;
     static GenerateWeightsAndCalculateRatingsAsync* th8;
 
+
     static CalculateAsyncWithThreadPool* tp;
+
 
     static int Count1;
     static int Count2;
@@ -133,6 +142,7 @@ private:
     static void GetNextNum(QVector<double>& currentSet, int maxN, int curPosIndex);
     static void GetNextNum(double currentSet[], int maxN, int curPosIndex);
 
+
     static int Previous;
 
 public:
@@ -143,7 +153,9 @@ public:
 private slots:
     void DeleteThreadInstances();
 
+
     void UpdateProgressBar();
+
 
     void UpdateCount1(int count);
     void UpdateCount2(int count);
