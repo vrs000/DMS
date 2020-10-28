@@ -11,10 +11,15 @@
 #include <solutiondb.h>
 #include <solution.h>
 #include <QtMath>
+#include <setprojectgroupimportanceform.h>
 
 namespace Ui {
 class StartupConfigForm;
 }
+
+
+class SetProjectGroupImportanceForm;
+class MainWindow;
 
 class StartupConfigForm : public QWidget
 {
@@ -47,6 +52,9 @@ public:
 
     static long double fact(int N);
 
+    static QString NotParsedImportanceGroupOfProjects;
+    static QString NotParsedImportanceGroupOfIndicators;
+
 
 private slots:
     void SetProgressBarValue(int value, int maximum);
@@ -62,6 +70,14 @@ private slots:
     void on_progressBar_valueChanged(int value);
 
     void on_ToggleProjectsGroupCheckBox_stateChanged(int arg1);
+
+    void on_UpButton_clicked();
+
+    void on_DownButton_clicked();
+
+    void on_SetProjectImportanceGroupsBtn_clicked();
+
+    void on_SetIndicatorImportanceGroupsBtn_clicked();
 
 private:
     Ui::StartupConfigForm *ui;

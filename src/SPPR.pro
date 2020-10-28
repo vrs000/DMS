@@ -35,6 +35,7 @@ SOURCES += \
     openprojectslistform.cpp \
     preselectionchartsform.cpp \
     selectforexportform.cpp \
+    setprojectgroupimportanceform.cpp \
     solution.cpp \
     solutiondb.cpp \
     startupconfigform.cpp
@@ -54,6 +55,7 @@ HEADERS += \
     openprojectslistform.h \
     preselectionchartsform.h \
     selectforexportform.h \
+    setprojectgroupimportanceform.h \
     solution.h \
     solutiondb.h \
     startupconfigform.h
@@ -67,6 +69,7 @@ FORMS += \
     openprojectslistform.ui \
     preselectionchartsform.ui \
     selectforexportform.ui \
+    setprojectgroupimportanceform.ui \
     startupconfigform.ui
 
 # Default rules for deployment.

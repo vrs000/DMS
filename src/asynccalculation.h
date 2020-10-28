@@ -22,10 +22,13 @@ private:
     QVector<double> HardRatings;
     QVector<double> SoftRatings;
 
+
     QTime time;
+
 
     int FirstIterationIndex;
     int LastIterationIndex;
+
 
     int Count = 0;
     int GeneratedIterCount = 0;
@@ -33,24 +36,48 @@ private:
 
     bool IsNeedToFinish = false;
 
+
 private:
+    //legacy
+    //-------------------------
     int *PrefferedMetrics;
     int *RejectedMetrics;
 
     int *PrefferedProjects;
     int *RejectedProjects;
+    //-------------------------
+
+
+    //In work
+    //-------------------------
+    int *PrefferedMetricsV2;
+    int *RejectedMetricsV2;
+
+    int *PrefferedProjectsV2;
+    int *RejectedProjectsV2;
+
+    int ProjectsGroupCount = 0;
+    int IndicatorsGroupCount = 0;
+    //-------------------------
+
+
+
 
     double h;
     double sum(double set[], int index);
 
+
     QVector<double> hardRatings;
     QVector<double> softRatings;
+
 
     int PrefferedMetricsCount = 0;
     int RejectedMetricsCount = 0;
 
+
     int PrefferedProjectsCount = 0;
     int RejectedProjectsCount = 0;
+
 
     int ProjectsCount = 0;
 

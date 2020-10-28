@@ -16,6 +16,13 @@ public:
              QVector<QString> priorityList,
              QVector<int> prefferedMetrics, QVector<int> rejectedMetrics);
 
+    Solution(QString solutionName, double crushingStep,
+             QVector<QString> indicatorsNames, QVector<QString> projectsNames,
+             QVector<QVector<double>> baseTable, QVector<QVector<double>> normalizedTable,
+             QVector<double> hardRatings, QVector<double> softRatings,
+             QVector<QString> priorityList,
+             QString projectsImportanceNotParsed, QString indicatorsImportanceNotParsed);
+
     QString SolutionName;
 
     QVector<QString> IndicatorsNames;
@@ -29,8 +36,18 @@ public:
 
     QVector<QString> PriorityList;
 
+    //legacy
+    //-------------------------------
     QVector<int> PrefferedMetrics;
     QVector<int> RejectedMetrics;
+    //-------------------------------
+
+
+    //In work
+    //-------------------------------
+    QString ProjectsImportanceNotParsed;
+    QString IndicatorsImportanceNotParsed;
+    //-------------------------------
 
     double CrushingStep;
 

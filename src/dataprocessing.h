@@ -11,7 +11,7 @@
 #include <asynccalculation.h>
 #include <QProgressBar>
 #include <QProgressDialog>
-
+#include <mainwindow.h>
 #include <calculateasyncwiththreadpool.h>
 
 
@@ -19,12 +19,19 @@
 class CalculateRatingsAsync;
 class GenerateWeightsAndCalculateRatingsAsync;
 class CalculateAsyncWithThreadPool;
+class MainWindow;
+
 
 class DataProcessing : public QObject
 {
     Q_OBJECT
 
 public:
+    static MainWindow* mainWindow;
+
+    static QString NotParsedImportanceGroupOfProjects;
+    static QString NotParsedImportanceGroupOfIndicators;
+
     static QVector<QString> PriorityList;
     static QVector<double> MaximumIndicators;
     static QVector<double> MinimumIndicators;
@@ -59,6 +66,9 @@ public:
 
     static QTime time;
 
+    static int UsedThreadCount;
+    static int TimeElapsed;
+
     static int ProjectsCount;
     static int IndicatorsCount;
 
@@ -83,6 +93,7 @@ public:
     static void CalculateRatingsIn2ThreadsWithWeights();
     static void CalculateRatingsIn4ThreadsWithWeights();
     static void CalculateRatingsIn8ThreadsWithWeights();
+    static void CalculateRatingsInAllThreadsWithWeights();
 
     static void CalculateRatingsWithPool();
 
@@ -142,7 +153,7 @@ private:
     static void GetNextNum(QVector<double>& currentSet, int maxN, int curPosIndex);
     static void GetNextNum(double currentSet[], int maxN, int curPosIndex);
 
-
+    static void SetMainWindowTitle(QString title);
     static int Previous;
 
 public:

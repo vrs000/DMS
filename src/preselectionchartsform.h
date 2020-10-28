@@ -16,6 +16,8 @@ namespace Ui {
 class PreSelectionChartsForm;
 }
 
+
+class MainWindow;
 class PreSelectionChartsForm : public QWidget
 {
     Q_OBJECT

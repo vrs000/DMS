@@ -1,12 +1,29 @@
 #include "startupconfigform.h"
 #include "ui_startupconfigform.h"
 
+QString StartupConfigForm::NotParsedImportanceGroupOfIndicators = "";
+QString StartupConfigForm::NotParsedImportanceGroupOfProjects = "";
+
 StartupConfigForm::StartupConfigForm(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::StartupConfigForm)
 {
     ui->setupUi(this);
 
+
+    //Скрытие старых компонентов
+    //----------------------------------------------
+    ui->StepSpinBox->hide();
+    ui->IterationCountLabel->hide();
+    ui->ToggleGroupCheckBox->hide();
+    ui->ImportanceGroups_groupBox->hide();
+    ui->ToggleProjectsGroupCheckBox->hide();
+    ui->ImportanceProjectsGroups_groupBox->hide();
+    //----------------------------------------------
+
+
+    NotParsedImportanceGroupOfIndicators = "";
+    NotParsedImportanceGroupOfProjects = "";
 
     SetPrioritiesList(IO::IndicatorsNames);
     SetMetricsLists(IO::IndicatorsNames);
@@ -19,17 +36,23 @@ StartupConfigForm::StartupConfigForm(QWidget *parent) :
     ui->progressBar->hide();
 
     ui->StepSpinBox->setValue(DataProcessing::CrushingStep);
+    ui->StepValueTextEdit->setPlainText(QString::number(DataProcessing::CrushingStep));
+
 
     int K = DataProcessing::GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), DataProcessing::CrushingStep);
+
+
 
     if (K < 0)
     {
         ui->IterationCountLabel->setText(QString("Уменьшите шаг"));
+        ui->IterationCountLabel_2->setText(QString("Уменьшите шаг"));
         ui->OkButton->setEnabled(false);
     }
     else
     {
         ui->IterationCountLabel->setText(QString("Количество итераций: %1").arg(K));
+        ui->IterationCountLabel_2->setText(QString("Количество итераций: %1").arg(K));
         ui->OkButton->setEnabled(true);
     }
 }
@@ -149,20 +172,30 @@ void StartupConfigForm::on_OkButton_clicked()
     qDebug() << prefferedProjects;
     qDebug() << rejectedProjects;
 
+    DataProcessing::CrushingStep = ui->StepValueTextEdit->toPlainText().toDouble();
+    double h = DataProcessing::CrushingStep;
     int m = IO::IndicatorsNames.size();
-    int K = std::floor(DataProcessing::Fact(std::floor(1 / ui->StepSpinBox->value()) + m - 1)
-                       / (DataProcessing::Fact(m - 1) * DataProcessing::Fact(std::floor(1 / ui->StepSpinBox->value()))));
+    int K = std::floor(DataProcessing::Fact(std::floor(1 /h) + m - 1)
+                       / (DataProcessing::Fact(m - 1) * DataProcessing::Fact(std::floor(1 / h))));
 
 
 
     DataProcessing::CurrentIterationCount = K;
 
 
+    //Задание групп важности
+    //-------------------------------------------------------------------------------------------
+    DataProcessing::NotParsedImportanceGroupOfIndicators = NotParsedImportanceGroupOfIndicators;
+    DataProcessing::NotParsedImportanceGroupOfProjects = NotParsedImportanceGroupOfProjects;
+    //-------------------------------------------------------------------------------------------
 
-    DataProcessing::CrushingStep = ui->StepSpinBox->value();
+
+    DataProcessing::CrushingStep = ui->StepValueTextEdit->toPlainText().toDouble();
     DataProcessing::OpenedSolutionName = solutionName;
     DataProcessing::MakeCalculations(priority, prefered, rejected, prefferedProjects, rejectedProjects);
     DataProcessing::bar = ui->progressBar;
+
+
     setEnabled(false);
 }
 
@@ -187,10 +220,6 @@ void StartupConfigForm::SetProgressBarValue(int value, int maximum)
 void StartupConfigForm::on_StepSpinBox_valueChanged(double arg1)
 {
 
-    //    int m = IO::IndicatorsNames.size();
-    //    int K = std::floor(DataProcessing::Fact(std::floor(1 / arg1) + m - 1)
-    //               / (DataProcessing::Fact(m - 1) * DataProcessing::Fact(std::floor(1 / arg1))));
-    //    DataProcessing::CurrentIterationCount = K;
 
     DataProcessing::CurrentIterationCount = DataProcessing::GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), arg1);
     int K = DataProcessing::GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), arg1);
@@ -218,4 +247,81 @@ void StartupConfigForm::on_progressBar_valueChanged(int value)
 void StartupConfigForm::on_ToggleProjectsGroupCheckBox_stateChanged(int arg1)
 {
     ui->ImportanceProjectsGroups_groupBox->setEnabled(ui->ToggleProjectsGroupCheckBox->isChecked());
+}
+
+void StartupConfigForm::on_UpButton_clicked()
+{
+    QList<double> list = {0.001, 0.002, 0.004, 0.005, 0.008, 0.01, 0.02, 0.025, 0.04, 0.05, 0.1, 0.125, 0.2, 0.25, 0.5};
+
+    double step = ui->StepValueTextEdit->toPlainText().toDouble();
+
+    int index = list.indexOf(step);
+
+
+    if (index != list.size() - 1)
+    {
+        ui->StepValueTextEdit->setPlainText(QString::number(list[index+1]));
+
+        DataProcessing::CurrentIterationCount = DataProcessing::GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), list[index+1]);
+        int K = DataProcessing::GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), list[index+1]);
+
+        if (K < 0)
+        {
+            ui->IterationCountLabel_2->setText(QString("Уменьшите шаг"));
+            ui->OkButton->setEnabled(false);
+        }
+        else
+        {
+            ui->IterationCountLabel_2->setText(QString("Количество итераций: %1").arg(K));
+            ui->OkButton->setEnabled(true);
+        }
+    }
+
+
+
+
+}
+
+void StartupConfigForm::on_DownButton_clicked()
+{
+    QList<double> list = {0.001, 0.002, 0.004, 0.005, 0.008, 0.01, 0.02, 0.025, 0.04, 0.05, 0.1, 0.125, 0.2, 0.25, 0.5};
+
+    double step = ui->StepValueTextEdit->toPlainText().toDouble();
+
+    int index = list.indexOf(step);
+
+
+    if (index != 0)
+    {
+        if (index == -1) index = 1;
+        ui->StepValueTextEdit->setPlainText(QString::number(list[index-1]));
+
+        DataProcessing::CurrentIterationCount = DataProcessing::GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), list[index-1]);
+        int K = DataProcessing::GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), list[index-1]);
+
+        if (K < 0)
+        {
+            ui->IterationCountLabel_2->setText(QString("Уменьшите шаг"));
+            ui->OkButton->setEnabled(false);
+        }
+        else
+        {
+            ui->IterationCountLabel_2->setText(QString("Количество итераций: %1").arg(K));
+            ui->OkButton->setEnabled(true);
+        }
+    }
+}
+
+void StartupConfigForm::on_SetProjectImportanceGroupsBtn_clicked()
+{
+    SetProjectGroupImportanceForm *form = new SetProjectGroupImportanceForm(nullptr, Projects);
+    form->btnProjects = ui->SetProjectImportanceGroupsBtn;
+    form->show();
+}
+
+void StartupConfigForm::on_SetIndicatorImportanceGroupsBtn_clicked()
+{
+    SetProjectGroupImportanceForm *form = new SetProjectGroupImportanceForm(nullptr, Indicators);
+    form->btnIndicatators = ui->SetIndicatorImportanceGroupsBtn;
+    form->show();
 }

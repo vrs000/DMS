@@ -29,3 +29,28 @@ Solution::Solution(QString solutionName, double crushingStep,
     PrefferedMetrics = prefferedMetrics;
     RejectedMetrics = rejectedMetrics;
 }
+
+Solution::Solution(QString solutionName, double crushingStep,
+                   QVector<QString> indicatorsNames, QVector<QString> projectsNames,
+                   QVector<QVector<double> > baseTable, QVector<QVector<double> > normalizedTable,
+                   QVector<double> hardRatings, QVector<double> softRatings,
+                   QVector<QString> priorityList,
+                   QString projectsImportanceNotParsed, QString indicatorsImportanceNotParsed)
+{
+    SolutionName = solutionName;
+    CrushingStep = crushingStep;
+
+    IndicatorsNames = indicatorsNames;
+    ProjectsNames = projectsNames;
+
+    BaseTable = baseTable;
+    NormalizedTable = normalizedTable;
+
+    HardRatings = hardRatings;
+    SoftRatings = softRatings;
+
+    PriorityList = priorityList;
+
+    ProjectsImportanceNotParsed = projectsImportanceNotParsed;
+    IndicatorsImportanceNotParsed = indicatorsImportanceNotParsed;
+}

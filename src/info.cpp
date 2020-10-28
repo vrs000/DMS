@@ -25,9 +25,19 @@ Info::Info(QWidget *parent) :
     ui->IterationsCount->setText(QString("Количество итераций: %1").arg(DataProcessing::CurrentIterationCount - DataProcessing::missed_variation));
 
 
+    //Производительность
+    //----------------------------------------------------------------------------------------------
+    QLabel *label1 = new QLabel(QString("Потоков использовано: %1").arg(DataProcessing::UsedThreadCount));
+    QLabel *label2 = new QLabel(QString("Затраченное время: %1 мс").arg(DataProcessing::TimeElapsed));
+
+    ui->layout->addWidget(label1);
+    ui->layout->addWidget(label2);
+    //----------------------------------------------------------------------------------------------
+
+
     //Приоритеты
     //----------------------------------------------------------------------------------------------
-    QString priority;    
+    QString priority;
     for (int i=0; i<IO::IndicatorsNames.size(); i++)
     {
         priority = DataProcessing::PriorityList[i] == "max" ? "Больше - лучше" : "Меньше - лучше";
@@ -41,6 +51,11 @@ Info::Info(QWidget *parent) :
 
     //Группы важности
 
+
+    //legacy
+    //##############################################################################################
+    //##############################################################################################
+    //##############################################################################################
 
     // Приоритеты показателей
     //----------------------------------------------------------------------------------------------
@@ -74,6 +89,71 @@ Info::Info(QWidget *parent) :
         }
     }
     //----------------------------------------------------------------------------------------------
+    //##############################################################################################
+    //##############################################################################################
+    //##############################################################################################
+
+
+
+
+    QStringList projectsImportance = DataProcessing::NotParsedImportanceGroupOfProjects.split(",");
+    QStringList indicatorsImportance = DataProcessing::NotParsedImportanceGroupOfIndicators.split(",");
+
+    qDebug() << projectsImportance.size() << indicatorsImportance.size();
+
+
+    int first;
+    int second;
+
+    //Список приоритетов проектов
+    //------------------------------------------------------------------------------------------------------------------
+    if (DataProcessing::NotParsedImportanceGroupOfProjects != "")
+        for (int i = 0; i < projectsImportance.size(); i++)
+        {
+            if (projectsImportance[i].contains("<"))
+            {
+                first = projectsImportance[i].split("<")[0].toInt();
+                second = projectsImportance[i].split("<")[1].toInt();
+            }
+
+
+            if (projectsImportance[i].contains(">"))
+            {
+                second = projectsImportance[i].split(">")[0].toInt();
+                first = projectsImportance[i].split(">")[1].toInt();
+            }
+
+            QLabel *label = new QLabel(QString("%1>%2").arg(IO::ProjectsNames[first]).arg(IO::ProjectsNames[second]));
+
+            ui->layout->addWidget(label);
+        }
+    //------------------------------------------------------------------------------------------------------------------
+
+
+    //Список приоритетов показателей
+    //------------------------------------------------------------------------------------------------------------------
+    if (DataProcessing::NotParsedImportanceGroupOfIndicators != "")
+        for (int i = 0; i < indicatorsImportance.size(); i++)
+        {
+            if (indicatorsImportance[i].contains("<"))
+            {
+                first = indicatorsImportance[i].split("<")[0].toInt();
+                second = indicatorsImportance[i].split("<")[1].toInt();
+            }
+
+
+            if (indicatorsImportance[i].contains(">"))
+            {
+                second = indicatorsImportance[i].split(">")[0].toInt();
+                first = indicatorsImportance[i].split(">")[1].toInt();
+            }
+
+            QLabel *label = new QLabel(QString("%1>%2").arg(IO::IndicatorsNames[first]).arg(IO::IndicatorsNames[second]));
+
+            ui->layout->addWidget(label);
+        }
+    //------------------------------------------------------------------------------------------------------------------
+
 }
 
 Info::~Info()

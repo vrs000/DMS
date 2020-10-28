@@ -14,7 +14,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->ListButton->hide();
 
 
+    DataProcessing::mainWindow = this;
 
+    startupconfigform = new StartupConfigForm;
+    selectforexportForm = new SelectForExportForm;
 
 
     ui->InfoButton->setEnabled(false);
@@ -195,19 +198,23 @@ void MainWindow::MakeToolTip()
 
 void MainWindow::on_InfoButton_clicked()
 {
-    OpenForm(infoform);
+    Info* info = (Info*)infoform;
 
-    //    delete infoform;
-    //    infoform = new Info();
-    //    infoform->show();
-    //    infoform->activateWindow();
+    if (info != nullptr)
+        delete info;
+
+    infoform = new Info;
+    info = (Info*)infoform;
+    info = (Info*)infoform;
+    info->show();
+    info->activateWindow();
 }
 
 void MainWindow::on_GraphicsButton_clicked()
 {
 
-    delete preselectionchartsform;
-    preselectionchartsform = new PreSelectionChartsForm();
+    preselectionchartsform = std::unique_ptr<PreSelectionChartsForm>(new PreSelectionChartsForm);
+    //preselectionchartsform = new PreSelectionChartsForm();
     preselectionchartsform->show();
     preselectionchartsform->activateWindow();
 
@@ -285,12 +292,12 @@ void MainWindow::CloseLoadingForm()
 
 void MainWindow::OpenAboutProgramForm()
 {
-    OpenForm(aboutProgramForm);
+    //OpenForm(aboutProgramForm);
 
-    //    delete aboutProgramForm;
-    //    aboutProgramForm = new AboutProgramForm();
-    //    aboutProgramForm->show();
-    //    aboutProgramForm->activateWindow();
+    delete aboutProgramForm;
+    aboutProgramForm = new AboutProgramForm();
+    aboutProgramForm->show();
+    aboutProgramForm->activateWindow();
 }
 
 void MainWindow::OpenExportFileForm()
@@ -364,6 +371,8 @@ void MainWindow::DeleteAction()
 
     const QString solutionName = action->text();
 
+    if (solutionName == SolutionDB::currentSolutionName)
+        setWindowTitle(QString("Система принятия решений"));
 
     //remove from OpenMenu
     for (int i = 0; i < OpenMenuActions.size(); i++)
@@ -412,15 +421,18 @@ void MainWindow::OpenAction()
 {
     QAction* action = qobject_cast<QAction*>(QObject::sender());
     const QString solutionName = action->text();
-
+    setWindowTitle(QString("Система принятия решений | %1").arg(solutionName));
     SolutionDB::LoadSolution(solutionName);
     IO::FillingTables(ui->InputTable, ui->OutputTable);
+
+
 }
 
 void MainWindow::DeleteAllAction()
 {
     //Remove from DB
     SolutionDB::DB.clear();
+    setWindowTitle(QString("Система принятия решений"));
 
     //Hide buttons
     ui->InfoButton->setEnabled(false);
@@ -464,14 +476,15 @@ void MainWindow::OpenSolution(const QString fileName)
 {
     if ((!fileName.contains(".xlsx"))&&(!fileName.contains(".xls"))) return;
     QString solutionName = fileName.split('/').last().split('.').first();
+    QString NewSultionName;
+    int n = 1;
 
-
-    auto OpenStartupConfigForm = [&]()
+    auto OpenStartupConfigForm = [&](QString solName)
     {
         delete startupconfigform;
         startupconfigform = new StartupConfigForm;
 
-        startupconfigform->solutionName = solutionName;
+        startupconfigform->solutionName = solName;
 
         startupconfigform->input = ui->InputTable;
         startupconfigform->output = ui->OutputTable;
@@ -480,34 +493,51 @@ void MainWindow::OpenSolution(const QString fileName)
         startupconfigform->activateWindow();
     };
 
+    //Если содержит, загрузить входные данные с БД
+    //Задать имя в формате {Name}_n, где n - цел
 
     if (SolutionDB::IsContained(solutionName))
     {
+        while (SolutionDB::IsContained(QString("%1_%2").arg(solutionName).arg(n)))
+            n++;
+
+        Solution old = SolutionDB::GetSolution(solutionName);
+
+        IO::BaseTable = old.BaseTable;
+        IO::IndicatorsNames = old.IndicatorsNames;
+        IO::ProjectsNames = old.ProjectsNames;
 
 
-        QMessageBox messageBox(QMessageBox::Question,
-                               tr("Файл уже открыт"),
-                               tr("Открыть заново ?"),
-                               QMessageBox::Yes | QMessageBox::No,
-                               this);
+        QString newSolName = QString("%1_%2").arg(solutionName).arg(n);
 
-        messageBox.setButtonText(QMessageBox::Yes, tr("Да"));
-        messageBox.setButtonText(QMessageBox::No, tr("Нет"));
+        UpdateDeleteMenu(newSolName);
+        UpdateOpenMenu(newSolName);
 
-        int result = messageBox.exec();
+        OpenStartupConfigForm(newSolName);
+
+        //        QMessageBox messageBox(QMessageBox::Question,
+        //                               tr("Файл уже открыт"),
+        //                               tr("Открыть заново ?"),
+        //                               QMessageBox::Yes | QMessageBox::No,
+        //                               this);
+
+        //        messageBox.setButtonText(QMessageBox::Yes, tr("Да"));
+        //        messageBox.setButtonText(QMessageBox::No, tr("Нет"));
+
+        //        int result = messageBox.exec();
 
 
-        if (result == QMessageBox::Yes)
-        {
-            SolutionDB::LoadSolution(solutionName);
-            OpenStartupConfigForm();
-        }
+        //        if (result == QMessageBox::Yes)
+        //        {
+        //            SolutionDB::LoadSolution(solutionName);
+        //            OpenStartupConfigForm();
+        //        }
 
-        if (result == QMessageBox::No)
-        {
-            SolutionDB::LoadSolution(solutionName);
-            IO::FillingTables(ui->InputTable, ui->OutputTable);
-        }
+        //        if (result == QMessageBox::No)
+        //        {
+        //            SolutionDB::LoadSolution(solutionName);
+        //            IO::FillingTables(ui->InputTable, ui->OutputTable);
+        //        }
 
 
     }
@@ -526,7 +556,7 @@ void MainWindow::OpenSolution(const QString fileName)
         ui->GraphicsButton->setEnabled(true);
 
 
-        OpenStartupConfigForm();
+        OpenStartupConfigForm(solutionName);
     }
 }
 

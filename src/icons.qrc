@@ -19,5 +19,8 @@
         <file>icons/WaitBar11.gif</file>
         <file>icons/Logo-resized.png</file>
         <file>icons/icon.ico</file>
+        <file>icons/down.png</file>
+        <file>icons/up.png</file>
+        <file>icons/up1.png</file>
     </qresource>
 </RCC>

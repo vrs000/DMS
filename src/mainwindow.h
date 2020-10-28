@@ -22,9 +22,22 @@
 #include <QDialog>
 #include <QtConcurrent/QtConcurrent>
 
+class PreSelectionChartsForm;
+class DataProcessing;
+class StartupConfigForm;
+class SelectForExportForm;
+
+//typedef Info alalalalallalalala;
+
 QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindow; }
+namespace Ui {
+class MainWindow;
+
+}
 QT_END_NAMESPACE
+
+
+//class InfoForm;
 
 class MainWindow : public QMainWindow
 {
@@ -58,14 +71,16 @@ private:
 
     //forms
 private:
-    StartupConfigForm* startupconfigform = new StartupConfigForm();
-    Info* infoform = new Info();
-    SelectForExportForm* selectforexportForm = new SelectForExportForm();
-    PreSelectionChartsForm* preselectionchartsform = new PreSelectionChartsForm();
-    PreSelectionChartsForm preselection;
+    StartupConfigForm* startupconfigform /*= new StartupConfigForm()*/;
+    //alalalalallalalala* infoform = new alalalalallalalala;
+    SelectForExportForm* selectforexportForm /*= new SelectForExportForm()*/;
 
+    std::unique_ptr<PreSelectionChartsForm> preselectionchartsform;
+    //PreSelectionChartsForm* preselectionchartsform = new PreSelectionChartsForm();
+//    PreSelectionChartsForm preselection;
+    void* infoform = nullptr;
     AboutProgramForm* aboutProgramForm = new AboutProgramForm();
-   // LoadingForm* loadingForm = new LoadingForm();
+    // LoadingForm* loadingForm = new LoadingForm();
 
 signals:
     void OpenedLoadingForm();

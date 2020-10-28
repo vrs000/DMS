@@ -11,6 +11,8 @@ void SolutionDB::AddSolution(Solution solution)
 
 void SolutionDB::RemoveSolution(Solution solution)
 {
+    //Поиск осущетсвляется по SolutionName
+
     for (int i=0; i < DB.size(); i++)
     {
         if (DB[i].SolutionName == solution.SolutionName)
@@ -23,6 +25,8 @@ void SolutionDB::RemoveSolution(Solution solution)
 
 void SolutionDB::RemoveSolution(QString solutionName)
 {
+    //Поиск осущетсвляется по SolutionName
+
     for (int i=0; i < DB.size(); i++)
     {
         if (DB[i].SolutionName == solutionName)
@@ -35,7 +39,7 @@ void SolutionDB::RemoveSolution(QString solutionName)
 
 void SolutionDB::UpdateSolution(Solution OldSolution, Solution NewSolution)
 {
-    //??????????????????????????????????
+    //Поиск осущетсвляется по SolutionName
 
     for (int i = 0; i < DB.size(); i++)
     {
@@ -49,6 +53,8 @@ void SolutionDB::UpdateSolution(Solution OldSolution, Solution NewSolution)
 
 bool SolutionDB::IsContained(Solution solution)
 {
+    //Поиск осущетсвляется по SolutionName
+
     for (auto sol : DB)
     {
         if (sol.SolutionName == solution.SolutionName)
@@ -60,6 +66,8 @@ bool SolutionDB::IsContained(Solution solution)
 
 bool SolutionDB::IsContained(QString solutionName)
 {
+    //Поиск осущетсвляется по SolutionName
+
     for (auto sol : DB)
     {
         if (sol.SolutionName == solutionName)
@@ -95,6 +103,9 @@ void SolutionDB::LoadSolution(const QString solutionName)
             DataProcessing::PrefferedMetrics = sol.PrefferedMetrics;
             DataProcessing::RejectedMetrics = sol.RejectedMetrics;
 
+            DataProcessing::NotParsedImportanceGroupOfProjects = sol.ProjectsImportanceNotParsed;
+            DataProcessing::NotParsedImportanceGroupOfIndicators = sol.IndicatorsImportanceNotParsed;
+
             break;
         }
     }
@@ -123,6 +134,9 @@ void SolutionDB::LoadSolution(const Solution& solution)
 
             DataProcessing::PrefferedMetrics = sol.PrefferedMetrics;
             DataProcessing::RejectedMetrics = sol.RejectedMetrics;
+
+            DataProcessing::NotParsedImportanceGroupOfProjects = sol.ProjectsImportanceNotParsed;
+            DataProcessing::NotParsedImportanceGroupOfIndicators = sol.IndicatorsImportanceNotParsed;
 
             break;
         }

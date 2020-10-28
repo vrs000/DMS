@@ -520,6 +520,7 @@ void IO::SetStartData(QVector<QVector<double> > &table, QVector<QString> &indica
 
 void IO::FillingTables(QTableWidget *input, QTableWidget *output)
 {
+    const double NumberAfterPoint = 1000000;
     const int LimitParams = 10;
     const QString Hard = "Жёсткий рейтинг";
     const QString Soft = "Мягкий рейтинг";
@@ -584,17 +585,9 @@ void IO::FillingTables(QTableWidget *input, QTableWidget *output)
             if (j!=0)
             {
                 double val = DataProcessing::NormalizedTable[i][j-1];
-                val = round(val*1000)/1000.0;
+                val = round(val*NumberAfterPoint)/NumberAfterPoint;
                 output->setItem(i,j, new QTableWidgetItem(QString::number(val)));
 
-                //                if (IO::IndicatorsNames.size() > LimitParams)
-                //                {
-                //                    double val = DataProcessing::NormalizedTable[i][j-1];
-                //                    val = round(val*1000)/1000.0;
-                //                    output->setItem(i,j, new QTableWidgetItem(QString::number(val)));
-                //                }
-                //                else
-                //                    output->setItem(i,j, new QTableWidgetItem(QString::number(DataProcessing::NormalizedTable[i][j-1])));
 
             }
         }
@@ -606,9 +599,9 @@ void IO::FillingTables(QTableWidget *input, QTableWidget *output)
     for (int i = 0; i < IO::BaseTable.size(); i++)
     {
         output->setItem(i,columns-2,
-                        new QTableWidgetItem(QString::number(round(DataProcessing::HardRatings[i]*1000)/1000.0)));
+                        new QTableWidgetItem(QString::number(round(DataProcessing::HardRatings[i]*NumberAfterPoint)/NumberAfterPoint)));
         output->setItem(i,columns-1,
-                        new QTableWidgetItem(QString::number(round(DataProcessing::SoftRatings[i]*1000)/1000.0)));
+                        new QTableWidgetItem(QString::number(round(DataProcessing::SoftRatings[i]*NumberAfterPoint)/NumberAfterPoint)));
     }
 
 

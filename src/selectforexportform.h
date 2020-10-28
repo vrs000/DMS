@@ -7,6 +7,7 @@
 namespace Ui {
 class SelectForExportForm;
 }
+class MainWindow;
 
 class SelectForExportForm : public QWidget
 {
