@@ -91,6 +91,8 @@ void SolutionDB::LoadSolution(const QString solutionName)
             IO::ProjectsNames = sol.ProjectsNames;
             IO::BaseTable = sol.BaseTable;
 
+            DataProcessing::timeElapsedParsed = sol.TimeElapsed;
+
             DataProcessing::CrushingStep = sol.CrushingStep;
 
             DataProcessing::NormalizedTable = sol.NormalizedTable;
@@ -122,6 +124,8 @@ void SolutionDB::LoadSolution(const Solution& solution)
             IO::IndicatorsNames = sol.IndicatorsNames;
             IO::ProjectsNames = sol.ProjectsNames;
             IO::BaseTable = sol.BaseTable;
+
+            DataProcessing::timeElapsedParsed = sol.TimeElapsed;
 
             DataProcessing::CrushingStep = sol.CrushingStep;
 

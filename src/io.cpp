@@ -586,7 +586,7 @@ void IO::FillingTables(QTableWidget *input, QTableWidget *output)
             {
                 double val = DataProcessing::NormalizedTable[i][j-1];
                 val = round(val*NumberAfterPoint)/NumberAfterPoint;
-                output->setItem(i,j, new QTableWidgetItem(QString::number(val)));
+                output->setItem(i,j, new QTableWidgetItem(QString::number(val, 'f')));
 
 
             }
@@ -599,9 +599,9 @@ void IO::FillingTables(QTableWidget *input, QTableWidget *output)
     for (int i = 0; i < IO::BaseTable.size(); i++)
     {
         output->setItem(i,columns-2,
-                        new QTableWidgetItem(QString::number(round(DataProcessing::HardRatings[i]*NumberAfterPoint)/NumberAfterPoint)));
+                        new QTableWidgetItem(QString::number(round(DataProcessing::HardRatings[i]*NumberAfterPoint)/NumberAfterPoint, 'f')));
         output->setItem(i,columns-1,
-                        new QTableWidgetItem(QString::number(round(DataProcessing::SoftRatings[i]*NumberAfterPoint)/NumberAfterPoint)));
+                        new QTableWidgetItem(QString::number(round(DataProcessing::SoftRatings[i]*NumberAfterPoint)/NumberAfterPoint, 'f')));
     }
 
 

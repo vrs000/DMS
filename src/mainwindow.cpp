@@ -421,8 +421,8 @@ void MainWindow::OpenAction()
 {
     QAction* action = qobject_cast<QAction*>(QObject::sender());
     const QString solutionName = action->text();
-    setWindowTitle(QString("Система принятия решений | %1").arg(solutionName));
     SolutionDB::LoadSolution(solutionName);
+    setWindowTitle(QString("Система принятия решений | %1   %2").arg(solutionName).arg(DataProcessing::timeElapsedParsed));
     IO::FillingTables(ui->InputTable, ui->OutputTable);
 
 

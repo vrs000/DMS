@@ -52,6 +52,7 @@ public:
     static QVector<QString> PrefferedProjects;
     static QVector<QString> RejectedProjects;
 
+    static QString GetPassedTimeElapsed(int ms);
 
     static QProgressBar* bar;
 
@@ -68,6 +69,7 @@ public:
 
     static int UsedThreadCount;
     static int TimeElapsed;
+    static QString timeElapsedParsed;
 
     static int ProjectsCount;
     static int IndicatorsCount;

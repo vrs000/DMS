@@ -27,7 +27,6 @@ class DataProcessing;
 class StartupConfigForm;
 class SelectForExportForm;
 
-//typedef Info alalalalallalalala;
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -72,7 +71,7 @@ private:
     //forms
 private:
     StartupConfigForm* startupconfigform /*= new StartupConfigForm()*/;
-    //alalalalallalalala* infoform = new alalalalallalalala;
+
     SelectForExportForm* selectforexportForm /*= new SelectForExportForm()*/;
 
     std::unique_ptr<PreSelectionChartsForm> preselectionchartsform;

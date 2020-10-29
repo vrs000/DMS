@@ -3,6 +3,8 @@
 
 int DataProcessing::UsedThreadCount = 0;
 int DataProcessing::TimeElapsed = 0;
+QString DataProcessing::timeElapsedParsed = "";
+
 
 MainWindow* DataProcessing::mainWindow = nullptr;
 
@@ -80,6 +82,37 @@ QTableWidget* DataProcessing::outputTable = nullptr;
 QString DataProcessing::OpenedSolutionName = "";
 
 DataProcessing* DataProcessing::instance = new DataProcessing;
+
+QString DataProcessing::GetPassedTimeElapsed(int ms)
+{
+    QString time = "";
+
+    int m, sec, min, hour;
+
+    m = ms % 1000;
+    sec = ms / 1000;
+
+    min = sec / 60;
+    sec = sec % 60;
+
+    hour = min / 60;
+    min = min % 60;
+
+    if (hour > 9) time += QString::number(hour);
+    else time += "0" + QString::number(hour);
+
+    if (min > 9) time +=":" + QString::number(min);
+    else time +=":0" + QString::number(min);
+
+    if (sec > 9) time +=":" + QString::number(sec);
+    else time +=":0" + QString::number(sec);
+
+    if (m > 100) time +=":" + QString::number(m);
+    else if (m > 9) time +=":0" + QString::number(m);
+    else time +=":00" + QString::number(m);
+
+    return time;
+}
 
 double DataProcessing::Fact(double value)
 {
@@ -264,7 +297,7 @@ void DataProcessing::GetNextNum(double currentSet[], int maxN, int curPosIndex)
 
 void DataProcessing::SetMainWindowTitle(QString title)
 {
-    mainWindow->setWindowTitle(QString("Система принятия решений | %1").arg(title));
+    mainWindow->setWindowTitle(QString("Система принятия решений | %1   %2").arg(title).arg(timeElapsedParsed));
 
     double sum = 0;
 
@@ -447,6 +480,7 @@ void DataProcessing::Finished1Threads()
 
             IO::FillingTables(inputTable, outputTable);
 
+            timeElapsedParsed = GetPassedTimeElapsed(TimeElapsed);
 
             Solution solution(
                         OpenedSolutionName, CrushingStep,
@@ -454,7 +488,8 @@ void DataProcessing::Finished1Threads()
                         IO::BaseTable, NormalizedTable,
                         HardRatings, SoftRatings,
                         PriorityList,
-                        NotParsedImportanceGroupOfProjects, NotParsedImportanceGroupOfIndicators
+                        NotParsedImportanceGroupOfProjects, NotParsedImportanceGroupOfIndicators,
+                        timeElapsedParsed
                         );
 
 
@@ -526,6 +561,7 @@ void DataProcessing::Finished2Threads()
 
             IO::FillingTables(inputTable, outputTable);
 
+            timeElapsedParsed = GetPassedTimeElapsed(TimeElapsed);
 
             Solution solution(
                         OpenedSolutionName, CrushingStep,
@@ -533,9 +569,9 @@ void DataProcessing::Finished2Threads()
                         IO::BaseTable, NormalizedTable,
                         HardRatings, SoftRatings,
                         PriorityList,
-                        NotParsedImportanceGroupOfProjects, NotParsedImportanceGroupOfIndicators
+                        NotParsedImportanceGroupOfProjects, NotParsedImportanceGroupOfIndicators,
+                        timeElapsedParsed
                         );
-
             if (SolutionDB::IsContained(OpenedSolutionName))
                 SolutionDB::UpdateSolution(SolutionDB::GetSolution(OpenedSolutionName),
                                            solution);
@@ -616,13 +652,16 @@ void DataProcessing::Finished4Threads()
 
 
 
+            timeElapsedParsed = GetPassedTimeElapsed(TimeElapsed);
+
             Solution solution(
                         OpenedSolutionName, CrushingStep,
                         IO::IndicatorsNames, IO::ProjectsNames,
                         IO::BaseTable, NormalizedTable,
                         HardRatings, SoftRatings,
                         PriorityList,
-                        NotParsedImportanceGroupOfProjects, NotParsedImportanceGroupOfIndicators
+                        NotParsedImportanceGroupOfProjects, NotParsedImportanceGroupOfIndicators,
+                        timeElapsedParsed
                         );
 
             if (SolutionDB::IsContained(OpenedSolutionName))
@@ -739,13 +778,16 @@ void DataProcessing::Finished8Threads()
 
 
 
+            timeElapsedParsed = GetPassedTimeElapsed(TimeElapsed);
+
             Solution solution(
                         OpenedSolutionName, CrushingStep,
                         IO::IndicatorsNames, IO::ProjectsNames,
                         IO::BaseTable, NormalizedTable,
                         HardRatings, SoftRatings,
                         PriorityList,
-                        NotParsedImportanceGroupOfProjects, NotParsedImportanceGroupOfIndicators
+                        NotParsedImportanceGroupOfProjects, NotParsedImportanceGroupOfIndicators,
+                        timeElapsedParsed
                         );
 
 

@@ -389,7 +389,10 @@ void GenerateWeightsAndCalculateRatingsAsync::Calculate(double currentSet[], int
             double* res = DataProcessing::GetLinearConvolutionResult(currentSet);
 
 
-            //Проверка показателей
+            bool IsSuitable = true;
+
+
+            //Проверка проектов
             //---------------------------------------
             if (ProjectsGroupCount != -1)
             {
@@ -399,7 +402,7 @@ void GenerateWeightsAndCalculateRatingsAsync::Calculate(double currentSet[], int
                     {
                         DataProcessing::missed_variation++;
                         missed++;
-                        return;
+                        IsSuitable = false;
                     }
                 }
 
@@ -417,11 +420,12 @@ void GenerateWeightsAndCalculateRatingsAsync::Calculate(double currentSet[], int
                     {
                         DataProcessing::missed_variation++;
                         missed++;
-                        return;
+                        IsSuitable = false;
                     }
                 }
             }
             //---------------------------------------
+
 
 
 
@@ -466,38 +470,37 @@ void GenerateWeightsAndCalculateRatingsAsync::Calculate(double currentSet[], int
             //            }
 
 
-
-
-            //Мягкий рейтинг
-            for (int i = 0; i < ProjectsCount; i++)
+            if (IsSuitable)
             {
-                softRatings[i] = res[i] / (1.0 - getMin(res));
-                hardRatings[i] = 0;
-            }
-
-
-            //Жёсткий рейтинг
-
-            if (COUNT(res, getMax(res)) > 1)
-            {
-                int q = COUNT(res, getMax(res));
+                //Мягкий рейтинг
                 for (int i = 0; i < ProjectsCount; i++)
-                    hardRatings[i] = (res[i] == getMax(res)) ? 1.0/q : 0;
+                {
+                    softRatings[i] = res[i] / (1.0 - getMin(res));
+                    hardRatings[i] = 0;
+                }
+
+
+                //Жёсткий рейтинг
+                if (COUNT(res, getMax(res)) > 1)
+                {
+                    int q = COUNT(res, getMax(res));
+                    for (int i = 0; i < ProjectsCount; i++)
+                        hardRatings[i] = (res[i] == getMax(res)) ? 1.0/q : 0;
+                }
+                else
+                {
+                    hardRatings[IndexOf(res, getMax(res))] = 1;
+                }
+
+
+                //Занесение результата
+                for (int i = 0; i < ProjectsCount; i++)
+                {
+                    HardRatings[i] += hardRatings[i];
+                    SoftRatings[i] += softRatings[i];
+                }
+
             }
-            else
-            {
-                hardRatings[IndexOf(res, getMax(res))] = 1;
-            }
-
-
-
-            for (int i = 0; i < ProjectsCount; i++)
-            {
-                HardRatings[i] += hardRatings[i];
-                SoftRatings[i] += softRatings[i];
-            }
-
-
 
             delete res;
         }

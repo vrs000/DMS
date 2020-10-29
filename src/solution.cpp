@@ -35,10 +35,12 @@ Solution::Solution(QString solutionName, double crushingStep,
                    QVector<QVector<double> > baseTable, QVector<QVector<double> > normalizedTable,
                    QVector<double> hardRatings, QVector<double> softRatings,
                    QVector<QString> priorityList,
-                   QString projectsImportanceNotParsed, QString indicatorsImportanceNotParsed)
+                   QString projectsImportanceNotParsed, QString indicatorsImportanceNotParsed,
+                   QString timeElapsed)
 {
     SolutionName = solutionName;
     CrushingStep = crushingStep;
+    TimeElapsed = timeElapsed;
 
     IndicatorsNames = indicatorsNames;
     ProjectsNames = projectsNames;
