@@ -24,6 +24,7 @@
 #include <QString>
 #include <startupconfigform.h>
 #include <QProgressDialog>
+//#include <QJSEngine>
 
 using namespace QXlsx;
 

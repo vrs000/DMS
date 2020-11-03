@@ -381,7 +381,7 @@ void GenerateWeightsAndCalculateRatingsAsync::Calculate(double currentSet[], int
                 emit CountChanged(Count);
 
 
-            bool isSuitable = true;
+
 
 
 
@@ -429,53 +429,16 @@ void GenerateWeightsAndCalculateRatingsAsync::Calculate(double currentSet[], int
 
 
 
-            //            //Проверка проектов
-            //            if ((PrefferedProjectsCount != 0) && (RejectedProjectsCount != 0))
-            //            {
-            //                isSuitable = true;
-            //                for (int i = 0; i < PrefferedProjectsCount; i++)
-            //                    for (int j = 0; j < RejectedProjectsCount; j++)
-            //                    {
-            //                        isSuitable = isSuitable &&
-            //                                (res[PrefferedProjects[i]] > res[RejectedProjects[j]]);
-
-            //                    }
-            //                if (!isSuitable)
-            //                {
-            //                    DataProcessing::missed_variation++;
-            //                    missed++;
-            //                    return;
-            //                }
-            //            }
-
-
-            //            //Проверка показателей
-            //            if ((PrefferedMetricsCount != 0) && (RejectedMetricsCount != 0))
-            //            {
-            //                isSuitable = true;
-            //                for (int i = 0; i < PrefferedMetricsCount; i++)
-            //                    for (int j = 0; j < RejectedMetricsCount; j++)
-            //                    {
-            //                        isSuitable = isSuitable &&
-            //                                (currentSet[PrefferedMetrics[i]] > currentSet[RejectedMetrics[j]]);
-
-            //                    }
-
-            //                if (!isSuitable)
-            //                {
-            //                    DataProcessing::missed_variation++;
-            //                    missed++;
-            //                    return;
-            //                }
-            //            }
-
-
             if (IsSuitable)
             {
+
+
+
                 //Мягкий рейтинг
                 for (int i = 0; i < ProjectsCount; i++)
                 {
-                    softRatings[i] = res[i] / (1.0 - getMin(res));
+
+                    softRatings[i] = res[i] / (getMax(res));
                     hardRatings[i] = 0;
                 }
 

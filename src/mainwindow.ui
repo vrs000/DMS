@@ -196,7 +196,7 @@ background-color: rgb(48, 62, 255)
            </property>
            <property name="font">
             <font>
-             <pointsize>13</pointsize>
+             <pointsize>9</pointsize>
             </font>
            </property>
            <property name="styleSheet">
@@ -233,7 +233,7 @@ text-align: left;
           <widget class="QPushButton" name="ConfiugreButton">
            <property name="font">
             <font>
-             <pointsize>13</pointsize>
+             <pointsize>9</pointsize>
             </font>
            </property>
            <property name="styleSheet">
@@ -270,7 +270,7 @@ text-align: left;
           <widget class="QPushButton" name="ListButton">
            <property name="font">
             <font>
-             <pointsize>13</pointsize>
+             <pointsize>9</pointsize>
             </font>
            </property>
            <property name="styleSheet">
@@ -307,7 +307,7 @@ text-align: left;
           <widget class="QPushButton" name="GraphicsButton">
            <property name="font">
             <font>
-             <pointsize>13</pointsize>
+             <pointsize>9</pointsize>
             </font>
            </property>
            <property name="autoFillBackground">
@@ -346,7 +346,7 @@ text-align: left;</string>
           <widget class="QPushButton" name="InfoButton">
            <property name="font">
             <font>
-             <pointsize>13</pointsize>
+             <pointsize>9</pointsize>
             </font>
            </property>
            <property name="autoFillBackground">

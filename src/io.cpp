@@ -116,12 +116,12 @@ void IO::OpenExelFile(QString Path)
     delete workbooks;
     delete excel;
 
-//    FileLoadingDialog* loadingFileDialog = new FileLoadingDialog(Path);
-//    loadingFileDialog->setModal(true);
-//    loadingFileDialog->show();
-//    loadingFileDialog->setWindowFlags(Qt::WindowStaysOnTopHint);
-//    loadingFileDialog->show();
-//    loadingFileDialog->close();
+    //    FileLoadingDialog* loadingFileDialog = new FileLoadingDialog(Path);
+    //    loadingFileDialog->setModal(true);
+    //    loadingFileDialog->show();
+    //    loadingFileDialog->setWindowFlags(Qt::WindowStaysOnTopHint);
+    //    loadingFileDialog->show();
+    //    loadingFileDialog->close();
     //    delete loadingFileDialog;
 }
 
@@ -192,7 +192,35 @@ void IO::OpenExelFile1(QString Path)
 
         for (int x = 2; x <= RangeX; x++)
         {
-           table.last() << xlsx.read(y, x).toDouble();
+            auto a = xlsx.read(y, x);
+
+
+//            qDebug() << a;
+
+            if (strcmp(a.typeName(), "QString") == 0)
+            {
+
+                double value;
+
+                QString A = a.toString();
+                qDebug() << A;
+                A.replace(',', '.');
+
+//                QJSEngine engine;
+//                QJSValue v;
+//                if (A.contains('='))
+//                    v = engine.evaluate(A.remove(0, 1));
+//                else
+//                    v = engine.evaluate(A);
+                value =  A.toDouble();
+
+                table.last() << value;
+
+            }
+
+
+            if (strcmp(a.typeName(), "double") == 0)
+                table.last() << a.toDouble();
         }
     }
 

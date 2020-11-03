@@ -38,6 +38,10 @@ StartupConfigForm::StartupConfigForm(QWidget *parent) :
     ui->StepSpinBox->setValue(DataProcessing::CrushingStep);
     ui->StepValueTextEdit->setPlainText(QString::number(DataProcessing::CrushingStep));
 
+    ui->StepValueTextEdit->hide();
+
+    ui->StepValueTextEdit_1->setText(QString::number(DataProcessing::CrushingStep));
+
 
     int K = DataProcessing::GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), DataProcessing::CrushingStep);
 
@@ -173,6 +177,7 @@ void StartupConfigForm::on_OkButton_clicked()
     qDebug() << rejectedProjects;
 
     DataProcessing::CrushingStep = ui->StepValueTextEdit->toPlainText().toDouble();
+    DataProcessing::CrushingStep = ui->StepValueTextEdit_1->text().toDouble();
     double h = DataProcessing::CrushingStep;
     int m = IO::IndicatorsNames.size();
     int K = std::floor(DataProcessing::Fact(std::floor(1 /h) + m - 1)
@@ -191,6 +196,7 @@ void StartupConfigForm::on_OkButton_clicked()
 
 
     DataProcessing::CrushingStep = ui->StepValueTextEdit->toPlainText().toDouble();
+      DataProcessing::CrushingStep = ui->StepValueTextEdit_1->text().toDouble();
     DataProcessing::OpenedSolutionName = solutionName;
     DataProcessing::MakeCalculations(priority, prefered, rejected, prefferedProjects, rejectedProjects);
     DataProcessing::bar = ui->progressBar;
@@ -254,6 +260,7 @@ void StartupConfigForm::on_UpButton_clicked()
     QList<double> list = {0.001, 0.002, 0.004, 0.005, 0.008, 0.01, 0.02, 0.025, 0.04, 0.05, 0.1, 0.125, 0.2, 0.25, 0.5};
 
     double step = ui->StepValueTextEdit->toPlainText().toDouble();
+    step =  ui->StepValueTextEdit_1->text().toDouble();
 
     int index = list.indexOf(step);
 
@@ -261,7 +268,7 @@ void StartupConfigForm::on_UpButton_clicked()
     if (index != list.size() - 1)
     {
         ui->StepValueTextEdit->setPlainText(QString::number(list[index+1]));
-
+        ui->StepValueTextEdit_1->setText(QString::number(list[index+1]));
         DataProcessing::CurrentIterationCount = DataProcessing::GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), list[index+1]);
         int K = DataProcessing::GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), list[index+1]);
 
@@ -287,7 +294,7 @@ void StartupConfigForm::on_DownButton_clicked()
     QList<double> list = {0.001, 0.002, 0.004, 0.005, 0.008, 0.01, 0.02, 0.025, 0.04, 0.05, 0.1, 0.125, 0.2, 0.25, 0.5};
 
     double step = ui->StepValueTextEdit->toPlainText().toDouble();
-
+    step =  ui->StepValueTextEdit_1->text().toDouble();
     int index = list.indexOf(step);
 
 
@@ -295,7 +302,7 @@ void StartupConfigForm::on_DownButton_clicked()
     {
         if (index == -1) index = 1;
         ui->StepValueTextEdit->setPlainText(QString::number(list[index-1]));
-
+        ui->StepValueTextEdit_1->setText(QString::number(list[index-1]));
         DataProcessing::CurrentIterationCount = DataProcessing::GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), list[index-1]);
         int K = DataProcessing::GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), list[index-1]);
 

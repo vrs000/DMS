@@ -207,7 +207,7 @@ void SetProjectGroupImportanceForm::on_AddGroupButton_clicked()
     QVector<QCheckBox*> v;
 
 
-    const int ElementHeight = 20;
+    const int ElementHeight = 46;
 
 
     //Добавить список проектов
