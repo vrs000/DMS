@@ -9,6 +9,7 @@
 #include <QScrollArea>
 #include <QGridLayout>
 #include <QPushButton>
+#include <QListWidget>
 enum StartupConfig
 {
     Projects,
@@ -49,11 +50,14 @@ private:
     //Containers
     //----------------------------------------
     QStringList checkedList;
-    QVector<QComboBox*> comboxes;
+
     QVector<QVector<QCheckBox*>> checkboxes;
     QVector<QVBoxLayout*> VLayouts;
     QVector<QScrollArea*> scrollAreas;
     QVector<QWidget*> widgets;
+
+    QVector<QComboBox*> comboxes;
+    QVector<QListWidget*> groupsList;
     //----------------------------------------
 
 private slots:

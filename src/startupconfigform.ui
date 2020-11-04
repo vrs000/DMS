@@ -49,6 +49,9 @@
            <layout class="QGridLayout" name="gridLayout_3">
             <item row="1" column="0">
              <layout class="QHBoxLayout" name="horizontalLayout_4">
+              <property name="spacing">
+               <number>3</number>
+              </property>
               <item>
                <widget class="QLineEdit" name="StepValueTextEdit_1">
                 <property name="minimumSize">
