@@ -10,6 +10,8 @@
 #include <QGridLayout>
 #include <QPushButton>
 #include <QListWidget>
+#include <QDialog>
+
 enum StartupConfig
 {
     Projects,
@@ -24,7 +26,7 @@ class IO;
 class DataProcessing;
 class StartupConfigForm;
 
-class SetProjectGroupImportanceForm : public QWidget
+class SetProjectGroupImportanceForm : public QDialog
 {
     Q_OBJECT
 
@@ -49,20 +51,11 @@ private:
 
     //Containers
     //----------------------------------------
-    QStringList checkedList;
-
-    QVector<QVector<QCheckBox*>> checkboxes;
-    QVector<QVBoxLayout*> VLayouts;
-    QVector<QScrollArea*> scrollAreas;
-    QVector<QWidget*> widgets;
-
     QVector<QComboBox*> comboxes;
     QVector<QListWidget*> groupsList;
     //----------------------------------------
 
 private slots:
-    void Checked(int state);
-    void UpdateVisibility();
 
     void on_OkButton_clicked();
 
@@ -70,7 +63,7 @@ private slots:
 
 private:
     Ui::SetProjectGroupImportanceForm *ui;
-    void UpdateCheckBoxesVisibility();
+
     void SetStartupProjects();
     void SetStartupIndicators();
 

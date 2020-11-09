@@ -195,7 +195,7 @@ void IO::OpenExelFile1(QString Path)
             auto a = xlsx.read(y, x);
 
 
-//            qDebug() << a;
+            //            qDebug() << a;
 
             if (strcmp(a.typeName(), "QString") == 0)
             {
@@ -206,12 +206,12 @@ void IO::OpenExelFile1(QString Path)
                 qDebug() << A;
                 A.replace(',', '.');
 
-//                QJSEngine engine;
-//                QJSValue v;
-//                if (A.contains('='))
-//                    v = engine.evaluate(A.remove(0, 1));
-//                else
-//                    v = engine.evaluate(A);
+                //                QJSEngine engine;
+                //                QJSValue v;
+                //                if (A.contains('='))
+                //                    v = engine.evaluate(A.remove(0, 1));
+                //                else
+                //                    v = engine.evaluate(A);
                 value =  A.toDouble();
 
                 table.last() << value;
@@ -569,18 +569,24 @@ void IO::FillingTables(QTableWidget *input, QTableWidget *output)
     input->setRowCount(ProjectsNames.size());
 
 
+    //Генерация вертикальных и горизонтальный заголовков для InputTable
+    //--------------------------------------------
     QStringList names, params;
     params<<"Проекты";
 
     for (auto i:IndicatorsNames)
         params<<i;
+
     for (auto i:ProjectsNames)
         names<<i;
 
-
     input->setHorizontalHeaderLabels(params);
+    //--------------------------------------------
 
 
+
+    //Заполнение InputTable
+    //------------------------------------------------------------------------------------------------
     for (int i = 0; i < IO::BaseTable.size(); i++)
         for (int j = 0; j < params.size(); j++)
         {
@@ -593,106 +599,155 @@ void IO::FillingTables(QTableWidget *input, QTableWidget *output)
             if (j!=0)
                 input->setItem(i, j, new QTableWidgetItem(QString::number(IO::BaseTable[i][j-1])));
         }
+    //------------------------------------------------------------------------------------------------
 
 
     output->setColumnCount(IndicatorsNames.size() + 3);
     output->setRowCount(ProjectsNames.size());
-    params<<Hard<<Soft;
+    params.insert(1, Hard);
+    params.insert(1, Soft);
+    //params<<Hard<<Soft;
     output->setHorizontalHeaderLabels(params);
 
 
+    /*
+     Формат горизонтальных заголовков
+     ____________________________________________________________________________
+     Проекты | Мягкий рейтинг | Жесткий рейтинг | Показатель1 | ... | Показательi
+
+    */
+
+
+
+    //Заполнение InputTable
+    //------------------------------------------------------------------------------------------------
     for (int i = 0; i < IO::BaseTable.size(); i++)
-        for (int j = 0; j < params.size()-2; j++)
+        for (int j = 0; j < params.size(); j++)
         {
-            if (j==0)
+            //Заполнение столбца "Проекты"
+            if (j == 0)
             {
-                output->setItem(i,j, new QTableWidgetItem(names[i]));
-                output->item(i,j)->setFont(font);
-                output->item(i,j)->setBackgroundColor(color);
+                output->setItem(i, j, new QTableWidgetItem(names[i]));
+                output->item(i, j)->setFont(font);
+                output->item(i, j)->setBackgroundColor(color);
             }
-            if (j!=0)
+
+            //Заполнение мягкого рейтинга
+            if (j == 1) {
+                output->setItem(i, j,
+                                new QTableWidgetItem(QString::number(round(DataProcessing::SoftRatings[i]*NumberAfterPoint)/NumberAfterPoint, 'f')));
+            }
+
+            //Заполнение жесткого рейтинга
+            if (j == 2) {
+                output->setItem(i, j,
+                                new QTableWidgetItem(QString::number(round(DataProcessing::HardRatings[i]*NumberAfterPoint)/NumberAfterPoint, 'f')));
+            }
+
+
+            //Заполнение показателей
+            if (j > 2)
             {
-                double val = DataProcessing::NormalizedTable[i][j-1];
-                val = round(val*NumberAfterPoint)/NumberAfterPoint;
-                output->setItem(i,j, new QTableWidgetItem(QString::number(val, 'f')));
-
-
+                double val = DataProcessing::NormalizedTable[i][j-3];
+                val = round(val * NumberAfterPoint)/NumberAfterPoint;
+                output->setItem(i, j, new QTableWidgetItem(QString::number(val, 'f')));
             }
         }
+    //------------------------------------------------------------------------------------------------
 
 
     int columns = params.size();
 
 
-    for (int i = 0; i < IO::BaseTable.size(); i++)
-    {
-        output->setItem(i,columns-2,
-                        new QTableWidgetItem(QString::number(round(DataProcessing::HardRatings[i]*NumberAfterPoint)/NumberAfterPoint, 'f')));
-        output->setItem(i,columns-1,
-                        new QTableWidgetItem(QString::number(round(DataProcessing::SoftRatings[i]*NumberAfterPoint)/NumberAfterPoint, 'f')));
-    }
+    //Заполнение жёсткого и мягкого рейтинга
+    //-------------------------------------------------------------------------------------------------------------------------------------
+    //    for (int i = 0; i < IO::BaseTable.size(); i++)
+    //    {
+    //        output->setItem(i,columns-2,
+    //                        new QTableWidgetItem(QString::number(round(DataProcessing::HardRatings[i]*NumberAfterPoint)/NumberAfterPoint, 'f')));
+    //        output->setItem(i,columns-1,
+    //                        new QTableWidgetItem(QString::number(round(DataProcessing::SoftRatings[i]*NumberAfterPoint)/NumberAfterPoint, 'f')));
+    //    }
+    //-------------------------------------------------------------------------------------------------------------------------------------
+
 
 
     //Растягивание по вертикали
     input->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     output->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
+
     //Растягивание по горизонтали
     input->resizeColumnsToContents();
     output->resizeColumnsToContents();
 
-
-
-
-    qDebug() << "###FillingTables###";
-    qDebug() << ProjectsNames.size() << "x" << IndicatorsNames.size();
-    qDebug() << input->rowCount() << "x" << input->columnCount();
-    qDebug() << output->rowCount() << "x" << output->columnCount();
-    qDebug() << "###################";
 
     //Центрирование текста
     for (int row=0; row < input->rowCount(); row++)
         for (int column=0; column < input->columnCount(); column++)
             input->item(row, column)->setTextAlignment(Qt::AlignCenter);
 
-    qDebug() << "OutputTable: " << output->rowCount() << "x" << output->columnCount();
-
     for (int row=0; row < output->rowCount(); row++)
         for (int column=0; column < output->columnCount(); column++)
             output->item(row, column)->setTextAlignment(Qt::AlignCenter);
 
 
-    int HardColumn = output->columnCount()-2;
-    int SoftColumn = output->columnCount()-1;
+    const int HardColumn = 2;
+    const int SoftColumn = 1;
 
 
-    //Окраска жесткого рейтинга и мягкого
+    //Окраска таблицы
+    //-----------------------------------------------------------------------------
     for (int row = 0; row < output->rowCount(); row++)
-    {
-        double k1 = output->item(row, HardColumn)->text().toDouble();
-        double k2 = output->item(row, SoftColumn)->text().toDouble();
-        if (k1 > 1) k1 = 1;
-        if (k2 > 1) k2 = 1;
-
-        color.setRgb(qCeil(255 * (1 - k1)), qCeil(k1 * 255), 0, alpha);
-        output->item(row, HardColumn)->setBackgroundColor(color);
-        color.setRgb(qCeil(255 * (1 - k2)), qCeil(k2 * 255), 0, alpha);
-        output->item(row, SoftColumn)->setBackgroundColor(color);
-    }
-
-
-    //Окраска нормированных показателей
-    for (int row = 0; row < output->rowCount(); row++)
-    {
-        for (int column = 1; column < output->columnCount() - 2; column++ )
+        for (int column = 1; column < output->columnCount(); column++ )
         {
-            double k1 = output->item(row, column)->text().toDouble();
-            if (k1 > 1) k1 = 1;
-            color.setRgb(qCeil(255 * (1 - k1)), qCeil(k1 * 255), 0, alpha/2);
-            output->item(row, column)->setBackgroundColor(color);
+            double k = output->item(row, column)->text().toDouble();
+            if (k > 1) k = 1;
 
+            if (column > 2)
+                color.setRgb(qCeil(255 * (1 - k)), qCeil(k * 255), 0, alpha/2);
+            else
+                color.setRgb(qCeil(255 * (1 - k)), qCeil(k * 255), 0, alpha);
+
+            output->item(row, column)->setBackgroundColor(color);
         }
-    }
+    //-----------------------------------------------------------------------------
+
+
+
+    //===================================================================================
+    //    //Окраска жесткого рейтинга и мягкого
+    //    for (int row = 0; row < output->rowCount(); row++)
+    //    {
+    //        double k1 = output->item(row, HardColumn)->text().toDouble();
+    //        double k2 = output->item(row, SoftColumn)->text().toDouble();
+    //        if (k1 > 1) k1 = 1;
+    //        if (k2 > 1) k2 = 1;
+
+    //        color.setRgb(qCeil(255 * (1 - k1)), qCeil(k1 * 255), 0, alpha);
+    //        output->item(row, HardColumn)->setBackgroundColor(color);
+
+    //        color.setRgb(qCeil(255 * (1 - k2)), qCeil(k2 * 255), 0, alpha);
+    //        output->item(row, SoftColumn)->setBackgroundColor(color);
+    //    }
+
+
+    //    //Окраска нормированных показателей
+    //    for (int row = 0; row < output->rowCount(); row++)
+    //    {
+    //        for (int column = 3; column < output->columnCount(); column++ )
+    //        {
+    //            double k1 = output->item(row, column)->text().toDouble();
+    //            if (k1 > 1) k1 = 1;
+    //            color.setRgb(qCeil(255 * (1 - k1)), qCeil(k1 * 255), 0, alpha/2);
+    //            output->item(row, column)->setBackgroundColor(color);
+
+    //        }
+    //    }
+
+    //===================================================================================
+
+
 }
 
 

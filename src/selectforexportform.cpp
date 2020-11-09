@@ -2,7 +2,7 @@
 #include "ui_selectforexportform.h"
 
 SelectForExportForm::SelectForExportForm(QWidget *parent) :
-    QWidget(parent),
+    QDialog(parent),
     ui(new Ui::SelectForExportForm)
 {
     ui->setupUi(this);

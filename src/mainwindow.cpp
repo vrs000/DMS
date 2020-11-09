@@ -17,38 +17,38 @@ MainWindow::MainWindow(QWidget *parent)
     auto test = [](){
 
         {
-               // Create a new .xlsx file.
-               QXlsx::Document xlsx;
-               xlsx.write("A1", "Hello Qt!");
-               xlsx.write("A2", 12345);
-               xlsx.write("A3", "=44+33");
-               xlsx.write("A4", true);
-               xlsx.write("A5", "http://qt-project.org");
-               xlsx.write("A6", QDate(2013, 12, 27));
-               xlsx.write("A7", QTime(6, 30));
-               xlsx.saveAs("Book1.xlsx");
-           }
+            // Create a new .xlsx file.
+            QXlsx::Document xlsx;
+            xlsx.write("A1", "Hello Qt!");
+            xlsx.write("A2", 12345);
+            xlsx.write("A3", "=44+33");
+            xlsx.write("A4", true);
+            xlsx.write("A5", "http://qt-project.org");
+            xlsx.write("A6", QDate(2013, 12, 27));
+            xlsx.write("A7", QTime(6, 30));
+            xlsx.saveAs("Book1.xlsx");
+        }
 
-           //![0]
-           QXlsx::Document xlsx("Book1.xlsx");
-           //![0]
+        //![0]
+        QXlsx::Document xlsx("Book1.xlsx");
+        //![0]
 
-           //![1]
-           qDebug() << xlsx.read("A1");
-           qDebug() << xlsx.read("A2");
-           qDebug() << xlsx.read("A3");
-           qDebug() << xlsx.read("A4");
-           qDebug() << xlsx.read("A5");
-           qDebug() << xlsx.read("A6");
-           qDebug() << xlsx.read("A7");
-           //![1]
+        //![1]
+        qDebug() << xlsx.read("A1");
+        qDebug() << xlsx.read("A2");
+        qDebug() << xlsx.read("A3");
+        qDebug() << xlsx.read("A4");
+        qDebug() << xlsx.read("A5");
+        qDebug() << xlsx.read("A6");
+        qDebug() << xlsx.read("A7");
+        //![1]
 
-           //![2]
-           for (int row = 1; row < 10; ++row) {
-               if (QXlsx::Cell *cell = xlsx.cellAt(row, 1))
-                   qDebug() << cell->value();
-           }
-           //![2]
+        //![2]
+        for (int row = 1; row < 10; ++row) {
+            if (QXlsx::Cell *cell = xlsx.cellAt(row, 1))
+                qDebug() << cell->value();
+        }
+        //![2]
     };
 
 
@@ -56,7 +56,7 @@ MainWindow::MainWindow(QWidget *parent)
     DataProcessing::mainWindow = this;
 
     startupconfigform = new StartupConfigForm;
-    selectforexportForm = new SelectForExportForm;
+    selectforexportForm = new SelectForExportForm(this);
 
 
     ui->InfoButton->setEnabled(false);
@@ -192,7 +192,13 @@ void MainWindow::on_ConfiugreButton_clicked()
     startupconfigform->input = ui->InputTable;
     startupconfigform->output = ui->OutputTable;
 
-    startupconfigform->show();
+
+    startupconfigform->exec();
+    startupconfigform->setModal(false);
+
+
+
+    //  startupconfigform->show();
 }
 
 void MainWindow::OpenFile()
@@ -254,8 +260,12 @@ void MainWindow::on_GraphicsButton_clicked()
 
     preselectionchartsform = std::unique_ptr<PreSelectionChartsForm>(new PreSelectionChartsForm);
     //preselectionchartsform = new PreSelectionChartsForm();
-    preselectionchartsform->show();
-    preselectionchartsform->activateWindow();
+
+    preselectionchartsform->setModal(true);
+    preselectionchartsform->exec();
+
+    //    preselectionchartsform->show();
+    //    preselectionchartsform->activateWindow();
 
     //OpenForm(preselectionchartsform);
     //OpenForm(preselection);
@@ -341,7 +351,12 @@ void MainWindow::OpenAboutProgramForm()
 
 void MainWindow::OpenExportFileForm()
 {
-    OpenForm(selectforexportForm);
+    //    OpenForm(selectforexportForm);
+
+    delete selectforexportForm;
+    selectforexportForm = new SelectForExportForm();
+    selectforexportForm->setModal(true);
+    selectforexportForm->exec();
 
     //    delete selectforexportForm;
     //    selectforexportForm = new SelectForExportForm();
@@ -514,6 +529,7 @@ void MainWindow::DeleteAllAction()
 void MainWindow::OpenSolution(const QString fileName)
 {
     if ((!fileName.contains(".xlsx"))&&(!fileName.contains(".xls"))) return;
+
     QString solutionName = fileName.split('/').last().split('.').first();
     QString NewSultionName;
     int n = 1;
@@ -528,8 +544,21 @@ void MainWindow::OpenSolution(const QString fileName)
         startupconfigform->input = ui->InputTable;
         startupconfigform->output = ui->OutputTable;
 
-        startupconfigform->show();
-        startupconfigform->activateWindow();
+        startupconfigform->exec();
+        startupconfigform->setModal(true);
+
+        if (StartupConfigForm::IsSuccessFinished)
+        {
+            UpdateDeleteMenu(solName);
+            UpdateOpenMenu(solName);
+        }
+
+        //        if (startupconfigform->getResult() == WindowResult::WindowSuccess)
+        //        {
+
+        //        }
+        //        startupconfigform->show();
+        //        startupconfigform->activateWindow();
     };
 
     //Если содержит, загрузить входные данные с БД
@@ -549,8 +578,8 @@ void MainWindow::OpenSolution(const QString fileName)
 
         QString newSolName = QString("%1_%2").arg(solutionName).arg(n);
 
-        UpdateDeleteMenu(newSolName);
-        UpdateOpenMenu(newSolName);
+//        UpdateDeleteMenu(newSolName);
+//        UpdateOpenMenu(newSolName);
 
         OpenStartupConfigForm(newSolName);
 
@@ -587,8 +616,8 @@ void MainWindow::OpenSolution(const QString fileName)
 
         IO::OpenExelFile1(fileName);
 
-        UpdateDeleteMenu(solutionName);
-        UpdateOpenMenu(solutionName);
+//        UpdateDeleteMenu(solutionName);
+//        UpdateOpenMenu(solutionName);
 
         ui->InfoButton->setEnabled(true);
         ui->ConfiugreButton->setEnabled(true);

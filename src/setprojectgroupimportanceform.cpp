@@ -2,7 +2,7 @@
 #include "ui_setprojectgroupimportanceform.h"
 
 SetProjectGroupImportanceForm::SetProjectGroupImportanceForm(QWidget *parent, StartupConfig config) :
-    QWidget(parent),
+    QDialog(parent),
     ui(new Ui::SetProjectGroupImportanceForm)
 {
     ui->setupUi(this);
@@ -10,10 +10,7 @@ SetProjectGroupImportanceForm::SetProjectGroupImportanceForm(QWidget *parent, St
     Config = config;
 
     comboxes.clear();
-    checkboxes.clear();
-    VLayouts.clear();
-    scrollAreas.clear();
-
+    groupsList.clear();
 
     ui->ListNamesWidget->setSelectionMode(QAbstractItemView::MultiSelection);
     ui->ListNamesWidget->setDragEnabled(true);
@@ -38,101 +35,15 @@ SetProjectGroupImportanceForm::~SetProjectGroupImportanceForm()
 void SetProjectGroupImportanceForm::SetStartupProjects()
 {
     foreach (QString project, IO::ProjectsNames)
-    {
         ui->ListNamesWidget->addItem(project);
-    }
-
-
 }
 
 void SetProjectGroupImportanceForm::SetStartupIndicators()
 {
     foreach (QString indicator, IO::IndicatorsNames)
-    {
         ui->ListNamesWidget->addItem(indicator);
-    }
-
 }
 
-void SetProjectGroupImportanceForm::UpdateCheckBoxesVisibility()
-{
-    checkedList.clear();
-    QCheckBox* chBox;
-
-
-    //Ищу интервал до QComboBox с ';'
-    //Обрабатываю данный интвервал
-
-    //Функция, которая будет заполнять checkedList отмеченными вариантами QComoBox до ';'
-    auto SetCheckedList = [&](int start)
-    {
-        checkedList.clear();
-
-        QCheckBox* chBox;
-        int end = -1;
-
-        for (int i = start; i < comboxes.size(); i++)
-        {
-            if (comboxes[i]->currentText() == ";")
-                break;
-
-            if (comboxes[i]->currentText() == ">")
-            {
-                end = i;
-            }
-        }
-
-        end++;
-
-        for (int i = start; i <= end; i++)
-        {
-            for (int j = 0; j < checkboxes[i].size(); j++)
-            {
-                chBox = checkboxes[i][j];
-
-                if (chBox->isChecked())
-                    checkedList << chBox->text();
-            }
-        }
-
-
-
-
-    };
-
-
-    int start = 0;
-
-    for (int i = 0; i < checkboxes.size(); i++)
-    {
-        if (checkedList.size() == 0)
-            SetCheckedList(start);
-
-
-        for (int j = 0; j < checkboxes.first().size(); j++)
-        {
-            chBox = checkboxes[i][j];
-
-
-            //Если чекбокс в списке отмеченных, то скрыть если не отмечен checked
-            if (checkedList.contains(chBox->text()) && !(chBox->isChecked()))
-                chBox->hide();
-
-            //Если нету в списке отмеченных и скрыт, то показать
-            if (!checkedList.contains(chBox->text()) && chBox->isHidden())
-                chBox->show();
-
-        }
-
-
-        if (i < comboxes.size())
-            if (comboxes[i]->currentText() == ";")
-            {
-                start = i + 1;
-                checkedList.clear();
-            }
-    }
-}
 
 void SetProjectGroupImportanceForm::on_AddGroupButton_clicked()
 {
@@ -230,18 +141,6 @@ QString SetProjectGroupImportanceForm::GetImportanceGroupString()
     return result.left(result.size()-1);
 
 
-}
-
-void SetProjectGroupImportanceForm::Checked(int state)
-{
-    QCheckBox* checkBox = qobject_cast<QCheckBox*>(QObject::sender());
-
-    UpdateCheckBoxesVisibility();
-}
-
-void SetProjectGroupImportanceForm::UpdateVisibility()
-{
-    UpdateCheckBoxesVisibility();
 }
 
 void SetProjectGroupImportanceForm::on_OkButton_clicked()

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.13.0, 2020-11-04T03:15:14. -->
+<!-- Written by QtCreator 4.13.0, 2020-11-09T21:53:22. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -64,7 +64,23 @@
     <value type="bool" key="AutoTest.Framework.QtQuickTest">true</value>
     <value type="bool" key="AutoTest.Framework.QtTest">true</value>
    </valuemap>
-   <valuemap type="QVariantMap" key="AutoTest.CheckStates"/>
+   <valuemap type="QVariantMap" key="AutoTest.CheckStates">
+    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.cpp:GetLinearConvolutionResult">Checked</value>
+    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.cpp:GetLinearConvolutionResult_data">Unchecked</value>
+    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.cpp:Sum">Checked</value>
+    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.cpp:Sum_data">Unchecked</value>
+    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.cpp:min_data_1">Checked</value>
+    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.cpp:min_data_10">Checked</value>
+    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.cpp:min_data_2">Checked</value>
+    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.cpp:min_data_3">Checked</value>
+    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.cpp:min_data_4">Checked</value>
+    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.cpp:min_data_5">Checked</value>
+    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.cpp:min_data_6">Checked</value>
+    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.cpp:min_data_7">Checked</value>
+    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.cpp:min_data_8">Checked</value>
+    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.cpp:min_data_9">Checked</value>
+    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.h:DataProcessing_Test">Checked</value>
+   </valuemap>
    <value type="int" key="AutoTest.RunAfterBuild">0</value>
    <value type="bool" key="AutoTest.UseGlobal">true</value>
    <valuelist type="QVariantList" key="ClangCodeModel.CustomCommandLineKey">
@@ -87,17 +103,17 @@
   <variable>ProjectExplorer.Project.Target.0</variable>
   <valuemap type="QVariantMap">
    <value type="QString" key="DeviceType">Desktop</value>
-   <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Desktop Qt 5.15.0 MinGW 32-bit</value>
-   <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Desktop Qt 5.15.0 MinGW 32-bit</value>
-   <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">qt.qt5.5150.win32_mingw81_kit</value>
+   <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Desktop Qt 5.15.0 MinGW 64-bit</value>
+   <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Desktop Qt 5.15.0 MinGW 64-bit</value>
+   <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">qt.qt5.5150.win64_mingw81_kit</value>
    <value type="int" key="ProjectExplorer.Target.ActiveBuildConfiguration">1</value>
    <value type="int" key="ProjectExplorer.Target.ActiveDeployConfiguration">0</value>
    <value type="int" key="ProjectExplorer.Target.ActiveRunConfiguration">0</value>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.0">
     <value type="bool">true</value>
     <value type="int" key="EnableQmlDebugging">2</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">M:\QT projects\build-SPPR-Desktop_Qt_5_15_0_MinGW_32_bit-Debug</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">M:/QT projects/build-SPPR-Desktop_Qt_5_15_0_MinGW_32_bit-Debug</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">M:\QT projects\build-SPPR-Desktop_Qt_5_15_0_MinGW_64_bit-Debug</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">M:/QT projects/build-SPPR-Desktop_Qt_5_15_0_MinGW_64_bit-Debug</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
       <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
@@ -148,8 +164,8 @@
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.1">
     <value type="bool">true</value>
     <value type="int" key="EnableQmlDebugging">2</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">M:\QT projects\build-SPPR-Desktop_Qt_5_15_0_MinGW_32_bit-Release</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">M:/QT projects/build-SPPR-Desktop_Qt_5_15_0_MinGW_32_bit-Release</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">M:\QT projects\build-SPPR-Desktop_Qt_5_15_0_MinGW_64_bit-Release</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">M:/QT projects/build-SPPR-Desktop_Qt_5_15_0_MinGW_64_bit-Release</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
       <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
@@ -200,8 +216,8 @@
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.2">
     <value type="bool">true</value>
     <value type="int" key="EnableQmlDebugging">2</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">M:/QT projects/build-SPPR-Desktop_Qt_5_15_0_MinGW_32_bit-Profile</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">M:/QT projects/build-SPPR-Desktop_Qt_5_15_0_MinGW_32_bit-Profile</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">M:/QT projects/build-SPPR-Desktop_Qt_5_15_0_MinGW_64_bit-Profile</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">M:/QT projects/build-SPPR-Desktop_Qt_5_15_0_MinGW_64_bit-Profile</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
       <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
@@ -325,9 +341,8 @@
     <valuelist type="QVariantList" key="CustomOutputParsers"/>
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">SPPR2</value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:D:/git/sppr1/SPPR/SPPR.pro</value>
-    <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">D:/git/sppr1/SPPR/SPPR.pro</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:D:/git/DMS/src/SPPR.pro</value>
+    <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">D:/git/DMS/src/SPPR.pro</value>
     <value type="QString" key="RunConfiguration.Arguments"></value>
     <value type="bool" key="RunConfiguration.Arguments.multi">false</value>
     <value type="QString" key="RunConfiguration.OverrideDebuggerStartup"></value>
@@ -338,7 +353,7 @@
     <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
     <value type="QString" key="RunConfiguration.WorkingDirectory"></value>
-    <value type="QString" key="RunConfiguration.WorkingDirectory.default">M:/QT projects/build-SPPR-Desktop_Qt_5_15_0_MinGW_32_bit-Release</value>
+    <value type="QString" key="RunConfiguration.WorkingDirectory.default">M:/QT projects/build-SPPR-Desktop_Qt_5_15_0_MinGW_64_bit-Release</value>
    </valuemap>
    <value type="int" key="ProjectExplorer.Target.RunConfigurationCount">1</value>
   </valuemap>
@@ -347,17 +362,17 @@
   <variable>ProjectExplorer.Project.Target.1</variable>
   <valuemap type="QVariantMap">
    <value type="QString" key="DeviceType">Desktop</value>
-   <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Desktop Qt 5.15.0 MinGW 64-bit</value>
-   <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Desktop Qt 5.15.0 MinGW 64-bit</value>
-   <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">qt.qt5.5150.win64_mingw81_kit</value>
+   <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Desktop Qt 5.15.0 MinGW 32-bit</value>
+   <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Desktop Qt 5.15.0 MinGW 32-bit</value>
+   <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">qt.qt5.5150.win32_mingw81_kit</value>
    <value type="int" key="ProjectExplorer.Target.ActiveBuildConfiguration">1</value>
    <value type="int" key="ProjectExplorer.Target.ActiveDeployConfiguration">0</value>
    <value type="int" key="ProjectExplorer.Target.ActiveRunConfiguration">0</value>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.0">
     <value type="bool">true</value>
     <value type="int" key="EnableQmlDebugging">2</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">M:/QT projects/build-SPPR-Desktop_Qt_5_15_0_MinGW_64_bit-Debug</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">M:/QT projects/build-SPPR-Desktop_Qt_5_15_0_MinGW_64_bit-Debug</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">M:\QT projects\build-SPPR-Desktop_Qt_5_15_0_MinGW_32_bit-Debug</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">M:/QT projects/build-SPPR-Desktop_Qt_5_15_0_MinGW_32_bit-Debug</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
       <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
@@ -408,8 +423,8 @@
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.1">
     <value type="bool">true</value>
     <value type="int" key="EnableQmlDebugging">2</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">M:\QT projects\build-SPPR-Desktop_Qt_5_15_0_MinGW_64_bit-Release</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">M:/QT projects/build-SPPR-Desktop_Qt_5_15_0_MinGW_64_bit-Release</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">M:\QT projects\build-SPPR-Desktop_Qt_5_15_0_MinGW_32_bit-Release</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">M:/QT projects/build-SPPR-Desktop_Qt_5_15_0_MinGW_32_bit-Release</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
       <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
@@ -460,8 +475,8 @@
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.2">
     <value type="bool">true</value>
     <value type="int" key="EnableQmlDebugging">2</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">M:/QT projects/build-SPPR-Desktop_Qt_5_15_0_MinGW_64_bit-Profile</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">M:/QT projects/build-SPPR-Desktop_Qt_5_15_0_MinGW_64_bit-Profile</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">M:/QT projects/build-SPPR-Desktop_Qt_5_15_0_MinGW_32_bit-Profile</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">M:/QT projects/build-SPPR-Desktop_Qt_5_15_0_MinGW_32_bit-Profile</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
       <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>

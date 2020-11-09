@@ -12,6 +12,7 @@
 #include <solution.h>
 #include <QtMath>
 #include <setprojectgroupimportanceform.h>
+#include <QDialog>
 
 namespace Ui {
 class StartupConfigForm;
@@ -21,7 +22,7 @@ class StartupConfigForm;
 class SetProjectGroupImportanceForm;
 class MainWindow;
 
-class StartupConfigForm : public QWidget
+class StartupConfigForm : public QDialog
 {
     Q_OBJECT
 
@@ -31,7 +32,9 @@ public:
 
     const QString max = "Больше - лучше";
     const QString min = "Меньше - лучше";
+//    WindowResult
 
+    static bool IsSuccessFinished;
 
     void SetPrioritiesList(QVector<QString> indicatorsNames);
     void SetMetricsLists(QVector<QString> indicatorsNames);

@@ -5,6 +5,8 @@
 #include <solutiondb.h>
 #include <QCheckBox>
 #include <chartsform.h>
+#include <QDialog>
+
 class ChartsForm;
 
 
@@ -18,7 +20,7 @@ class PreSelectionChartsForm;
 
 
 class MainWindow;
-class PreSelectionChartsForm : public QWidget
+class PreSelectionChartsForm : public QDialog
 {
     Q_OBJECT
 

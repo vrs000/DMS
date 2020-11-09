@@ -3,7 +3,7 @@
 
 
 PreSelectionChartsForm::PreSelectionChartsForm(QWidget *parent) :
-    QWidget(parent),
+    QDialog(parent),
     ui(new Ui::PreSelectionChartsForm)
 {
     ui->setupUi(this);

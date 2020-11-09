@@ -3,14 +3,19 @@
 
 QString StartupConfigForm::NotParsedImportanceGroupOfIndicators = "";
 QString StartupConfigForm::NotParsedImportanceGroupOfProjects = "";
+bool StartupConfigForm::IsSuccessFinished = true;
+
+
 
 StartupConfigForm::StartupConfigForm(QWidget *parent) :
-    QWidget(parent),
+    QDialog(parent),
     ui(new Ui::StartupConfigForm)
 {
     ui->setupUi(this);
 
-
+    IsSuccessFinished = true;
+    //    Qt::ApplicationModal = WindowModal;
+    //    Qt::SetWindowModality(Qt::WindowModal);
     //Скрытие старых компонентов
     //----------------------------------------------
     ui->StepSpinBox->hide();
@@ -135,6 +140,7 @@ void StartupConfigForm::SetPrioritiesList(QVector<QString> indicatorsNames)
 
 void StartupConfigForm::on_CancelButton_clicked()
 {
+    IsSuccessFinished = false;
     close();
 }
 
@@ -196,7 +202,7 @@ void StartupConfigForm::on_OkButton_clicked()
 
 
     DataProcessing::CrushingStep = ui->StepValueTextEdit->toPlainText().toDouble();
-      DataProcessing::CrushingStep = ui->StepValueTextEdit_1->text().toDouble();
+    DataProcessing::CrushingStep = ui->StepValueTextEdit_1->text().toDouble();
     DataProcessing::OpenedSolutionName = solutionName;
     DataProcessing::MakeCalculations(priority, prefered, rejected, prefferedProjects, rejectedProjects);
     DataProcessing::bar = ui->progressBar;
@@ -321,14 +327,18 @@ void StartupConfigForm::on_DownButton_clicked()
 
 void StartupConfigForm::on_SetProjectImportanceGroupsBtn_clicked()
 {
-    SetProjectGroupImportanceForm *form = new SetProjectGroupImportanceForm(nullptr, Projects);
+    SetProjectGroupImportanceForm *form = new SetProjectGroupImportanceForm(this, Projects);
     form->btnProjects = ui->SetProjectImportanceGroupsBtn;
-    form->show();
+    form->setModal(true);
+    form->exec();
+    //    form->show();
 }
 
 void StartupConfigForm::on_SetIndicatorImportanceGroupsBtn_clicked()
 {
     SetProjectGroupImportanceForm *form = new SetProjectGroupImportanceForm(nullptr, Indicators);
     form->btnIndicatators = ui->SetIndicatorImportanceGroupsBtn;
-    form->show();
+    form->setModal(true);
+    form->exec();
+    //    form->show();
 }

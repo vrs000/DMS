@@ -4,12 +4,14 @@
 #include <QWidget>
 #include "solutiondb.h"
 #include <QCheckBox>
+#include <QDialog>
+
 namespace Ui {
 class SelectForExportForm;
 }
 class MainWindow;
 
-class SelectForExportForm : public QWidget
+class SelectForExportForm : public QDialog
 {
     Q_OBJECT
 
