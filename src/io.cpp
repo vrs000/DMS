@@ -195,15 +195,13 @@ void IO::OpenExelFile1(QString Path)
             auto a = xlsx.read(y, x);
 
 
-            //            qDebug() << a;
-
             if (strcmp(a.typeName(), "QString") == 0)
             {
 
                 double value;
 
                 QString A = a.toString();
-                qDebug() << A;
+
                 A.replace(',', '.');
 
                 //                QJSEngine engine;
@@ -564,6 +562,11 @@ void IO::FillingTables(QTableWidget *input, QTableWidget *output)
     QColor color;
     color.setRgb(255, 249, 222, alpha/2);
 
+    input->clear();
+    output->clear();
+
+    input->setSortingEnabled(false);
+    output->setSortingEnabled(false);
 
     input->setColumnCount(IndicatorsNames.size()+1);
     input->setRowCount(ProjectsNames.size());
@@ -604,8 +607,10 @@ void IO::FillingTables(QTableWidget *input, QTableWidget *output)
 
     output->setColumnCount(IndicatorsNames.size() + 3);
     output->setRowCount(ProjectsNames.size());
+
     params.insert(1, Hard);
     params.insert(1, Soft);
+
     //params<<Hard<<Soft;
     output->setHorizontalHeaderLabels(params);
 
@@ -649,7 +654,9 @@ void IO::FillingTables(QTableWidget *input, QTableWidget *output)
             if (j > 2)
             {
                 double val = DataProcessing::NormalizedTable[i][j-3];
+
                 val = round(val * NumberAfterPoint)/NumberAfterPoint;
+
                 output->setItem(i, j, new QTableWidgetItem(QString::number(val, 'f')));
             }
         }
@@ -694,6 +701,9 @@ void IO::FillingTables(QTableWidget *input, QTableWidget *output)
 
     const int HardColumn = 2;
     const int SoftColumn = 1;
+
+
+
 
 
     //Окраска таблицы
@@ -747,7 +757,8 @@ void IO::FillingTables(QTableWidget *input, QTableWidget *output)
 
     //===================================================================================
 
-
+    input->setSortingEnabled(true);
+    output->setSortingEnabled(true);
 }
 
 

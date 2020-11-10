@@ -179,8 +179,7 @@ void StartupConfigForm::on_OkButton_clicked()
     //===========================================
 
 
-    qDebug() << prefferedProjects;
-    qDebug() << rejectedProjects;
+
 
     DataProcessing::CrushingStep = ui->StepValueTextEdit->toPlainText().toDouble();
     DataProcessing::CrushingStep = ui->StepValueTextEdit_1->text().toDouble();

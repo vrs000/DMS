@@ -93,7 +93,7 @@ void CalculateRatingsAsync::run()
             if (!isSuitable)
             {
                 DataProcessing::missed_variation++;
-                qDebug() << DataProcessing::WeightsTable[count];
+
                 continue;
             }
         }

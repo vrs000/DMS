@@ -152,10 +152,7 @@ void SetProjectGroupImportanceForm::on_OkButton_clicked()
     switch (Config)
     {
     case Projects:
-        qDebug() << "Projects";
-        qDebug() << "================================================";
-        qDebug() << GetImportanceGroupString();
-        qDebug() << "================================================";
+
         StartupConfigForm::NotParsedImportanceGroupOfProjects = GetImportanceGroupString();
         if (StartupConfigForm::NotParsedImportanceGroupOfProjects != "")
             btnProjects->setStyleSheet("color: rgb(0, 195, 13);");
@@ -165,10 +162,7 @@ void SetProjectGroupImportanceForm::on_OkButton_clicked()
 
 
     case Indicators:
-        qDebug() << "Indicators";
-        qDebug() << "================================================";
-        qDebug() << GetImportanceGroupString();
-        qDebug() << "================================================";
+
         StartupConfigForm::NotParsedImportanceGroupOfIndicators = GetImportanceGroupString();
         if (StartupConfigForm::NotParsedImportanceGroupOfIndicators != "")
             btnIndicatators->setStyleSheet("color: rgb(0, 195, 13);");

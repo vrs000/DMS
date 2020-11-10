@@ -52,7 +52,7 @@ GenerateWeightsAndCalculateRatingsAsync::GenerateWeightsAndCalculateRatingsAsync
     FirstIterationIndex = firstIterationIndex;
     LastIterationIndex = lastIterationIndex;
 
-    qDebug() << "№" << firstIterationIndex << lastIterationIndex;
+
     HardRatings = QVector<double>(IO::ProjectsNames.size(), 0);
     SoftRatings = QVector<double>(IO::ProjectsNames.size(), 0);
 
@@ -282,7 +282,6 @@ void GenerateWeightsAndCalculateRatingsAsync::Calculate(QVector<double>& current
             };
 
 
-            //qDebug() << currentSet;
 
 
             auto res = DataProcessing::GetLinearConvolutionResult(currentSet);
@@ -368,11 +367,14 @@ void GenerateWeightsAndCalculateRatingsAsync::Calculate(double currentSet[], int
 
             GeneratedIterCount++;
 
-            if (GeneratedIterCount > LastIterationIndex) IsNeedToFinish = true;
+
 
             if(GeneratedIterCount < FirstIterationIndex || GeneratedIterCount > LastIterationIndex)
-                return;
+            {
+//                qDebug() << GeneratedIterCount << QThread::currentThreadId();
 
+                return;
+            }
 
 
             Count++;
@@ -462,6 +464,7 @@ void GenerateWeightsAndCalculateRatingsAsync::Calculate(double currentSet[], int
                     HardRatings[i] += hardRatings[i];
                     SoftRatings[i] += softRatings[i];
                 }
+//                qDebug() <<QThread::currentThreadId() << HardRatings;
 
             }
 

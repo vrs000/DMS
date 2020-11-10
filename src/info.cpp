@@ -99,7 +99,7 @@ Info::Info(QWidget *parent) :
     QStringList projectsImportance = DataProcessing::NotParsedImportanceGroupOfProjects.split(",");
     QStringList indicatorsImportance = DataProcessing::NotParsedImportanceGroupOfIndicators.split(",");
 
-    qDebug() << projectsImportance.size() << indicatorsImportance.size();
+
 
 
     int first;
