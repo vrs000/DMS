@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.13.0, 2020-11-09T21:45:09. -->
+<!-- Written by QtCreator 4.13.0, 2020-11-13T02:47:10. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -64,23 +64,7 @@
     <value type="bool" key="AutoTest.Framework.QtQuickTest">true</value>
     <value type="bool" key="AutoTest.Framework.QtTest">true</value>
    </valuemap>
-   <valuemap type="QVariantMap" key="AutoTest.CheckStates">
-    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.cpp:GetLinearConvolutionResult">Checked</value>
-    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.cpp:GetLinearConvolutionResult_data">Unchecked</value>
-    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.cpp:Sum">Checked</value>
-    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.cpp:Sum_data">Unchecked</value>
-    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.cpp:min_data_1">Checked</value>
-    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.cpp:min_data_10">Checked</value>
-    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.cpp:min_data_2">Checked</value>
-    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.cpp:min_data_3">Checked</value>
-    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.cpp:min_data_4">Checked</value>
-    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.cpp:min_data_5">Checked</value>
-    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.cpp:min_data_6">Checked</value>
-    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.cpp:min_data_7">Checked</value>
-    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.cpp:min_data_8">Checked</value>
-    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.cpp:min_data_9">Checked</value>
-    <value type="Qt::CheckState" key="D:/git/sppr1/SPPR/tests/dataprocessing_test.h:DataProcessing_Test">Checked</value>
-   </valuemap>
+   <valuemap type="QVariantMap" key="AutoTest.CheckStates"/>
    <value type="int" key="AutoTest.RunAfterBuild">0</value>
    <value type="bool" key="AutoTest.UseGlobal">true</value>
    <valuelist type="QVariantList" key="ClangCodeModel.CustomCommandLineKey">

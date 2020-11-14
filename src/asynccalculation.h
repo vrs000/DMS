@@ -50,6 +50,9 @@ private:
 
     //In work
     //-------------------------
+    char* ProjectsRelation;
+    char* IndicatorsRelation;
+
     int *PrefferedMetricsV2;
     int *RejectedMetricsV2;
 
@@ -101,7 +104,6 @@ public:
 
     int GetCount();
     int missed = 0;
-    void Calculate(QVector<double>& currentSet, int maxN, int curPosIndex);
     void Calculate(double currentSet[], int maxN, int curPosIndex);
 
     static QMutex mutex;

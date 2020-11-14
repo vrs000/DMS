@@ -32,6 +32,10 @@ SetProjectGroupImportanceForm::~SetProjectGroupImportanceForm()
     delete ui;
 }
 
+
+//Методы для установки начального списка показателей
+//Или проектов
+//-----------------------------------------------------------
 void SetProjectGroupImportanceForm::SetStartupProjects()
 {
     foreach (QString project, IO::ProjectsNames)
@@ -43,6 +47,7 @@ void SetProjectGroupImportanceForm::SetStartupIndicators()
     foreach (QString indicator, IO::IndicatorsNames)
         ui->ListNamesWidget->addItem(indicator);
 }
+//-----------------------------------------------------------
 
 
 void SetProjectGroupImportanceForm::on_AddGroupButton_clicked()
@@ -52,6 +57,7 @@ void SetProjectGroupImportanceForm::on_AddGroupButton_clicked()
     {
         QComboBox* combobox = new QComboBox(this);
         combobox->addItem(">");
+        combobox->addItem("≥");
         combobox->addItem(";");
         comboxes << combobox;
         ui->GroupsLayout->addWidget(combobox);
@@ -154,6 +160,7 @@ void SetProjectGroupImportanceForm::on_OkButton_clicked()
     case Projects:
 
         StartupConfigForm::NotParsedImportanceGroupOfProjects = GetImportanceGroupString();
+        qDebug() << GetImportanceGroupString().split("≥");
         if (StartupConfigForm::NotParsedImportanceGroupOfProjects != "")
             btnProjects->setStyleSheet("color: rgb(0, 195, 13);");
         else

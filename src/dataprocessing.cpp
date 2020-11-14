@@ -477,8 +477,8 @@ void DataProcessing::Finished1Threads()
 
             //1-SoftRatings
             //--------------------------------------------------
-            for (int i = 0; i < IO::ProjectsNames.size(); i++)
-                softRatings[i] = 1 - softRatings[i];
+//            for (int i = 0; i < IO::ProjectsNames.size(); i++)
+//                softRatings[i] = 1 - softRatings[i];
             //--------------------------------------------------
 
             missed_variation = MissedCount;
@@ -572,8 +572,8 @@ void DataProcessing::Finished2Threads()
 
             //1-SoftRatings
             //--------------------------------------------------
-            for (int i = 0; i < IO::ProjectsNames.size(); i++)
-                softRatings[i] = 1 - softRatings[i];
+//            for (int i = 0; i < IO::ProjectsNames.size(); i++)
+//                softRatings[i] = 1 - softRatings[i];
             //--------------------------------------------------
 
 
@@ -675,8 +675,8 @@ void DataProcessing::Finished4Threads()
 
             //1-SoftRatings
             //--------------------------------------------------
-            for (int i = 0; i < IO::ProjectsNames.size(); i++)
-                softRatings[i] = 1 - softRatings[i];
+//            for (int i = 0; i < IO::ProjectsNames.size(); i++)
+//                softRatings[i] = 1 - softRatings[i];
             //--------------------------------------------------
 
 
@@ -802,8 +802,8 @@ void DataProcessing::Finished8Threads()
 
             //1-SoftRatings
             //--------------------------------------------------
-            for (int i = 0; i < IO::ProjectsNames.size(); i++)
-                softRatings[i] = 1 - softRatings[i];
+//            for (int i = 0; i < IO::ProjectsNames.size(); i++)
+//                softRatings[i] = 1 - softRatings[i];
             //--------------------------------------------------
 
 
@@ -1527,8 +1527,9 @@ void DataProcessing::MakeCalculations(QVector<QString> priorityList,
 
 
 
-    //    UsedThreadCount = 1;
-    //    CalculateRatingsIn1ThreadsWithWeights();
+
+//        CalculateRatingsIn1ThreadsWithWeights();
+        CalculateRatingsIn8ThreadsWithWeights();
 
     //        UsedThreadCount = 2;
     //        CalculateRatingsIn2ThreadsWithWeights();
@@ -1542,33 +1543,29 @@ void DataProcessing::MakeCalculations(QVector<QString> priorityList,
     //    CalculateRatingsIn4ThreadsWithWeights();
 
 
-    if ((AlgorithmComplexity < 500000) || (AvailableThreadCount == 1))
-    {
-        //UsedThreadCount = 1;
-        CalculateRatingsIn1ThreadsWithWeights();
-    }
+//    if ((AlgorithmComplexity < 500000) || (AvailableThreadCount == 1))
+//    {
+//        CalculateRatingsIn1ThreadsWithWeights();
+//    }
 
 
-    if ((AlgorithmComplexity >= 500000 && AlgorithmComplexity < 1000000 && AvailableThreadCount >= 2)
-            || (AlgorithmComplexity >= 1000000 && AvailableThreadCount == 2))
-    {
-        //UsedThreadCount = 2;
-        CalculateRatingsIn2ThreadsWithWeights();
-    }
+//    if ((AlgorithmComplexity >= 500000 && AlgorithmComplexity < 1000000 && AvailableThreadCount >= 2)
+//            || (AlgorithmComplexity >= 1000000 && AvailableThreadCount == 2))
+//    {
+//        CalculateRatingsIn2ThreadsWithWeights();
+//    }
 
 
-    if ((AlgorithmComplexity >= 1000000 && AlgorithmComplexity < 2000000 && AvailableThreadCount >= 4)
-            || (AlgorithmComplexity >= 2000000 && AvailableThreadCount == 4))
-    {
-//        UsedThreadCount = 4;
-        CalculateRatingsIn4ThreadsWithWeights();
-    }
+//    if ((AlgorithmComplexity >= 1000000 && AlgorithmComplexity < 2000000 && AvailableThreadCount >= 4)
+//            || (AlgorithmComplexity >= 2000000 && AvailableThreadCount == 4))
+//    {
+//        CalculateRatingsIn4ThreadsWithWeights();
+//    }
 
 
-    if ((AlgorithmComplexity >= 2000000 && AvailableThreadCount >= 8))
-    {
-//        UsedThreadCount = 8;
-        CalculateRatingsIn8ThreadsWithWeights();
-    }
+//    if ((AlgorithmComplexity >= 2000000 && AvailableThreadCount >= 8))
+//    {
+//        CalculateRatingsIn8ThreadsWithWeights();
+//    }
 
 }
