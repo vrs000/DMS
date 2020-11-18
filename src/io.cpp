@@ -131,6 +131,7 @@ void IO::OpenExelFile1(QString Path)
     int RangeX = 1;
     int RangeY = 1;
 
+
     //Ищем x
     while (true)
     {
@@ -156,7 +157,6 @@ void IO::OpenExelFile1(QString Path)
             RangeY--;
             break;
         }
-
     }
 
 
@@ -169,20 +169,14 @@ void IO::OpenExelFile1(QString Path)
     QVector<QVector<double>> table;
 
 
-
     //Чтение показателей
     for (int x = 2; x<=RangeX; x++)
-    {
         indicatorsNames << xlsx.read(1, x).toString();
-    }
 
 
     //Чтение названий проектов
     for (int y = 2; y <=RangeY; y++)
-    {
         projectsNames << xlsx.read(y, 1).toString();
-    }
-
 
 
     //Чтение таблицы
@@ -192,33 +186,16 @@ void IO::OpenExelFile1(QString Path)
 
         for (int x = 2; x <= RangeX; x++)
         {
-            auto a = xlsx.read(y, x);
-
+            auto a = xlsx.cellAt(y,x)->value();
 
             if (strcmp(a.typeName(), "QString") == 0)
             {
-
                 double value;
-
                 QString A = a.toString();
-
                 A.replace(',', '.');
-
-                //                QJSEngine engine;
-                //                QJSValue v;
-                //                if (A.contains('='))
-                //                    v = engine.evaluate(A.remove(0, 1));
-                //                else
-                //                    v = engine.evaluate(A);
-
-//                Cell *cell = cellAt(y, x);
-
                 value =  A.toDouble();
-
                 table.last() << value;
-
             }
-
 
             if (strcmp(a.typeName(), "double") == 0)
                 table.last() << a.toDouble();
@@ -694,7 +671,7 @@ void IO::FillingTables(QTableWidget *input, QTableWidget *output)
                 double val = DataProcessing::NormalizedTable[ProjectIndexInStartList][j-3];
 
 
-//                double val = DataProcessing::NormalizedTable[i][j-3];
+                //                double val = DataProcessing::NormalizedTable[i][j-3];
 
 
                 val = round(val * NumberAfterPoint)/NumberAfterPoint;
