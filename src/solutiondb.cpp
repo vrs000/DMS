@@ -1,4 +1,5 @@
 #include "solutiondb.h"
+
 QList<Solution> SolutionDB::DB;
 
 QString SolutionDB::currentSolutionName = "";
@@ -108,6 +109,8 @@ void SolutionDB::LoadSolution(const QString solutionName)
             DataProcessing::NotParsedImportanceGroupOfProjects = sol.ProjectsImportanceNotParsed;
             DataProcessing::NotParsedImportanceGroupOfIndicators = sol.IndicatorsImportanceNotParsed;
 
+            DataProcessing::ParettoSetProjects = sol.ParettoSetProjects;
+
             break;
         }
     }
@@ -141,6 +144,8 @@ void SolutionDB::LoadSolution(const Solution& solution)
 
             DataProcessing::NotParsedImportanceGroupOfProjects = sol.ProjectsImportanceNotParsed;
             DataProcessing::NotParsedImportanceGroupOfIndicators = sol.IndicatorsImportanceNotParsed;
+
+            DataProcessing::ParettoSetProjects = sol.ParettoSetProjects;
 
             break;
         }

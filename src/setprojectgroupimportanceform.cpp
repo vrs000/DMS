@@ -38,8 +38,12 @@ SetProjectGroupImportanceForm::~SetProjectGroupImportanceForm()
 //-----------------------------------------------------------
 void SetProjectGroupImportanceForm::SetStartupProjects()
 {
-    foreach (QString project, IO::ProjectsNames)
-        ui->ListNamesWidget->addItem(project);
+    if (DataProcessing::ParettoSetProjects.size() == 0)
+        foreach (QString project, IO::ProjectsNames)
+            ui->ListNamesWidget->addItem(project);
+    else
+        foreach (QString project, DataProcessing::ParettoSetProjects)
+            ui->ListNamesWidget->addItem(project);
 }
 
 void SetProjectGroupImportanceForm::SetStartupIndicators()
@@ -125,8 +129,18 @@ QString SetProjectGroupImportanceForm::GetImportanceGroupString()
 
                 if (Config == Projects)
                 {
-                    fNumb = IO::ProjectsNames.indexOf(groupsList[i]->item(k)->text());
-                    sNumb = IO::ProjectsNames.indexOf(groupsList[i+1]->item(l)->text());
+                    //Если выключен критерий паретто
+                    if (DataProcessing::ParettoSetProjects.size() == 0)
+                    {
+                        fNumb = IO::ProjectsNames.indexOf(groupsList[i]->item(k)->text());
+                        sNumb = IO::ProjectsNames.indexOf(groupsList[i+1]->item(l)->text());
+                    }
+                    else
+                    {
+                        fNumb = DataProcessing::ParettoSetProjects.indexOf(groupsList[i]->item(k)->text());
+                        sNumb = DataProcessing::ParettoSetProjects.indexOf(groupsList[i+1]->item(l)->text());
+                    }
+
                     result += QString("%1%2%3,").arg(fNumb).arg(comboxes[i]->currentText()).arg(sNumb);
                 }
 

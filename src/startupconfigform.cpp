@@ -14,18 +14,6 @@ StartupConfigForm::StartupConfigForm(QWidget *parent) :
     ui->setupUi(this);
 
     IsSuccessFinished = true;
-    //    Qt::ApplicationModal = WindowModal;
-    //    Qt::SetWindowModality(Qt::WindowModal);
-    //Скрытие старых компонентов
-    //----------------------------------------------
-    ui->StepSpinBox->hide();
-    ui->IterationCountLabel->hide();
-    ui->ToggleGroupCheckBox->hide();
-    ui->ImportanceGroups_groupBox->hide();
-    ui->ToggleProjectsGroupCheckBox->hide();
-    ui->ImportanceProjectsGroups_groupBox->hide();
-    //----------------------------------------------
-
 
     NotParsedImportanceGroupOfIndicators = "";
     NotParsedImportanceGroupOfProjects = "";
@@ -34,33 +22,25 @@ StartupConfigForm::StartupConfigForm(QWidget *parent) :
     SetMetricsLists(IO::IndicatorsNames);
     SetProjectsLists(IO::ProjectsNames);
 
+    DataProcessing::ParettoSetProjects.clear();
 
     DataProcessing::bar = ui->progressBar;
 
-
     ui->progressBar->hide();
 
-    ui->StepSpinBox->setValue(DataProcessing::CrushingStep);
-    ui->StepValueTextEdit->setPlainText(QString::number(DataProcessing::CrushingStep));
-
-    ui->StepValueTextEdit->hide();
-
+    ui->ParretoCountInfoLabel->setText("");
     ui->StepValueTextEdit_1->setText(QString::number(DataProcessing::CrushingStep));
 
 
     int K = DataProcessing::GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), DataProcessing::CrushingStep);
 
-
-
     if (K < 0)
     {
-        ui->IterationCountLabel->setText(QString("Уменьшите шаг"));
         ui->IterationCountLabel_2->setText(QString("Уменьшите шаг"));
         ui->OkButton->setEnabled(false);
     }
     else
     {
-        ui->IterationCountLabel->setText(QString("Количество итераций: %1").arg(K));
         ui->IterationCountLabel_2->setText(QString("Количество итераций: %1").arg(K));
         ui->OkButton->setEnabled(true);
     }
@@ -71,11 +51,6 @@ StartupConfigForm::~StartupConfigForm()
     delete ui;
 }
 
-void StartupConfigForm::on_ToggleGroupCheckBox_stateChanged(int arg1)
-{
-    ui->ImportanceGroups_groupBox->setEnabled(ui->ToggleGroupCheckBox->isChecked());
-}
-
 void StartupConfigForm::SetMetricsLists(QVector<QString> indicatorsNames)
 {
     foreach (QString param, indicatorsNames)
@@ -83,13 +58,8 @@ void StartupConfigForm::SetMetricsLists(QVector<QString> indicatorsNames)
         QCheckBox* pref = new QCheckBox(param);
         QCheckBox* rejec = new QCheckBox(param);
 
-
-
         PreferredCheckBoxes << pref;
         RejectedCheckBoxes << rejec;
-
-        ui->PreffredLayout->addWidget(pref);
-        ui->RejectedLayout->addWidget(rejec);
     }
 }
 
@@ -103,17 +73,11 @@ void StartupConfigForm::SetProjectsLists(QVector<QString> projectsNames)
 
         PreferredProjectsCheckBoxes << pref;
         RejectedProjectsCheckBoxes<< rejec;
-
-
-        ui->PreffredProjectsLayout->addWidget(pref);
-        ui->RejectedProjectsLayout->addWidget(rejec);
     }
 }
 
 void StartupConfigForm::SetPrioritiesList(QVector<QString> indicatorsNames)
 {
-
-
     foreach (QString param, indicatorsNames)
     {
 
@@ -125,8 +89,11 @@ void StartupConfigForm::SetPrioritiesList(QVector<QString> indicatorsNames)
         QLabel* nameLabel =new QLabel(param);
 
         QComboBox* comboBox = new QComboBox();
+
         comboBox->addItem(max);
         comboBox->addItem(min);
+
+        connect(comboBox, SIGNAL(currentTextChanged(const QString&)), this, SLOT(ComboBoxChanged()));
 
         layout->addWidget(nameLabel);
         layout->addWidget(comboBox);
@@ -156,11 +123,15 @@ void StartupConfigForm::on_OkButton_clicked()
     QVector<QString> prefferedProjects;
     QVector<QString> rejectedProjects;
 
-    //Считывание данных с чекбоксов и комбобоксов
+
+    //Считывание данных с ??чекбоксов?? и комбобоксов
     //===========================================
     for (auto p : PrioritiesComboBoxes)
         priority << (p->currentText() == max ? _max : _min);
 
+
+    //LEGACY???????????????????????
+    //------------------------------------------------------------------
     for (int i = 0; i < PreferredCheckBoxes.size(); i++)
         if (PreferredCheckBoxes[i]->isChecked())
             prefered << i;
@@ -175,19 +146,17 @@ void StartupConfigForm::on_OkButton_clicked()
 
     for (int i = 0; i < RejectedProjectsCheckBoxes.size(); i++)
         if (RejectedProjectsCheckBoxes[i]->isChecked())
-            rejectedProjects << RejectedProjectsCheckBoxes[i]->text();
+            rejectedProjects << RejectedProjectsCheckBoxes[i]->text();    
+    //------------------------------------------------------------------
+
     //===========================================
 
 
-
-
-    DataProcessing::CrushingStep = ui->StepValueTextEdit->toPlainText().toDouble();
     DataProcessing::CrushingStep = ui->StepValueTextEdit_1->text().toDouble();
     double h = DataProcessing::CrushingStep;
     int m = IO::IndicatorsNames.size();
     int K = std::floor(DataProcessing::Fact(std::floor(1 /h) + m - 1)
                        / (DataProcessing::Fact(m - 1) * DataProcessing::Fact(std::floor(1 / h))));
-
 
 
     DataProcessing::CurrentIterationCount = K;
@@ -200,7 +169,6 @@ void StartupConfigForm::on_OkButton_clicked()
     //-------------------------------------------------------------------------------------------
 
 
-    DataProcessing::CrushingStep = ui->StepValueTextEdit->toPlainText().toDouble();
     DataProcessing::CrushingStep = ui->StepValueTextEdit_1->text().toDouble();
     DataProcessing::OpenedSolutionName = solutionName;
     DataProcessing::MakeCalculations(priority, prefered, rejected, prefferedProjects, rejectedProjects);
@@ -218,6 +186,12 @@ long double StartupConfigForm::fact(int N)
         return N * fact(N - 1);
 }
 
+void StartupConfigForm::ComboBoxChanged()
+{
+    if (ui->ParettoOnBtn->isChecked())
+        on_ParettoOnBtn_clicked();
+}
+
 void StartupConfigForm::SetProgressBarValue(int value, int maximum)
 {
     Q_UNUSED(value);
@@ -230,19 +204,15 @@ void StartupConfigForm::SetProgressBarValue(int value, int maximum)
 
 void StartupConfigForm::on_StepSpinBox_valueChanged(double arg1)
 {
-
-
     DataProcessing::CurrentIterationCount = DataProcessing::GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), arg1);
     int K = DataProcessing::GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), arg1);
 
     if (K < 0)
     {
-        ui->IterationCountLabel->setText(QString("Уменьшите шаг"));
         ui->OkButton->setEnabled(false);
     }
     else
     {
-        ui->IterationCountLabel->setText(QString("Количество итераций: %1").arg(K));
         ui->OkButton->setEnabled(true);
     }
 }
@@ -255,24 +225,17 @@ void StartupConfigForm::on_progressBar_valueChanged(int value)
     }
 }
 
-void StartupConfigForm::on_ToggleProjectsGroupCheckBox_stateChanged(int arg1)
-{
-    ui->ImportanceProjectsGroups_groupBox->setEnabled(ui->ToggleProjectsGroupCheckBox->isChecked());
-}
 
 void StartupConfigForm::on_UpButton_clicked()
 {
     QList<double> list = {0.001, 0.002, 0.004, 0.005, 0.008, 0.01, 0.02, 0.025, 0.04, 0.05, 0.1, 0.125, 0.2, 0.25, 0.5};
 
-    double step = ui->StepValueTextEdit->toPlainText().toDouble();
-    step =  ui->StepValueTextEdit_1->text().toDouble();
+    double step =  ui->StepValueTextEdit_1->text().toDouble();
 
     int index = list.indexOf(step);
 
-
     if (index != list.size() - 1)
     {
-        ui->StepValueTextEdit->setPlainText(QString::number(list[index+1]));
         ui->StepValueTextEdit_1->setText(QString::number(list[index+1]));
         DataProcessing::CurrentIterationCount = DataProcessing::GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), list[index+1]);
         int K = DataProcessing::GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), list[index+1]);
@@ -288,25 +251,19 @@ void StartupConfigForm::on_UpButton_clicked()
             ui->OkButton->setEnabled(true);
         }
     }
-
-
-
-
 }
 
 void StartupConfigForm::on_DownButton_clicked()
 {
     QList<double> list = {0.001, 0.002, 0.004, 0.005, 0.008, 0.01, 0.02, 0.025, 0.04, 0.05, 0.1, 0.125, 0.2, 0.25, 0.5};
 
-    double step = ui->StepValueTextEdit->toPlainText().toDouble();
-    step =  ui->StepValueTextEdit_1->text().toDouble();
+    double step =  ui->StepValueTextEdit_1->text().toDouble();
     int index = list.indexOf(step);
 
 
     if (index != 0)
     {
         if (index == -1) index = 1;
-        ui->StepValueTextEdit->setPlainText(QString::number(list[index-1]));
         ui->StepValueTextEdit_1->setText(QString::number(list[index-1]));
         DataProcessing::CurrentIterationCount = DataProcessing::GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), list[index-1]);
         int K = DataProcessing::GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), list[index-1]);
@@ -330,7 +287,6 @@ void StartupConfigForm::on_SetProjectImportanceGroupsBtn_clicked()
     form->btnProjects = ui->SetProjectImportanceGroupsBtn;
     form->setModal(true);
     form->exec();
-    //    form->show();
 }
 
 void StartupConfigForm::on_SetIndicatorImportanceGroupsBtn_clicked()
@@ -339,5 +295,54 @@ void StartupConfigForm::on_SetIndicatorImportanceGroupsBtn_clicked()
     form->btnIndicatators = ui->SetIndicatorImportanceGroupsBtn;
     form->setModal(true);
     form->exec();
-    //    form->show();
+}
+
+void StartupConfigForm::on_ParettoOffBtn_clicked()
+{
+    ui->ParretoCountInfoLabel->setText("");
+    ui->ParretoCountInfoLabel->setStyleSheet("");
+
+    DataProcessing::ParettoSetProjects.clear();
+    DataProcessing::ParettoSetProjectsIndexes.clear();
+}
+
+void StartupConfigForm::on_ParettoOnBtn_clicked()
+{
+    const double ThresholdPercent = 40;
+    const QString _max= "max";
+    const QString _min= "min";
+
+    QVector<QString> priority;
+    for (auto p : PrioritiesComboBoxes)
+        priority << (p->currentText() == max ? _max : _min);
+
+    DataProcessing::SetPriorityList(priority);
+    DataProcessing::FindMaxMinIndicators(IO::BaseTable);
+    DataProcessing::CalculateNormalizedTable(IO::BaseTable);
+    DataProcessing::FindParettoSet();
+
+
+    int RealProjectsCount = IO::ProjectsNames.size();
+    int ParretoSetProjectsCount = DataProcessing::ParettoSetProjects.size();
+    int percent = round(ParretoSetProjectsCount * 100.0/(RealProjectsCount*1.0));
+
+
+
+    ui->ParretoCountInfoLabel->setText(QString("%1/%2 (%3%)")
+                                       .arg(ParretoSetProjectsCount)
+                                       .arg(RealProjectsCount)
+                                       .arg(percent));
+
+
+    //Not needed ????????????????????
+    //-----------------------------------------------------------------------------------
+    foreach (auto project, DataProcessing::ParettoSetProjects)
+        DataProcessing::ParettoSetProjectsIndexes << IO::ProjectsNames.indexOf(project);
+    //-----------------------------------------------------------------------------------
+
+
+
+    qDebug() << DataProcessing::ParettoSetProjects;
+    qDebug() << DataProcessing::ParettoSetProjectsIndexes;
+    qDebug() << DataProcessing::ParettoSetProjects.size() << IO::ProjectsNames.size();
 }

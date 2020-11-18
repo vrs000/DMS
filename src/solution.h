@@ -24,12 +24,22 @@ public:
              QString projectsImportanceNotParsed, QString indicatorsImportanceNotParsed,
              QString timeElapsed);
 
+    Solution(QString solutionName, double crushingStep,
+             QVector<QString> indicatorsNames, QVector<QString> projectsNames,
+             QVector<QVector<double>> baseTable, QVector<QVector<double>> normalizedTable,
+             QVector<double> hardRatings, QVector<double> softRatings,
+             QVector<QString> priorityList,
+             QString projectsImportanceNotParsed, QString indicatorsImportanceNotParsed,
+             QString timeElapsed, QVector<QString> parettoSetProjects);
+
     QString TimeElapsed;
 
     QString SolutionName;
 
     QVector<QString> IndicatorsNames;
     QVector<QString> ProjectsNames;
+    QVector<QString> ParettoSetProjects;
+    bool IsParettoCriterionUsed;
 
     QVector<QVector<double>> BaseTable;
     QVector<QVector<double>> NormalizedTable;
@@ -53,8 +63,6 @@ public:
     //-------------------------------
 
     double CrushingStep;
-
-
 };
 
 

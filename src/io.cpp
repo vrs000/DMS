@@ -210,6 +210,9 @@ void IO::OpenExelFile1(QString Path)
                 //                    v = engine.evaluate(A.remove(0, 1));
                 //                else
                 //                    v = engine.evaluate(A);
+
+//                Cell *cell = cellAt(y, x);
+
                 value =  A.toDouble();
 
                 table.last() << value;
@@ -552,6 +555,7 @@ void IO::FillingTables(QTableWidget *input, QTableWidget *output)
     const QString Soft = "Мягкий рейтинг";
     const int alpha = 180;
 
+    bool IsParettoCriterionUsed = DataProcessing::ParettoSetProjects.size() == 0 ? false : true;
 
     //Жирный шрифт
     QFont font;
@@ -561,6 +565,12 @@ void IO::FillingTables(QTableWidget *input, QTableWidget *output)
     //Цвет заливки
     QColor color;
     color.setRgb(255, 249, 222, alpha/2);
+
+    QColor ProjectsNotInParretoSetColor;
+    ProjectsNotInParretoSetColor.setRgb(255, 0, 0, alpha/4);
+
+    QColor ProjectsNotInParretoSetColor1;
+    ProjectsNotInParretoSetColor1.setRgb(255, 0, 0, alpha/4);
 
     input->clear();
     output->clear();
@@ -572,16 +582,17 @@ void IO::FillingTables(QTableWidget *input, QTableWidget *output)
     input->setRowCount(ProjectsNames.size());
 
 
+
     //Генерация вертикальных и горизонтальный заголовков для InputTable
     //--------------------------------------------
     QStringList names, params;
     params<<"Проекты";
 
     for (auto i:IndicatorsNames)
-        params<<i;
+        params << i;
 
     for (auto i:ProjectsNames)
-        names<<i;
+        names << i;
 
     input->setHorizontalHeaderLabels(params);
     //--------------------------------------------
@@ -598,15 +609,29 @@ void IO::FillingTables(QTableWidget *input, QTableWidget *output)
                 input->setItem(i, j, new QTableWidgetItem(names[i]));
                 input->item(i,j)->setFont(font);
                 input->item(i,j)->setBackgroundColor(color);
+
+                if (!DataProcessing::ParettoSetProjects.contains(names[i]) && IsParettoCriterionUsed)
+                    input->item(i,j)->setBackgroundColor(ProjectsNotInParretoSetColor);
             }
+
             if (j!=0)
+            {
                 input->setItem(i, j, new QTableWidgetItem(QString::number(IO::BaseTable[i][j-1])));
+
+                if (!DataProcessing::ParettoSetProjects.contains(names[i]) && IsParettoCriterionUsed)
+                    input->item(i,j)->setBackgroundColor(ProjectsNotInParretoSetColor1);
+
+            }
         }
     //------------------------------------------------------------------------------------------------
 
 
     output->setColumnCount(IndicatorsNames.size() + 3);
-    output->setRowCount(ProjectsNames.size());
+
+    if (DataProcessing::ParettoSetProjects.size() == 0)
+        output->setRowCount(ProjectsNames.size());
+    else
+        output->setRowCount(DataProcessing::ParettoSetProjects.size());
 
     params.insert(1, Hard);
     params.insert(1, Soft);
@@ -624,9 +649,20 @@ void IO::FillingTables(QTableWidget *input, QTableWidget *output)
 
 
 
-    //Заполнение InputTable
+    if (DataProcessing::ParettoSetProjects.size() != 0)
+    {
+        names.clear();
+
+        for (auto project:DataProcessing::ParettoSetProjects)
+            names << project;
+    }
+
+
+
+
+    //Заполнение OutputTable
     //------------------------------------------------------------------------------------------------
-    for (int i = 0; i < IO::BaseTable.size(); i++)
+    for (int i = 0; i < names.size(); i++)
         for (int j = 0; j < params.size(); j++)
         {
             //Заполнение столбца "Проекты"
@@ -638,22 +674,28 @@ void IO::FillingTables(QTableWidget *input, QTableWidget *output)
             }
 
             //Заполнение мягкого рейтинга
-            if (j == 1) {
+            if (j == 1)
+            {
                 output->setItem(i, j,
                                 new QTableWidgetItem(QString::number(round(DataProcessing::SoftRatings[i]*NumberAfterPoint)/NumberAfterPoint, 'f')));
             }
 
             //Заполнение жесткого рейтинга
-            if (j == 2) {
+            if (j == 2)
+            {
                 output->setItem(i, j,
                                 new QTableWidgetItem(QString::number(round(DataProcessing::HardRatings[i]*NumberAfterPoint)/NumberAfterPoint, 'f')));
             }
 
-
             //Заполнение показателей
             if (j > 2)
             {
-                double val = DataProcessing::NormalizedTable[i][j-3];
+                int ProjectIndexInStartList = ProjectsNames.indexOf(names[i]);
+                double val = DataProcessing::NormalizedTable[ProjectIndexInStartList][j-3];
+
+
+//                double val = DataProcessing::NormalizedTable[i][j-3];
+
 
                 val = round(val * NumberAfterPoint)/NumberAfterPoint;
 
@@ -663,47 +705,37 @@ void IO::FillingTables(QTableWidget *input, QTableWidget *output)
     //------------------------------------------------------------------------------------------------
 
 
-    int columns = params.size();
-
-
-    //Заполнение жёсткого и мягкого рейтинга
-    //-------------------------------------------------------------------------------------------------------------------------------------
-    //    for (int i = 0; i < IO::BaseTable.size(); i++)
-    //    {
-    //        output->setItem(i,columns-2,
-    //                        new QTableWidgetItem(QString::number(round(DataProcessing::HardRatings[i]*NumberAfterPoint)/NumberAfterPoint, 'f')));
-    //        output->setItem(i,columns-1,
-    //                        new QTableWidgetItem(QString::number(round(DataProcessing::SoftRatings[i]*NumberAfterPoint)/NumberAfterPoint, 'f')));
-    //    }
-    //-------------------------------------------------------------------------------------------------------------------------------------
-
-
 
     //Растягивание по вертикали
+    //-------------------------------------------------------------------
     input->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     output->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    //-------------------------------------------------------------------
 
 
     //Растягивание по горизонтали
+    //--------------------------------
     input->resizeColumnsToContents();
     output->resizeColumnsToContents();
+    //--------------------------------
 
 
     //Центрирование текста
+    //-----------------------------------------------------------------
+    //InputTable
     for (int row=0; row < input->rowCount(); row++)
         for (int column=0; column < input->columnCount(); column++)
             input->item(row, column)->setTextAlignment(Qt::AlignCenter);
 
+    //OutputTable
     for (int row=0; row < output->rowCount(); row++)
         for (int column=0; column < output->columnCount(); column++)
             output->item(row, column)->setTextAlignment(Qt::AlignCenter);
+    //-----------------------------------------------------------------
 
 
     const int HardColumn = 2;
     const int SoftColumn = 1;
-
-
-
 
 
     //Окраска таблицы

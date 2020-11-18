@@ -23,6 +23,7 @@ enum Top
     All = -1
 };
 
+
 using namespace QtCharts;
 namespace Ui {
 class ChartsForm;

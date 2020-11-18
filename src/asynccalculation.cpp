@@ -1,5 +1,6 @@
 #include "asynccalculation.h"
 
+
 double GenerateWeightsAndCalculateRatingsAsync::sum(double set[], int index)
 {
     double Sum = 0.0;
@@ -11,7 +12,6 @@ double GenerateWeightsAndCalculateRatingsAsync::sum(double set[], int index)
 
     return Sum;
 }
-
 double GenerateWeightsAndCalculateRatingsAsync::getMax(double *list)
 {
     double max = list[0];
@@ -47,29 +47,32 @@ int GenerateWeightsAndCalculateRatingsAsync::IndexOf(double *list, double value)
     return -1;
 }
 
+
 GenerateWeightsAndCalculateRatingsAsync::GenerateWeightsAndCalculateRatingsAsync(int firstIterationIndex, int lastIterationIndex, double step)
 {
     FirstIterationIndex = firstIterationIndex;
     LastIterationIndex = lastIterationIndex;
 
+    HardRatings = QVector<double>(DataProcessing::ProjectsCount, 0);
+    SoftRatings = QVector<double>(DataProcessing::ProjectsCount, 0);
 
-    HardRatings = QVector<double>(IO::ProjectsNames.size(), 0);
-    SoftRatings = QVector<double>(IO::ProjectsNames.size(), 0);
-
-    h = step;
-
-    hardRatings = QVector<double>(IO::ProjectsNames.size(), 0);
-    softRatings = QVector<double>(IO::ProjectsNames.size(), 0);
+    hardRatings = QVector<double>(DataProcessing::ProjectsCount, 0);
+    softRatings = QVector<double>(DataProcessing::ProjectsCount, 0);
 
     ProjectsCount = DataProcessing::ProjectsCount;
 
+
+    h = step;
+
+
     //Парсинг строчек групп важности для проектов и для показателей если имеется
-    //==========================================================================
+    //=========================================================================================================
     auto IndicatorsGroups = DataProcessing::NotParsedImportanceGroupOfIndicators.split(',');
     auto ProjectsGroups = DataProcessing::NotParsedImportanceGroupOfProjects.split(',');
 
     ProjectsGroupCount = ProjectsGroups.size();
     IndicatorsGroupCount = IndicatorsGroups.size();
+
 
     //Показатели
     //---------------------------------------------------------------
@@ -116,7 +119,6 @@ GenerateWeightsAndCalculateRatingsAsync::GenerateWeightsAndCalculateRatingsAsync
             continue;
         }
     }
-
     //---------------------------------------------------------------
 
 
@@ -125,7 +127,6 @@ GenerateWeightsAndCalculateRatingsAsync::GenerateWeightsAndCalculateRatingsAsync
     PrefferedProjectsV2 = new int[ProjectsGroupCount];
     RejectedProjectsV2 = new int[ProjectsGroupCount];
     ProjectsRelation = new char[ProjectsGroupCount];
-
 
     for (int i=0; i < ProjectsGroupCount; i++)
     {
@@ -163,13 +164,11 @@ GenerateWeightsAndCalculateRatingsAsync::GenerateWeightsAndCalculateRatingsAsync
             continue;
         }
     }
-
     //---------------------------------------------------------------
-
 
     if (DataProcessing::NotParsedImportanceGroupOfIndicators == "") IndicatorsGroupCount = -1;
     if (DataProcessing::NotParsedImportanceGroupOfProjects == "") ProjectsGroupCount = -1;
-    //==========================================================================
+ //=========================================================================================================
 
 
 

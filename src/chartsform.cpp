@@ -59,18 +59,10 @@ ChartsForm::~ChartsForm()
 
 void ChartsForm::FillingCharts()
 {
-
-//    if (PreSelectionChartsForm::SelectedSolutions.size() == 0)
-//    {
-//        AddSolutionsCharts(SolutionDB::currentSolutionName);
-//    }
-
-//    if (PreSelectionChartsForm::SelectedSolutions.size() != 0)
-
-        for (auto sol : PreSelectionChartsForm::SelectedSolutions)
-        {
-            AddSolutionsCharts(sol);
-        }
+    for (auto sol : PreSelectionChartsForm::SelectedSolutions)
+    {
+        AddSolutionsCharts(sol);
+    }
 
     PreSelectionChartsForm::SelectedSolutions.clear();
 }
@@ -96,10 +88,10 @@ void ChartsForm::AddSolutionsCharts(Solution solution)
     QVBoxLayout* layout = new QVBoxLayout();
 
 
-
     groupBox->setLayout(layout);
     groupBox->setTitle(solution.SolutionName);
     groupBox->setFont(font);
+
 
     ui->ChartsField->addWidget(groupBox);
 
@@ -124,10 +116,10 @@ void ChartsForm::AddSolutionsCharts(Solution solution)
     layout->addWidget(splitter);
 
 
-
     QChart *diagrams;
     QChart* scatter;
     QChart* HorizontalBars;
+
 
     //Если количество проектов больше заданного топа
     if ((solution.ProjectsNames.size() > (int)top) && (top != All))
@@ -138,7 +130,6 @@ void ChartsForm::AddSolutionsCharts(Solution solution)
         QVector<QVector<double>> normalizedTable;
         FindTopProjects(hardRatings, softRatings, projectsNames, normalizedTable, top, solution);
 
-
         diagrams = GetBarChart(hardRatings, softRatings, projectsNames);
         scatter = GetScatterChart(hardRatings, softRatings, projectsNames);
         HorizontalBars = GetHorizontalStackedBarChart(normalizedTable, solution.IndicatorsNames, projectsNames);
@@ -147,9 +138,19 @@ void ChartsForm::AddSolutionsCharts(Solution solution)
     //Если количество проектов меньше заданнаго топа
     if ((solution.ProjectsNames.size() <= (int)top) || (top == All))
     {
-        diagrams = GetBarChart(solution.HardRatings, solution.SoftRatings, solution.ProjectsNames);
-        scatter = GetScatterChart(solution.HardRatings, solution.SoftRatings, solution.ProjectsNames);
-        HorizontalBars = GetHorizontalStackedBarChart(solution.NormalizedTable, solution.IndicatorsNames, solution.ProjectsNames);
+        if (solution.IsParettoCriterionUsed)
+        {
+            diagrams = GetBarChart(solution.HardRatings, solution.SoftRatings, solution.ParettoSetProjects);
+            scatter = GetScatterChart(solution.HardRatings, solution.SoftRatings, solution.ParettoSetProjects);
+            HorizontalBars = GetHorizontalStackedBarChart(solution.NormalizedTable, solution.IndicatorsNames, solution.ParettoSetProjects);
+        }
+        else
+        {
+            diagrams = GetBarChart(solution.HardRatings, solution.SoftRatings, solution.ProjectsNames);
+            scatter = GetScatterChart(solution.HardRatings, solution.SoftRatings, solution.ProjectsNames);
+            HorizontalBars = GetHorizontalStackedBarChart(solution.NormalizedTable, solution.IndicatorsNames, solution.ProjectsNames);
+        }
+
     }
 
 
@@ -432,12 +433,9 @@ void ChartsForm::FindTopProjects(QVector<double>& hardRatings, QVector<double>& 
                                  Top top, Solution solution)
 {
     QList<int> topIndex;
-
-
     int max = 0;
 
     auto _HardRatings = solution.HardRatings;
-
     qSort(_HardRatings.begin(), _HardRatings.end());
 
 
@@ -461,12 +459,12 @@ void ChartsForm::FindTopProjects(QVector<double>& hardRatings, QVector<double>& 
     }
 
 
-
     for (int i=0; i < topIndex.size(); i++)
     {
         hardRatings << solution.HardRatings[topIndex[i]];
         softRatings << solution.SoftRatings[topIndex[i]];
-        projectsNames << solution.ProjectsNames[topIndex[i]];
+
+        projectsNames << (solution.IsParettoCriterionUsed ? solution.ParettoSetProjects[topIndex[i]] : solution.ProjectsNames[topIndex[i]]);
         normalizedTable << solution.NormalizedTable[topIndex[i]];
     }
 
@@ -486,7 +484,6 @@ void ChartsForm::keyPressEvent(QKeyEvent *event)
     case Qt::Key_A:
         for (auto c : listViews)
             c.DiagramsView->setMinimumWidth(c.DiagramsView->width() - StepWidth);
-        //c.DiagramsView->setMinimumWidth(c.DiagramsView->minimumWidth() - StepWidth);
         break;
 
     case Qt::Key_D:

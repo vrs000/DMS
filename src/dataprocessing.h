@@ -39,6 +39,8 @@ public:
     static double** normTable;
     static QVector<QVector<double>> NormalizedTable;
     static QVector<QVector<double>> WeightsTable;
+    static QVector<QString> ParettoSetProjects;
+    static QList<int> ParettoSetProjectsIndexes;
 
     static double CrushingStep;
     static int missed_variation;
@@ -81,6 +83,7 @@ public:
     static double Factorial(double value);
     static int GetTheoreticalWeightsCount(int ParametersCount, double h);
 
+    static void FindParettoSet();
     static void FindMaxMinIndicators( QVector<QVector<double>> BaseTable);
     static void CalculateNormalizedTable( QVector<QVector<double>> BaseTable);
     static void GenerateWeightsList();
@@ -165,8 +168,6 @@ public:
 
 private slots:
     void DeleteThreadInstances();
-
-
     void UpdateProgressBar();
 
 
@@ -184,6 +185,7 @@ private slots:
     void Finished2Threads();
     void Finished4Threads();
     void Finished8Threads();
+
 
     void ThreadPoolFinished();
 };

@@ -60,9 +60,9 @@ public:
 
 
 private slots:
-    void SetProgressBarValue(int value, int maximum);
+    void ComboBoxChanged();
 
-    void on_ToggleGroupCheckBox_stateChanged(int arg1);
+    void SetProgressBarValue(int value, int maximum);
 
     void on_CancelButton_clicked();
 
@@ -72,8 +72,6 @@ private slots:
 
     void on_progressBar_valueChanged(int value);
 
-    void on_ToggleProjectsGroupCheckBox_stateChanged(int arg1);
-
     void on_UpButton_clicked();
 
     void on_DownButton_clicked();
@@ -81,6 +79,10 @@ private slots:
     void on_SetProjectImportanceGroupsBtn_clicked();
 
     void on_SetIndicatorImportanceGroupsBtn_clicked();
+
+    void on_ParettoOffBtn_clicked();
+
+    void on_ParettoOnBtn_clicked();
 
 private:
     Ui::StartupConfigForm *ui;

@@ -56,3 +56,35 @@ Solution::Solution(QString solutionName, double crushingStep,
     ProjectsImportanceNotParsed = projectsImportanceNotParsed;
     IndicatorsImportanceNotParsed = indicatorsImportanceNotParsed;
 }
+
+Solution::Solution(QString solutionName, double crushingStep,
+                   QVector<QString> indicatorsNames, QVector<QString> projectsNames,
+                   QVector<QVector<double> > baseTable, QVector<QVector<double> > normalizedTable,
+                   QVector<double> hardRatings, QVector<double> softRatings,
+                   QVector<QString> priorityList,
+                   QString projectsImportanceNotParsed, QString indicatorsImportanceNotParsed,
+                   QString timeElapsed,
+                   QVector<QString> parettoSetProjects)
+{
+    SolutionName = solutionName;
+    CrushingStep = crushingStep;
+    TimeElapsed = timeElapsed;
+
+    IndicatorsNames = indicatorsNames;
+    ProjectsNames = projectsNames;
+
+    BaseTable = baseTable;
+    NormalizedTable = normalizedTable;
+
+    HardRatings = hardRatings;
+    SoftRatings = softRatings;
+
+    PriorityList = priorityList;
+
+    ProjectsImportanceNotParsed = projectsImportanceNotParsed;
+    IndicatorsImportanceNotParsed = indicatorsImportanceNotParsed;
+
+    ParettoSetProjects = parettoSetProjects;
+
+    IsParettoCriterionUsed = parettoSetProjects.size() == 0 ? false : true;
+}
