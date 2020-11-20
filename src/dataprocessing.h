@@ -93,7 +93,6 @@ public:
     static void CalculateRatingsIn4Threads();
     static void CalculateRatingsIn8Threads();
 
-
     static void CalculateRatingsIn1ThreadsWithWeights();
     static void CalculateRatingsIn2ThreadsWithWeights();
     static void CalculateRatingsIn4ThreadsWithWeights();

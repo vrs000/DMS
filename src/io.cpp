@@ -346,22 +346,43 @@ void IO::SaveExcelFile(QList<Solution> solutionsList)
 
 
         //Заполнение вертикальных заголовков
-        for (int i = 0; i < sol.ProjectsNames.size(); i++)
-            xlsx.write(BeginY + i + 1, 1, sol.ProjectsNames[i], format);
-
+        if (sol.IsParettoCriterionUsed)
+            for (int i = 0; i < sol.ParettoSetProjects.size(); i++)
+                xlsx.write(BeginY + i + 1, 1, sol.ParettoSetProjects[i], format);
+        else
+            for (int i = 0; i < sol.ProjectsNames.size(); i++)
+                xlsx.write(BeginY + i + 1, 1, sol.ProjectsNames[i], format);
 
         //Заполнение расчетной таблицы
-        for (int i = 0; i < sol.NormalizedTable.size(); i++)
-            for (int j = 0; j < sol.NormalizedTable[0].size(); j++)
-            {
-                if (IsPaint)
-                {
-                    double k = sol.NormalizedTable[i][j] > 1 ? 1 : sol.NormalizedTable[i][j];
-                    format1.setPatternBackgroundColor(QColor(qCeil(255 * (1 - k)), qCeil(k * 255), 0, 180));
-                }
-                xlsx.write(BeginY + i + 1, j + 2, sol.NormalizedTable[i][j], format1);
-            }
+        if (sol.IsParettoCriterionUsed)
+        {
 
+            for (int i = 0; i < sol.ParettoSetProjects.size(); i++)
+                for (int j = 0; j < sol.NormalizedTable[0].size(); j++)
+                {
+                    int ProjectIndexInStartList = sol.ProjectsNames.indexOf(sol.ParettoSetProjects[i]);
+                    double val = sol.NormalizedTable[ProjectIndexInStartList][j];
+
+                    if (IsPaint)
+                    {
+                        format1.setPatternBackgroundColor(QColor(qCeil(255 * (1 - val)), qCeil(val * 255), 0, 180));
+                    }
+                    xlsx.write(BeginY + i + 1, j + 2, val/*sol.NormalizedTable[i][j]*/, format1);
+                }
+        }
+        else
+        {
+            for (int i = 0; i < sol.NormalizedTable.size(); i++)
+                for (int j = 0; j < sol.NormalizedTable[0].size(); j++)
+                {
+                    if (IsPaint)
+                    {
+                        double k = sol.NormalizedTable[i][j];
+                        format1.setPatternBackgroundColor(QColor(qCeil(255 * (1 - k)), qCeil(k * 255), 0, 180));
+                    }
+                    xlsx.write(BeginY + i + 1, j + 2, sol.NormalizedTable[i][j], format1);
+                }
+        }
 
         //Заполнение жесткого+мягкого рейтинга
         for (int i = 0; i < sol.HardRatings.size(); i++)
@@ -428,40 +449,145 @@ void IO::SaveExcelFile(QList<Solution> solutionsList)
         }
 
         int row = 2;
-        for (int i = 0; i < sol.PrefferedMetrics.size(); i++)
-            for (int j = 0; j < sol.RejectedMetrics.size(); j++)
-            {
-                int length = QString("%1 > %2")
-                        .arg(sol.IndicatorsNames[sol.PrefferedMetrics[i]])
-                        .arg(sol.IndicatorsNames[sol.RejectedMetrics[j]]).size();
 
-                max = length > max ? length : max;
+        //Группы важности
+        //------------------------------------------------------------------------------
+        QStringList projects = sol.ProjectsImportanceNotParsed.split(",");
+        QStringList indicators = sol.IndicatorsImportanceNotParsed.split(",");
+        QStringList parsedRow;
+        QString first;
+        QString second;
+        qDebug() << indicators;
 
-                xlsx.write(row, BeginX + 2, QString("%1 > %2")
-                           .arg(sol.IndicatorsNames[sol.PrefferedMetrics[i]])
-                        .arg(sol.IndicatorsNames[sol.RejectedMetrics[j]]), format2);
-                row++;
-            }
+        int MaxCount = projects.size() > indicators.size() ? projects.size() : indicators.size();
+    int max1 = 0;
+    int max2 = 0;
 
-        if (max == 0)
+        for (int i=0; i < MaxCount; i++)
+        {
+            if (sol.IndicatorsImportanceNotParsed != "")
+                if (i < indicators.size())
+                {
+                    if (indicators[i].contains('>'))
+                    {
+                        parsedRow = indicators[i].split('>');
+                        parsedRow.first().toInt();
+                        first = sol.IndicatorsNames[parsedRow.first().toInt()];
+                        second = sol.IndicatorsNames[parsedRow.last().toInt()];
+
+                        max1 = QString("%1>%2").arg(first).arg(second).size() > max1 ? QString("%1>%2").arg(first).arg(second).size() : max1;
+
+                        xlsx.write(row, BeginX + 2, QString("%1>%2").arg(first).arg(second), format2);
+                    }
+                    if (indicators[i].contains("≥"))
+                    {
+                        parsedRow = indicators[i].split("≥");
+                        parsedRow.first().toInt();
+                        first = sol.IndicatorsNames[parsedRow.first().toInt()];
+                        second = sol.IndicatorsNames[parsedRow.last().toInt()];
+
+                        max1 = QString("%1≥%2").arg(first).arg(second).size() > max1 ? QString("%1≥%2").arg(first).arg(second).size() : max1;
+
+                        xlsx.write(row, BeginX + 2, QString("%1≥%2").arg(first).arg(second), format2);
+                    }
+
+                }
+
+            if (sol.ProjectsImportanceNotParsed != "")
+                if (i < projects.size())
+                {
+                    if (projects[i].contains('>'))
+                    {
+                        parsedRow = projects[i].split('>');
+                        parsedRow.first().toInt();
+                        first = sol.ProjectsNames[parsedRow.first().toInt()];
+                        second = sol.ProjectsNames[parsedRow.last().toInt()];
+
+                        max2 = QString("%1≥%2").arg(first).arg(second).size() > max2 ? QString("%1≥%2").arg(first).arg(second).size() : max2;
+
+                        if (sol.IndicatorsImportanceNotParsed == "")
+                            xlsx.write(row, BeginX + 2, QString("%1>%2").arg(first).arg(second), format2);
+                        else
+                            xlsx.write(row, BeginX + 3, QString("%1>%2").arg(first).arg(second), format2);
+
+
+                    }
+                    if (projects[i].contains("≥"))
+                    {
+                        parsedRow = projects[i].split("≥");
+                        parsedRow.first().toInt();
+                        first = sol.ProjectsNames[parsedRow.first().toInt()];
+                        second = sol.ProjectsNames[parsedRow.last().toInt()];
+                        max2 = QString("%1≥%2").arg(first).arg(second).size() > max2 ? QString("%1≥%2").arg(first).arg(second).size() : max2;
+                        if (sol.IndicatorsImportanceNotParsed == "")
+                            xlsx.write(row, BeginX + 2, QString("%1≥%2").arg(first).arg(second), format2);
+                        else
+                            xlsx.write(row, BeginX + 3, QString("%1≥%2").arg(first).arg(second), format2);
+                    }
+                }
+
+            row++;
+        }
+
+        //        for (int i = 0; i < sol.PrefferedMetrics.size(); i++)
+        //            for (int j = 0; j < sol.RejectedMetrics.size(); j++)
+        //            {
+        //                int length = QString("%1 > %2")
+        //                        .arg(sol.IndicatorsNames[sol.PrefferedMetrics[i]])
+        //                        .arg(sol.IndicatorsNames[sol.RejectedMetrics[j]]).size();
+
+        //                max = length > max ? length : max;
+
+        //                xlsx.write(row, BeginX + 2, QString("%1 > %2")
+        //                           .arg(sol.IndicatorsNames[sol.PrefferedMetrics[i]])
+        //                        .arg(sol.IndicatorsNames[sol.RejectedMetrics[j]]), format2);
+        //                row++;
+        //            }
+        //------------------------------------------------------------------------------
+
+
+
+
+
+
+
+        if ((sol.IndicatorsImportanceNotParsed == "") || (sol.ProjectsImportanceNotParsed == ""))
+        {
+            xlsx.mergeCells(QXlsx::CellRange(1, BeginX, 1, BeginX + 2), format);
+            xlsx.setColumnWidth(BeginX + 2, xOffset *  (max1 > max2 ? max1 : max2 ));
+        }
+
+
+        if ((sol.IndicatorsImportanceNotParsed == "") && (sol.ProjectsImportanceNotParsed == ""))
         {
             xlsx.mergeCells(QXlsx::CellRange(1, BeginX, 1, BeginX + 1), format);
         }
-        else
+
+        if ((sol.IndicatorsImportanceNotParsed != "") && (sol.ProjectsImportanceNotParsed != ""))
         {
-            xlsx.setColumnWidth(BeginX + 2, xOffset * max);
-            xlsx.mergeCells(QXlsx::CellRange(1, BeginX, 1, BeginX + 2), format);
+            xlsx.mergeCells(QXlsx::CellRange(1, BeginX, 1, BeginX + 3), format);
+            xlsx.setColumnWidth(BeginX + 2, xOffset * max1);
+            xlsx.setColumnWidth(BeginX + 3, xOffset * max2);
         }
+
+        //        if (max == 0)
+        //        {
+        //            xlsx.mergeCells(QXlsx::CellRange(1, BeginX, 1, BeginX + 1), format);
+        //        }
+        //        else
+        //        {
+        //            xlsx.setColumnWidth(BeginX + 2, xOffset * max);
+        //            xlsx.mergeCells(QXlsx::CellRange(1, BeginX, 1, BeginX + 3), format);
+        //        }
 
         xlsx.write(1, BeginX, "Конфигурация", format);
 
-        //------------------------------------------------------------------------------------------------------------
         format1.setPatternBackgroundColor(QColor(235, 241, 222));
 
 
 
         //Построение графиков
-        //------------------------------------------------------------------------------------------------------------
+        //------------------------------------------------------------------------------------------------------
         if (IsBuild)
         {
             Chart* chart = xlsx.insertChart(7 + 2 * sol.ProjectsNames.size() - 2, 1, QSize(700, 300));
@@ -480,8 +606,7 @@ void IO::SaveExcelFile(QList<Solution> solutionsList)
             scatterChart->setChartType(Chart::CT_Doughnut);
             scatterChart->addSeries(CellRange(begY, begX, endY, endX));
         }
-        //------------------------------------------------------------------------------------------------------------
-
+        //------------------------------------------------------------------------------------------------------
     }
 
 
@@ -493,12 +618,9 @@ void IO::SaveExcelFile(QList<Solution> solutionsList)
             .arg(cd.day()).arg(cd.month()).arg(cd.year())
             .arg(ct.hour()).arg(ct.minute()).arg(ct.second());
 
-
     QString path = QFileDialog::getSaveFileName(nullptr, "Сохранить файл",
                                                 FilePath.arg(filename),
                                                 "Excel files (*.xlsx)");
-
-
     xlsx.saveAs(path);
     FilePath = path.remove(path.split("/").last()) + "%1";
 }
