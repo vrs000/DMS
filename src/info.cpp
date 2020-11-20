@@ -141,8 +141,9 @@ Info::Info(QWidget *parent) :
     //Список приоритетов показателей
     //------------------------------------------------------------------------------------------------------------------
     if (DataProcessing::NotParsedImportanceGroupOfIndicators != "")
-        for (int i = 0; i < indicatorsImportance.size(); i++)
+        for (int i = 0; i < indicatorsImportance.size(); i++)            
         {
+            QLabel *label;
             if (indicatorsImportance[i].contains("<"))
             {
                 second = indicatorsImportance[i].split("<")[0].toInt();
@@ -154,9 +155,17 @@ Info::Info(QWidget *parent) :
             {
                 first = indicatorsImportance[i].split(">")[0].toInt();
                 second = indicatorsImportance[i].split(">")[1].toInt();
+                label = new QLabel(QString("%1>%2").arg(IO::IndicatorsNames[first]).arg(IO::IndicatorsNames[second]));
             }
 
-            QLabel *label = new QLabel(QString("%1>%2").arg(IO::IndicatorsNames[first]).arg(IO::IndicatorsNames[second]));
+            if (indicatorsImportance[i].contains("≥"))
+            {
+                first = indicatorsImportance[i].split("≥")[0].toInt();
+                second = indicatorsImportance[i].split("≥")[1].toInt();
+                label = new QLabel(QString("%1≥%2").arg(IO::IndicatorsNames[first]).arg(IO::IndicatorsNames[second]));
+            }
+
+
 
             ui->layout->addWidget(label);
         }
