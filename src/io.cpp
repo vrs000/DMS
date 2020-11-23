@@ -457,7 +457,7 @@ void IO::SaveExcelFile(QList<Solution> solutionsList)
         QStringList parsedRow;
         QString first;
         QString second;
-        qDebug() << indicators;
+//        qDebug() << indicators;
 
         int MaxCount = projects.size() > indicators.size() ? projects.size() : indicators.size();
     int max1 = 0;
@@ -529,26 +529,6 @@ void IO::SaveExcelFile(QList<Solution> solutionsList)
             row++;
         }
 
-        //        for (int i = 0; i < sol.PrefferedMetrics.size(); i++)
-        //            for (int j = 0; j < sol.RejectedMetrics.size(); j++)
-        //            {
-        //                int length = QString("%1 > %2")
-        //                        .arg(sol.IndicatorsNames[sol.PrefferedMetrics[i]])
-        //                        .arg(sol.IndicatorsNames[sol.RejectedMetrics[j]]).size();
-
-        //                max = length > max ? length : max;
-
-        //                xlsx.write(row, BeginX + 2, QString("%1 > %2")
-        //                           .arg(sol.IndicatorsNames[sol.PrefferedMetrics[i]])
-        //                        .arg(sol.IndicatorsNames[sol.RejectedMetrics[j]]), format2);
-        //                row++;
-        //            }
-        //------------------------------------------------------------------------------
-
-
-
-
-
 
 
         if ((sol.IndicatorsImportanceNotParsed == "") || (sol.ProjectsImportanceNotParsed == ""))
@@ -570,20 +550,11 @@ void IO::SaveExcelFile(QList<Solution> solutionsList)
             xlsx.setColumnWidth(BeginX + 3, xOffset * max2);
         }
 
-        //        if (max == 0)
-        //        {
-        //            xlsx.mergeCells(QXlsx::CellRange(1, BeginX, 1, BeginX + 1), format);
-        //        }
-        //        else
-        //        {
-        //            xlsx.setColumnWidth(BeginX + 2, xOffset * max);
-        //            xlsx.mergeCells(QXlsx::CellRange(1, BeginX, 1, BeginX + 3), format);
-        //        }
 
         xlsx.write(1, BeginX, "Конфигурация", format);
 
-        format1.setPatternBackgroundColor(QColor(235, 241, 222));
 
+        format1.setPatternBackgroundColor(QColor(235, 241, 222));
 
 
         //Построение графиков

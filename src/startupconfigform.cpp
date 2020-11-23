@@ -304,6 +304,7 @@ void StartupConfigForm::on_ParettoOffBtn_clicked()
 
     DataProcessing::ParettoSetProjects.clear();
     DataProcessing::ParettoSetProjectsIndexes.clear();
+    DataProcessing::NormalizedTable.clear();
 }
 
 void StartupConfigForm::on_ParettoOnBtn_clicked()
@@ -312,9 +313,11 @@ void StartupConfigForm::on_ParettoOnBtn_clicked()
     const QString _max= "max";
     const QString _min= "min";
 
+
     QVector<QString> priority;
     for (auto p : PrioritiesComboBoxes)
         priority << (p->currentText() == max ? _max : _min);
+
 
     DataProcessing::SetPriorityList(priority);
     DataProcessing::FindMaxMinIndicators(IO::BaseTable);
@@ -338,11 +341,7 @@ void StartupConfigForm::on_ParettoOnBtn_clicked()
     //-----------------------------------------------------------------------------------
     foreach (auto project, DataProcessing::ParettoSetProjects)
         DataProcessing::ParettoSetProjectsIndexes << IO::ProjectsNames.indexOf(project);
-    //-----------------------------------------------------------------------------------
 
-
-
-    qDebug() << DataProcessing::ParettoSetProjects;
     qDebug() << DataProcessing::ParettoSetProjectsIndexes;
-    qDebug() << DataProcessing::ParettoSetProjects.size() << IO::ProjectsNames.size();
+    //-----------------------------------------------------------------------------------
 }

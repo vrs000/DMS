@@ -605,6 +605,9 @@ text-align: left;</string>
              <property name="editTriggers">
               <set>QAbstractItemView::NoEditTriggers</set>
              </property>
+             <property name="dragDropMode">
+              <enum>QAbstractItemView::NoDragDrop</enum>
+             </property>
              <property name="showGrid">
               <bool>true</bool>
              </property>

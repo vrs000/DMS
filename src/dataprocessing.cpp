@@ -164,8 +164,8 @@ void DataProcessing::FindParettoSet()
 
     //Рассчет нормализованнных показателей
     //--------------------------------------
-//    FindMaxMinIndicators(IO::BaseTable);
-//    CalculateNormalizedTable(IO::BaseTable);
+    //    FindMaxMinIndicators(IO::BaseTable);
+    //    CalculateNormalizedTable(IO::BaseTable);
     //--------------------------------------
 
     ParettoSetProjects.clear();
@@ -201,7 +201,7 @@ void DataProcessing::FindParettoSet()
         //Если проект не худший повсем показателям
         //то добавить в мн-во паретто
 
-        qDebug() << IsWorth << IO::ProjectsNames[i] << DataProcessing::NormalizedTable[i];
+        //        qDebug() << IsWorth << IO::ProjectsNames[i] << DataProcessing::NormalizedTable[i];
 
         if (!IsWorth)
             ParettoSetProjects << IO::ProjectsNames[i];
@@ -517,6 +517,7 @@ void DataProcessing::Finished1Threads()
 
             int iter = WeightCount - MissedCount;
 
+
             for (int i = 0; i < ProjectsCount; i++)
             {
                 hardRatings[i] *= 1.0 / count;
@@ -542,6 +543,7 @@ void DataProcessing::Finished1Threads()
                         timeElapsedParsed,
                         ParettoSetProjects);
 
+            NormalizedTable.clear();
 
             if (SolutionDB::IsContained(OpenedSolutionName))
                 SolutionDB::UpdateSolution(SolutionDB::GetSolution(OpenedSolutionName),
@@ -572,8 +574,8 @@ void DataProcessing::Finished2Threads()
             auto soft2 = th2->GetSoftRatings();
 
 
-            qDebug() << hard1;
-            qDebug() << hard2;
+            //            qDebug() << hard1;
+            //            qDebug() << hard2;
 
 
             QVector<double> hardRatings(hard1.size(), 0);
@@ -615,7 +617,7 @@ void DataProcessing::Finished2Threads()
                         NotParsedImportanceGroupOfProjects, NotParsedImportanceGroupOfIndicators,
                         timeElapsedParsed,
                         ParettoSetProjects);
-
+            NormalizedTable.clear();
             if (SolutionDB::IsContained(OpenedSolutionName))
                 SolutionDB::UpdateSolution(SolutionDB::GetSolution(OpenedSolutionName),
                                            solution);
@@ -698,7 +700,7 @@ void DataProcessing::Finished4Threads()
                         NotParsedImportanceGroupOfProjects, NotParsedImportanceGroupOfIndicators,
                         timeElapsedParsed,
                         ParettoSetProjects);
-
+            NormalizedTable.clear();
             if (SolutionDB::IsContained(OpenedSolutionName))
                 SolutionDB::UpdateSolution(SolutionDB::GetSolution(OpenedSolutionName),
                                            solution);
@@ -810,7 +812,7 @@ void DataProcessing::Finished8Threads()
                         timeElapsedParsed,
                         ParettoSetProjects);
 
-
+            NormalizedTable.clear();
             if (SolutionDB::IsContained(OpenedSolutionName))
                 SolutionDB::UpdateSolution(SolutionDB::GetSolution(OpenedSolutionName),
                                            solution);
@@ -1425,17 +1427,16 @@ QVector<double> DataProcessing::GetLinearConvolutionResult(QVector<double> weigh
 }
 
 double* DataProcessing::GetLinearConvolutionResult(double *weights)
-{
+{    
     double* results = new double[ProjectsCount];
-
     double sum;
+
     for (int i = 0; i < ProjectsCount; i++)
     {
         sum = 0;
+
         for (int j = 0; j < IndicatorsCount; j++)
-        {
-            sum += normTable[i][j] * weights[j];
-        }
+            sum += normTable[ParettoSetProjects.size() == 0 ? i : ParettoSetProjectsIndexes[i]][j] * weights[j];
 
         results[i] = sum;
     }
@@ -1474,11 +1475,14 @@ void DataProcessing::MakeCalculations(QVector<QString> priorityList,
 
     SetMetrics(Preferred, Rejected);
     SetProjectsPriorities(preferredProjects, rejectedProjects);
-
     SetPriorityList(priority);
 
-    FindMaxMinIndicators(IO::BaseTable);
-    CalculateNormalizedTable(IO::BaseTable);
+
+    if (NormalizedTable.size() == 0)
+    {
+        FindMaxMinIndicators(IO::BaseTable);
+        CalculateNormalizedTable(IO::BaseTable);
+    }
 
 
     WeightsTable.clear();

@@ -168,7 +168,7 @@ GenerateWeightsAndCalculateRatingsAsync::GenerateWeightsAndCalculateRatingsAsync
 
     if (DataProcessing::NotParsedImportanceGroupOfIndicators == "") IndicatorsGroupCount = -1;
     if (DataProcessing::NotParsedImportanceGroupOfProjects == "") ProjectsGroupCount = -1;
- //=========================================================================================================
+    //=========================================================================================================
 
 
 
@@ -278,10 +278,13 @@ void GenerateWeightsAndCalculateRatingsAsync::Calculate(double currentSet[], int
             currentSet[curPosIndex] = rest;
 
             GeneratedIterCount++;
+
+            //Если индекс не входит в пределы, то прервать
             if(GeneratedIterCount < FirstIterationIndex || GeneratedIterCount > LastIterationIndex) return;
 
 
             Count++;
+
 
             if (Count % 10000 == 0)
                 emit CountChanged(Count);
@@ -292,7 +295,7 @@ void GenerateWeightsAndCalculateRatingsAsync::Calculate(double currentSet[], int
 
 
             //Проверка проектов
-            //---------------------------------------
+            //---------------------------------------------------------------------------
             if (ProjectsGroupCount != -1)
             {
                 for (int i = 0; i < ProjectsGroupCount; i++)
@@ -313,11 +316,11 @@ void GenerateWeightsAndCalculateRatingsAsync::Calculate(double currentSet[], int
                 }
 
             }
-            //---------------------------------------
+            //---------------------------------------------------------------------------
 
 
             //Проверка индикаторов
-            //---------------------------------------
+            //--------------------------------------------------------------------------------------
             if (IndicatorsGroupCount != -1)
             {
                 for (int i = 0; i < IndicatorsGroupCount; i++)
@@ -337,12 +340,9 @@ void GenerateWeightsAndCalculateRatingsAsync::Calculate(double currentSet[], int
                         }
                 }
             }
-            //---------------------------------------
+            //--------------------------------------------------------------------------------------
 
 
-
-            //Если удовлятворяет заданным группам важности
-            //то идет подсчёт рейтингов
             if (IsSuitable)
             {
                 //Мягкий рейтинг
@@ -357,7 +357,7 @@ void GenerateWeightsAndCalculateRatingsAsync::Calculate(double currentSet[], int
 
 
                 //Жёсткий рейтинг
-                //-----------------------------------------------
+                //-----------------------------------------------------------
                 if (COUNT(res, getMax(res)) > 1)
                 {
                     int q = COUNT(res, getMax(res));
@@ -368,18 +368,19 @@ void GenerateWeightsAndCalculateRatingsAsync::Calculate(double currentSet[], int
                 {
                     hardRatings[IndexOf(res, getMax(res))] = 1;
                 }
-                //-----------------------------------------------
+                //-----------------------------------------------------------
 
 
                 //Занесение результата
-                //-----------------------------------------------
+                //---------------------------------------
                 for (int i = 0; i < ProjectsCount; i++)
                 {
                     HardRatings[i] += hardRatings[i];
-                    SoftRatings[i] += softRatings[i];
-                }
-                //-----------------------------------------------
 
+                    if (softRatings[0] == softRatings[0])
+                        SoftRatings[i] += softRatings[i];
+                }
+                //---------------------------------------
             }
 
             delete res;
