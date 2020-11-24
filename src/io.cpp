@@ -529,22 +529,31 @@ void IO::SaveExcelFile(QList<Solution> solutionsList)
             row++;
         }
 
+        bool expr1 = sol.IndicatorsImportanceNotParsed == "" && sol.ProjectsImportanceNotParsed != "";
+        bool expr2 = sol.IndicatorsImportanceNotParsed != "" && sol.ProjectsImportanceNotParsed == "";
 
-
-        if ((sol.IndicatorsImportanceNotParsed == "") || (sol.ProjectsImportanceNotParsed == ""))
+        //Если заданы суждения 1го или 2го рода
+//        if ((sol.IndicatorsImportanceNotParsed == "") || (sol.ProjectsImportanceNotParsed == ""))
+        if (expr1 || expr2)
         {
+            qDebug() << "MERGED1";
             xlsx.mergeCells(QXlsx::CellRange(1, BeginX, 1, BeginX + 2), format);
             xlsx.setColumnWidth(BeginX + 2, xOffset *  (max1 > max2 ? max1 : max2 ));
         }
 
 
+        //Если не заданы суждения 1го и 2го рода
         if ((sol.IndicatorsImportanceNotParsed == "") && (sol.ProjectsImportanceNotParsed == ""))
         {
+            qDebug() << "MERGED2";
             xlsx.mergeCells(QXlsx::CellRange(1, BeginX, 1, BeginX + 1), format);
         }
 
+
+        //Если заданы суждения 1го и 2го рода
         if ((sol.IndicatorsImportanceNotParsed != "") && (sol.ProjectsImportanceNotParsed != ""))
         {
+            qDebug() << "MERGED3";
             xlsx.mergeCells(QXlsx::CellRange(1, BeginX, 1, BeginX + 3), format);
             xlsx.setColumnWidth(BeginX + 2, xOffset * max1);
             xlsx.setColumnWidth(BeginX + 3, xOffset * max2);
