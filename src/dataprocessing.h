@@ -105,6 +105,7 @@ public:
     static void SetProjectsPriorities(QVector<QString> Preferred, QVector<QString> Rejected);
     static void SetPriorityList(QVector<QString> list);
 
+    static QString GetTheDigitsOfNumber(QString number, QString splitter = " ");
 
     static void MakeCalculations(QVector<QString> priorityList = QVector<QString>(),
                                  QVector<int> Preferred = QVector<int>(),

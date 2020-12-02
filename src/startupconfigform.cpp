@@ -41,7 +41,7 @@ StartupConfigForm::StartupConfigForm(QWidget *parent) :
     }
     else
     {
-        ui->IterationCountLabel_2->setText(QString("Количество итераций: %1").arg(K));
+        ui->IterationCountLabel_2->setText(QString("Количество итераций: %1").arg(DataProcessing::GetTheDigitsOfNumber(QString::number(K))));
         ui->OkButton->setEnabled(true);
     }
 }
@@ -50,6 +50,7 @@ StartupConfigForm::~StartupConfigForm()
 {
     delete ui;
 }
+
 
 void StartupConfigForm::SetMetricsLists(QVector<QString> indicatorsNames)
 {
@@ -146,7 +147,7 @@ void StartupConfigForm::on_OkButton_clicked()
 
     for (int i = 0; i < RejectedProjectsCheckBoxes.size(); i++)
         if (RejectedProjectsCheckBoxes[i]->isChecked())
-            rejectedProjects << RejectedProjectsCheckBoxes[i]->text();    
+            rejectedProjects << RejectedProjectsCheckBoxes[i]->text();
     //------------------------------------------------------------------
 
     //===========================================
@@ -202,20 +203,6 @@ void StartupConfigForm::SetProgressBarValue(int value, int maximum)
 
 }
 
-void StartupConfigForm::on_StepSpinBox_valueChanged(double arg1)
-{
-    DataProcessing::CurrentIterationCount = DataProcessing::GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), arg1);
-    int K = DataProcessing::GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), arg1);
-
-    if (K < 0)
-    {
-        ui->OkButton->setEnabled(false);
-    }
-    else
-    {
-        ui->OkButton->setEnabled(true);
-    }
-}
 
 void StartupConfigForm::on_progressBar_valueChanged(int value)
 {
@@ -247,7 +234,7 @@ void StartupConfigForm::on_UpButton_clicked()
         }
         else
         {
-            ui->IterationCountLabel_2->setText(QString("Количество итераций: %1").arg(K));
+            ui->IterationCountLabel_2->setText(QString("Количество итераций: %1").arg(DataProcessing::GetTheDigitsOfNumber(QString::number(K))));
             ui->OkButton->setEnabled(true);
         }
     }
@@ -275,7 +262,7 @@ void StartupConfigForm::on_DownButton_clicked()
         }
         else
         {
-            ui->IterationCountLabel_2->setText(QString("Количество итераций: %1").arg(K));
+            ui->IterationCountLabel_2->setText(QString("Количество итераций: %1").arg(DataProcessing::GetTheDigitsOfNumber(QString::number(K))));
             ui->OkButton->setEnabled(true);
         }
     }
@@ -342,6 +329,6 @@ void StartupConfigForm::on_ParettoOnBtn_clicked()
     foreach (auto project, DataProcessing::ParettoSetProjects)
         DataProcessing::ParettoSetProjectsIndexes << IO::ProjectsNames.indexOf(project);
 
-    qDebug() << DataProcessing::ParettoSetProjectsIndexes;
+    //    qDebug() << DataProcessing::ParettoSetProjectsIndexes;
     //-----------------------------------------------------------------------------------
 }

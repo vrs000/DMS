@@ -32,7 +32,6 @@ public:
 
     const QString max = "Больше - лучше";
     const QString min = "Меньше - лучше";
-//    WindowResult
 
     static bool IsSuccessFinished;
 
@@ -68,7 +67,7 @@ private slots:
 
     void on_OkButton_clicked();
 
-    void on_StepSpinBox_valueChanged(double arg1);
+//    void on_StepSpinBox_valueChanged(double arg1);
 
     void on_progressBar_valueChanged(int value);
 

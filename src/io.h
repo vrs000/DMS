@@ -54,6 +54,9 @@ public:
 
     static void SaveExcelFile(QList<Solution> solutionsList);
 
+
+    static QVector<QString> GetTopProjects(QVector<QString> projectNames, QVector<double> hardRating, QVector<double> softRating);
+
 private:
     static QString FilePath;
     static void InitList(int rows, int columns);

@@ -160,58 +160,39 @@ int DataProcessing::GetTheoreticalWeightsCount(int ParametersCount, double h)
 
 void DataProcessing::FindParettoSet()
 {
-
-
-    //Рассчет нормализованнных показателей
-    //--------------------------------------
-    //    FindMaxMinIndicators(IO::BaseTable);
-    //    CalculateNormalizedTable(IO::BaseTable);
-    //--------------------------------------
-
     ParettoSetProjects.clear();
     ParettoSetProjectsIndexes.clear();
 
 
-    //Отбор проектов для множества Паретто
-    //--------------------------------------
-
-    bool IsWorth;
+    QList<int> WorstProjectIndexes;
     bool IsBetter;
 
-    //Беру i-ым проект
+
     for (int i = 0; i < IO::ProjectsNames.size(); i++)
     {
-        IsWorth = false;
+        if (WorstProjectIndexes.contains(i)) continue;
 
-        //Сравниваю его с j-ым проектом
         for (int j = 0; j < IO::ProjectsNames.size(); j++)
         {
-            if (j == i) continue;
-
             IsBetter = true;
 
-            //Сравниваю по параметрам
-            for (int paramIndex = 0; paramIndex < IO::IndicatorsNames.size(); paramIndex++)
-                IsBetter = IsBetter && (NormalizedTable[j][paramIndex] >= NormalizedTable[i][paramIndex]);
+            if (j == i) continue;
+            if (WorstProjectIndexes.contains(j)) continue;
 
+            for (int paramIndex = 0; paramIndex < IO::IndicatorsNames.size(); paramIndex++ )
+            {
+                IsBetter = IsBetter && (NormalizedTable[i][paramIndex] >= NormalizedTable[j][paramIndex]);
+            }
 
-            IsWorth = IsWorth || IsBetter;
+            if (IsBetter)
+                WorstProjectIndexes << j;
         }
-
-        //Если проект не худший повсем показателям
-        //то добавить в мн-во паретто
-
-        //        qDebug() << IsWorth << IO::ProjectsNames[i] << DataProcessing::NormalizedTable[i];
-
-        if (!IsWorth)
-            ParettoSetProjects << IO::ProjectsNames[i];
-
     }
 
 
-    //--------------------------------------
-
-
+     for (int i = 0; i < IO::ProjectsNames.size(); i++)
+         if (!WorstProjectIndexes.contains(i))
+             ParettoSetProjects << IO::ProjectsNames[i];
 }
 
 void DataProcessing::FindMaxMinIndicators(QVector<QVector<double> > BaseTable)
@@ -295,6 +276,27 @@ void DataProcessing::CalculateNormalizedTable(QVector<QVector<double> > BaseTabl
 void DataProcessing::SetPriorityList(QVector<QString> list)
 {
     PriorityList = list;
+}
+
+QString DataProcessing::GetTheDigitsOfNumber(QString number, QString splitter)
+{
+    QStringList triads;
+    int count = number.count() - 3;
+
+    while (count >= 0)
+    {
+        triads.push_front(number.mid(count, 3));
+        count -= 3;
+    }
+
+    if (count == -2)
+        triads.push_front(number.mid(0, 1));
+
+    if (count == -1)
+        triads.push_front(number.mid(0, 2));
+
+
+    return triads.join(splitter);
 }
 
 

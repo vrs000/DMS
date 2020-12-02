@@ -22,7 +22,9 @@ Info::Info(QWidget *parent) :
 
     ui->Step->setText(QString("Шаг дробления: %1").arg(DataProcessing::CrushingStep));
     ui->ProjectsCount->setText(QString("Количество проектов: %1").arg(IO::ProjectsNames.size()));
-    ui->IterationsCount->setText(QString("Количество итераций: %1").arg(DataProcessing::CurrentIterationCount - DataProcessing::missed_variation));
+
+    int size = DataProcessing::CurrentIterationCount - DataProcessing::missed_variation;
+    ui->IterationsCount->setText(QString("Количество итераций: %1").arg(DataProcessing::GetTheDigitsOfNumber(QString::number(size))));
 
 
     //Производительность

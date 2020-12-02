@@ -35,8 +35,13 @@ void SelectForExportForm::on_OkButton_clicked()
     foreach(auto checkBox, checkboxesList)
     {
         if (checkBox->isChecked())
-            solutions << SolutionDB::GetSolution(checkBox->text());
+        {
+            solutions << (SolutionDB::GetSolution(checkBox->text()));
+
+        }
     }
+
+
 
     IO::IsBuild = ui->BuildChartOnRadioButton->isChecked();
     IO::IsPaint = ui->PaintOnRadioButton->isChecked();

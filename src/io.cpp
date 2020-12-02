@@ -240,21 +240,6 @@ void IO::MakeExcelReport(QList<Solution> solutions)
     excelFile.open(QIODevice::WriteOnly);
 
     excelFile.close();
-
-
-    /*
-    QAxObject* excel = new QAxObject( "Excel.Application", 0);
-
-    excel->dynamicCall( "SetVisible(bool)", TRUE );
-    QAxObject *workbooks = excel->querySubObject( "Workbooks" );
-    QAxObject *workbook = workbooks->querySubObject( "Open(const QString&)", filePath);
-    QAxObject *sheets = workbook->querySubObject( "Sheets" );
-    QAxObject *StatSheet = sheets->querySubObject( "Item(const QVariant&)", QVariant("stat") );
-    StatSheet->dynamicCall( "Select()" );
-    QAxObject *range = StatSheet->querySubObject( "Range(const QVariant&)", QVariant(QString("A1:A1")));
-    range->dynamicCall( "Clear()" );
-    /range->dynamicCall( "SetValue(const QVariant&)", QVariant(5) );
-*/
 }
 
 void IO::SaveExcelFile(QList<Solution> solutionsList)
@@ -268,6 +253,97 @@ void IO::SaveExcelFile(QList<Solution> solutionsList)
 
         return max;
     };
+    auto GetColorOfNormalizedValue = [](double k)
+    {
+        QColor color;
+
+        int r = 250;
+        int g = 70;
+        int b = 70;
+
+        double dist = 215.74985515638244;
+
+        double dr = -0.44495974252411946;
+        double dg = 0.8064895333249665;
+        double db = 0.38933977470860454;
+
+        color.setRgb(qRound(r + dr*dist*k), qRound(g + dg*dist*k), qRound(b + db*dist*k));
+
+        return color;
+    };
+    auto GetColorOfRatingValue = [](double k)
+    {
+        //G (154, 244, 154)
+        //R (250, 70, 70)
+
+        int r = 250;
+        int g = 70;
+        int b = 70;
+
+        double offset = 2;
+
+        if (k ==  0) return QColor(255, 30, 30);
+
+
+        double dist = 215.74985515638244;
+        double dr = -0.44495974252411946;
+        double dg = 0.8064895333249665;
+        double db = 0.38933977470860454;
+
+
+        int R, G, B;
+        if (k < 0.1)
+        {
+            R = qRound(r + dr*dist*k*offset);
+            G = qRound(g + dg*dist*k*offset);
+            B = qRound(b + db*dist*k*offset);
+
+        }
+
+        else
+        {
+            R = qRound(r + dr*dist*k);
+            G = qRound(g + dg*dist*k);
+            B = qRound(b + db*dist*k);
+        }
+
+        return QColor(R, G, B);
+    };
+
+    QVector<QString> topProjects;
+    auto GetColorOfHardRating = [&](int projectIndex, QVector<QString> notSortedProjects, double HR)
+    {
+        /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+         * В этой реализации есть недочет
+         * В случае если будут проекты с одинаковыми именами,
+         * то будут некорректно опредляться позиции в топе
+           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+
+        //G (154, 244, 154)
+        //R (250, 70, 70)
+        //int r = 250;
+        //int g = 70;
+        //int b = 70;
+        if (HR <= 0.0000001) return QColor(250, 70, 70);
+
+       double dist = 215.74985515638244;
+       double dr = -0.44495974252411946;
+       double dg = 0.8064895333249665;
+       double db = 0.38933977470860454;
+
+
+        int posInTop = topProjects.indexOf(notSortedProjects[projectIndex]);
+
+        double step = dist/topProjects.size();
+
+        double step_dr = step * dr;
+        double step_dg = step * dg;
+        double step_db = step * db;
+
+        return QColor(154 - posInTop*step_dr, 244- posInTop*step_dg, 154- posInTop*step_db);
+    };
+
+
 
     const double xOffset = 1.5;
 
@@ -288,6 +364,7 @@ void IO::SaveExcelFile(QList<Solution> solutionsList)
     format1.setFontSize(10);
     format2.setFontSize(12);
 
+
     format.setPatternBackgroundColor(QColor(220, 230, 241));
     format1.setPatternBackgroundColor(QColor(235, 241, 222));
     format2.setPatternBackgroundColor(QColor(235, 241, 222));
@@ -298,10 +375,12 @@ void IO::SaveExcelFile(QList<Solution> solutionsList)
     double k;
     foreach (auto sol, solutionsList)
     {
+        topProjects = GetTopProjects(sol.IsParettoCriterionUsed ? sol.ParettoSetProjects : sol.ProjectsNames, sol.HardRatings, sol.SoftRatings);
+
         xlsx.addSheet(sol.SolutionName);
 
         //Заполнение исходной таблицы
-        //-----------------------------------------
+        //-----------------------------------------------------------------------
 
         //Заполнение горизонтальных заголовков
         xlsx.write(1, 1, "Проекты", format);
@@ -323,37 +402,44 @@ void IO::SaveExcelFile(QList<Solution> solutionsList)
             for (int j = 0; j < sol.BaseTable[0].size(); j++)
                 xlsx.write(i + 2, j + 2, sol.BaseTable[i][j], format1);
 
-        //-----------------------------------------
+        //-----------------------------------------------------------------------
 
 
         //Заполнение расчетной таблицы
-        //-----------------------------------------
+        //===========================================================================================================
         const int BeginY = sol.ProjectsNames.size() + 1 + 3;
 
         //Заполнение горизонтальных заголовков
+        //-------------------------------------------------------------------------------------------------
         xlsx.write(BeginY, 1, "Проекты", format);
         for (int j=0; j < sol.IndicatorsNames.size(); j++)
-            xlsx.write(BeginY, j+2, sol.IndicatorsNames[j], format);
+        {
+            xlsx.write(BeginY, j + 4, sol.IndicatorsNames[j], format);
+            xlsx.setColumnWidth(j + 4, xOffset *  sol.IndicatorsNames[j].size());
+        }
 
 
+        xlsx.setColumnWidth(2, xOffset *  QString("Жёсткий рейтинг").size());
+        xlsx.setColumnWidth(3, xOffset *  QString("Мягкий рейтинг").size());
 
-        xlsx.setColumnWidth(sol.IndicatorsNames.size() + 2, xOffset *  QString("Жёсткий рейтинг").size());
-        xlsx.setColumnWidth(sol.IndicatorsNames.size() + 3, xOffset *  QString("Мягкий рейтинг").size());
 
-
-        xlsx.write(BeginY, sol.IndicatorsNames.size() + 2, "Жёсткий рейтинг", format);
-        xlsx.write(BeginY, sol.IndicatorsNames.size() + 3, "Мягкий рейтинг", format);
+        xlsx.write(BeginY, 2, "Жёсткий рейтинг", format);
+        xlsx.write(BeginY, 3, "Мягкий рейтинг", format);
+        //-------------------------------------------------------------------------------------------------
 
 
         //Заполнение вертикальных заголовков
-        if (sol.IsParettoCriterionUsed)
-            for (int i = 0; i < sol.ParettoSetProjects.size(); i++)
-                xlsx.write(BeginY + i + 1, 1, sol.ParettoSetProjects[i], format);
-        else
-            for (int i = 0; i < sol.ProjectsNames.size(); i++)
-                xlsx.write(BeginY + i + 1, 1, sol.ProjectsNames[i], format);
+        //-------------------------------------------------------------------------------------------
+        auto projectsNames = sol.IsParettoCriterionUsed ? sol.ParettoSetProjects : sol.ProjectsNames;
+
+        for (int i = 0; i < projectsNames.size(); i++)
+            xlsx.write(BeginY + i + 1, 1, projectsNames[i], format);
+        //-------------------------------------------------------------------------------------------
 
         //Заполнение расчетной таблицы
+        //=================================================================================================================
+        const int maxColorValue = 200;
+
         if (sol.IsParettoCriterionUsed)
         {
 
@@ -365,9 +451,9 @@ void IO::SaveExcelFile(QList<Solution> solutionsList)
 
                     if (IsPaint)
                     {
-                        format1.setPatternBackgroundColor(QColor(qCeil(255 * (1 - val)), qCeil(val * 255), 0, 180));
+                        format1.setPatternBackgroundColor(GetColorOfNormalizedValue(val));
                     }
-                    xlsx.write(BeginY + i + 1, j + 2, val/*sol.NormalizedTable[i][j]*/, format1);
+                    xlsx.write(BeginY + i + 1, j + 4, val/*sol.NormalizedTable[i][j]*/, format1);
                 }
         }
         else
@@ -378,9 +464,11 @@ void IO::SaveExcelFile(QList<Solution> solutionsList)
                     if (IsPaint)
                     {
                         double k = sol.NormalizedTable[i][j];
-                        format1.setPatternBackgroundColor(QColor(qCeil(255 * (1 - k)), qCeil(k * 255), 0, 180));
+                        //                        GetColorOfNormalizedValue
+                        //                        format1.setPatternBackgroundColor(QColor(qCeil(maxColorValue * (1 - k)), qCeil(k * maxColorValue), 0, 180));
+                        format1.setPatternBackgroundColor(GetColorOfNormalizedValue(k));
                     }
-                    xlsx.write(BeginY + i + 1, j + 2, sol.NormalizedTable[i][j], format1);
+                    xlsx.write(BeginY + i + 1, j + 4, sol.NormalizedTable[i][j], format1);
                 }
         }
 
@@ -388,21 +476,19 @@ void IO::SaveExcelFile(QList<Solution> solutionsList)
         for (int i = 0; i < sol.HardRatings.size(); i++)
         {
             if (IsPaint)
-            {
-                k = sol.HardRatings[i];
-                format1.setPatternBackgroundColor(QColor(qCeil(255 * (1 - k)), qCeil(k * 255), 0, 180));
-            }
-            xlsx.write(BeginY + i + 1, 1 + sol.IndicatorsNames.size() + 1, sol.HardRatings[i], format1);
+                format1.setPatternBackgroundColor(GetColorOfHardRating(i, sol.IsParettoCriterionUsed ? sol.ParettoSetProjects : sol.ProjectsNames, sol.HardRatings[i]));
+//                format1.setPatternBackgroundColor(GetColorOfRatingValue(sol.HardRatings[i]));
+
+            xlsx.write(BeginY + i + 1, 2, sol.HardRatings[i], format1);
+
 
             if (IsPaint)
-            {
-                k = sol.SoftRatings[i] > 1 ? 1 : sol.SoftRatings[i];
-                format1.setPatternBackgroundColor(QColor(qCeil(255 * (1 - k)), qCeil(k * 255), 0, 180));
-            }
-            xlsx.write(BeginY + i + 1, 1 + sol.IndicatorsNames.size() + 2, sol.SoftRatings[i], format1);
+                format1.setPatternBackgroundColor(GetColorOfNormalizedValue(sol.SoftRatings[i]));
+
+            xlsx.write(BeginY + i + 1, 3, sol.SoftRatings[i], format1);
         }
 
-        //-----------------------------------------
+        //=================================================================================================================
 
         //Заполнение Инфо таблицы
         /*
@@ -457,11 +543,12 @@ void IO::SaveExcelFile(QList<Solution> solutionsList)
         QStringList parsedRow;
         QString first;
         QString second;
-//        qDebug() << indicators;
+
 
         int MaxCount = projects.size() > indicators.size() ? projects.size() : indicators.size();
-    int max1 = 0;
-    int max2 = 0;
+        int max1 = 0;
+        int max2 = 0;
+
 
         for (int i=0; i < MaxCount; i++)
         {
@@ -479,6 +566,7 @@ void IO::SaveExcelFile(QList<Solution> solutionsList)
 
                         xlsx.write(row, BeginX + 2, QString("%1>%2").arg(first).arg(second), format2);
                     }
+
                     if (indicators[i].contains("≥"))
                     {
                         parsedRow = indicators[i].split("≥");
@@ -529,14 +617,15 @@ void IO::SaveExcelFile(QList<Solution> solutionsList)
             row++;
         }
 
+
         bool expr1 = sol.IndicatorsImportanceNotParsed == "" && sol.ProjectsImportanceNotParsed != "";
         bool expr2 = sol.IndicatorsImportanceNotParsed != "" && sol.ProjectsImportanceNotParsed == "";
 
+
         //Если заданы суждения 1го или 2го рода
-//        if ((sol.IndicatorsImportanceNotParsed == "") || (sol.ProjectsImportanceNotParsed == ""))
+        //        if ((sol.IndicatorsImportanceNotParsed == "") || (sol.ProjectsImportanceNotParsed == ""))
         if (expr1 || expr2)
         {
-            qDebug() << "MERGED1";
             xlsx.mergeCells(QXlsx::CellRange(1, BeginX, 1, BeginX + 2), format);
             xlsx.setColumnWidth(BeginX + 2, xOffset *  (max1 > max2 ? max1 : max2 ));
         }
@@ -545,7 +634,6 @@ void IO::SaveExcelFile(QList<Solution> solutionsList)
         //Если не заданы суждения 1го и 2го рода
         if ((sol.IndicatorsImportanceNotParsed == "") && (sol.ProjectsImportanceNotParsed == ""))
         {
-            qDebug() << "MERGED2";
             xlsx.mergeCells(QXlsx::CellRange(1, BeginX, 1, BeginX + 1), format);
         }
 
@@ -553,7 +641,6 @@ void IO::SaveExcelFile(QList<Solution> solutionsList)
         //Если заданы суждения 1го и 2го рода
         if ((sol.IndicatorsImportanceNotParsed != "") && (sol.ProjectsImportanceNotParsed != ""))
         {
-            qDebug() << "MERGED3";
             xlsx.mergeCells(QXlsx::CellRange(1, BeginX, 1, BeginX + 3), format);
             xlsx.setColumnWidth(BeginX + 2, xOffset * max1);
             xlsx.setColumnWidth(BeginX + 3, xOffset * max2);
@@ -567,26 +654,45 @@ void IO::SaveExcelFile(QList<Solution> solutionsList)
 
 
         //Построение графиков
-        //------------------------------------------------------------------------------------------------------
+        //======================================================================================================
         if (IsBuild)
         {
-            Chart* chart = xlsx.insertChart(7 + 2 * sol.ProjectsNames.size() - 2, 1, QSize(700, 300));
-            chart->setChartType(Chart::CT_Bar3D);
-            chart->setChartStyle(9);
-
+            //Диапозон данных
+            //----------------------------------------------------------------------------------------------------------------------------------------
             int begY = 1 + sol.ProjectsNames.size() + 4;
-            int begX = 1 + sol.IndicatorsNames.size() + 1;
+            int begX = 2;
 
-            int endY = 1 + sol.ProjectsNames.size() + 4 + sol.ProjectsNames.size() - 1;
-            int endX = 1 + sol.IndicatorsNames.size() + 1 + 1;
+            int endY = 1 + sol.ProjectsNames.size() + 4 + (sol.IsParettoCriterionUsed ? sol.ParettoSetProjects.size() : sol.ProjectsNames.size()) - 1;
+            int endX = 3;
+            //----------------------------------------------------------------------------------------------------------------------------------------
 
+
+            //Положение графика
+            //-----------------------------------------------------------------------------------------------------------------------------------
+            int row = 7 + sol.ProjectsNames.size() + (sol.IsParettoCriterionUsed ? sol.ParettoSetProjects.size() : sol.ProjectsNames.size()) - 2;
+            int col = 1;
+            //-----------------------------------------------------------------------------------------------------------------------------------
+
+
+            Chart* chart = xlsx.insertChart(row, col, QSize(1000, 600));
+            chart->setChartType(Chart::CT_Bar3D);
             chart->addSeries(CellRange(begY, begX, endY, endX));
 
-            Chart *scatterChart = xlsx.insertChart(7 + 2 * sol.ProjectsNames.size()-2 + 17, 1, QSize(700, 300));
-            scatterChart->setChartType(Chart::CT_Doughnut);
-            scatterChart->addSeries(CellRange(begY, begX, endY, endX));
+            //Добавление легенды рядом с графиком
+            //---------------------------------------------------------------------------------------------
+            auto projects = sol.IsParettoCriterionUsed ? sol.ParettoSetProjects : sol.ProjectsNames;
+
+            Format legendFormat;
+            legendFormat.setPatternBackgroundColor(QColor(253, 233, 217));
+            legendFormat.setFontBold(true);
+            legendFormat.setHorizontalAlignment(QXlsx::Format::AlignLeft);
+
+
+            for (int i = 0; i < projects.size(); i++)
+                xlsx.write(row + 1 + i, col, QString("%1. %2").arg(i + 1).arg(projects[i]), legendFormat);
+            //---------------------------------------------------------------------------------------------
         }
-        //------------------------------------------------------------------------------------------------------
+        //======================================================================================================
     }
 
 
@@ -605,6 +711,51 @@ void IO::SaveExcelFile(QList<Solution> solutionsList)
     FilePath = path.remove(path.split("/").last()) + "%1";
 }
 
+QVector<QString> IO::GetTopProjects(QVector<QString> projectNames, QVector<double> hardRating, QVector<double> softRating)
+{
+    QVector<QString> topProjects = projectNames;
+    QVector<double> hard = hardRating;
+    QVector<double> soft = softRating;
+
+
+    auto swap = [&](int index1, int index2)
+    {
+        //swap projects
+        QString s = topProjects[index1];
+        topProjects[index1] = topProjects[index2];
+        topProjects[index2] = s;
+
+
+        //swap hard
+        double tmp = hard[index1];
+        hard[index1] = hard[index2];
+        hard[index2] = tmp;
+
+
+        //swap soft
+        tmp = soft[index1];
+        soft[index1] = soft[index2];
+        soft[index2] = tmp;
+    };
+
+
+    //Сортировка
+    for (int i = 0; i < hard.size(); i++)
+    {
+        for (int j = 0; j < hard.size() - 1; j++)
+        {
+            if (hard[j] < hard[j + 1])
+                swap(j, j + 1);
+
+            if ((hard[j] == hard[j + 1]) && (soft[j] < soft[j +1 ]))
+                swap(j, j + 1);
+        }
+    }
+
+
+    return topProjects;
+}
+
 
 
 
@@ -621,20 +772,20 @@ void IO::SetStartData(QVector<QVector<double> > &table, QVector<QString> &indica
     IO::BaseTable = table;
     IO::IndicatorsNames = indicatorsNames;
     IO::ProjectsNames = projectsNames;
-
-
 }
 
 
 void IO::FillingTables(QTableWidget *input, QTableWidget *output)
 {
+    //    GetTopProjects(ProjectsNames, DataProcessing::HardRatings, DataProcessing::SoftRatings);
+
     const double NumberAfterPoint = 1000000;
     const int LimitParams = 10;
     const QString Hard = "Жёсткий рейтинг";
     const QString Soft = "Мягкий рейтинг";
     const int alpha = 180;
-
     bool IsParettoCriterionUsed = DataProcessing::ParettoSetProjects.size() == 0 ? false : true;
+
 
     //Жирный шрифт
     QFont font;
