@@ -208,17 +208,20 @@ void IO::OpenExelFile1(QString Path)
     BaseTable = table;
 }
 
+
 void IO::OpenExelFile(QString Path, int StartX, int StartY)
 {
-
+    Q_UNUSED(Path);
+    Q_UNUSED(StartX);
+    Q_UNUSED(StartY);
 }
+
 
 void IO::OpenCSVFile(QString Path)
 {
-
-
-
+    Q_UNUSED(Path);
 }
+
 
 void IO::MakeExcelReport(QList<Solution> solutions)
 {
@@ -326,10 +329,10 @@ void IO::SaveExcelFile(QList<Solution> solutionsList)
         //int b = 70;
         if (HR <= 0.0000001) return QColor(250, 70, 70);
 
-       double dist = 215.74985515638244;
-       double dr = -0.44495974252411946;
-       double dg = 0.8064895333249665;
-       double db = 0.38933977470860454;
+        double dist = 215.74985515638244;
+        double dr = -0.44495974252411946;
+        double dg = 0.8064895333249665;
+        double db = 0.38933977470860454;
 
 
         int posInTop = topProjects.indexOf(notSortedProjects[projectIndex]);
@@ -477,7 +480,7 @@ void IO::SaveExcelFile(QList<Solution> solutionsList)
         {
             if (IsPaint)
                 format1.setPatternBackgroundColor(GetColorOfHardRating(i, sol.IsParettoCriterionUsed ? sol.ParettoSetProjects : sol.ProjectsNames, sol.HardRatings[i]));
-//                format1.setPatternBackgroundColor(GetColorOfRatingValue(sol.HardRatings[i]));
+            //                format1.setPatternBackgroundColor(GetColorOfRatingValue(sol.HardRatings[i]));
 
             xlsx.write(BeginY + i + 1, 2, sol.HardRatings[i], format1);
 
@@ -777,8 +780,6 @@ void IO::SetStartData(QVector<QVector<double> > &table, QVector<QString> &indica
 
 void IO::FillingTables(QTableWidget *input, QTableWidget *output)
 {
-    //    GetTopProjects(ProjectsNames, DataProcessing::HardRatings, DataProcessing::SoftRatings);
-
     const double NumberAfterPoint = 1000000;
     const int LimitParams = 10;
     const QString Hard = "Жёсткий рейтинг";
@@ -786,6 +787,43 @@ void IO::FillingTables(QTableWidget *input, QTableWidget *output)
     const int alpha = 180;
     bool IsParettoCriterionUsed = DataProcessing::ParettoSetProjects.size() == 0 ? false : true;
 
+
+    QVector<QString> topProjects = GetTopProjects(IsParettoCriterionUsed ? DataProcessing::ParettoSetProjects : ProjectsNames, DataProcessing::HardRatings, DataProcessing::SoftRatings);
+    auto GetColorOfHardRating = [&](int projectIndex, QVector<QString> notSortedProjects, double HR)
+    {
+        /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+         * В этой реализации есть недочет
+         * В случае если будут проекты с одинаковыми именами,
+         * то будут некорректно опредляться позиции в топе
+           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+
+        //G (0, 255, 0)
+        //R (255, 0, 0)
+        //S (-255, 255, 0)
+        //
+
+        //int r = 250;
+        //int g = 70;
+        //int b = 70;
+        if (HR <= 0.0000001) return QColor(255, 0, 0, 180);
+
+        double dist = sqrt(255*255 + 255*255);
+        double dr = -0.7071067811865475;
+        double dg = 0.7071067811865475;
+        double db = 0;
+
+
+        int posInTop = topProjects.indexOf(notSortedProjects[projectIndex]);
+
+        double step = dist/topProjects.size();
+
+        double step_dr = step * dr;
+        double step_dg = step * dg;
+        double step_db = step * db;
+
+        qDebug() << 0 - posInTop*step_dr << 255 - posInTop*step_dg << 0 - posInTop*step_db;
+        return QColor(0 - posInTop*step_dr, 255 - posInTop*step_dg, 0 - posInTop*step_db, 180);
+    };
 
     //Жирный шрифт
     QFont font;
@@ -978,8 +1016,12 @@ void IO::FillingTables(QTableWidget *input, QTableWidget *output)
 
             if (column > 2)
                 color.setRgb(qCeil(255 * (1 - k)), qCeil(k * 255), 0, alpha/2);
-            else
+
+            if (column == 1)
                 color.setRgb(qCeil(255 * (1 - k)), qCeil(k * 255), 0, alpha);
+
+            if (column == 2)
+                color = GetColorOfHardRating(row, IsParettoCriterionUsed ? DataProcessing::ParettoSetProjects : ProjectsNames, k);
 
             output->item(row, column)->setBackgroundColor(color);
         }
