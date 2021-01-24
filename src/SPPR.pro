@@ -23,20 +23,17 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     aboutprogramform.cpp \
     asynccalculation.cpp \
-    calculateasyncwiththreadpool.cpp \
     chartsform.cpp \
     dataprocessing.cpp \
-    fileloadingdialog.cpp \
     info.cpp \
     io.cpp \
-    loadingform.cpp \
     main.cpp \
     mainwindow.cpp \
-    multi_threading_methods.cpp \
     openprojectslistform.cpp \
     preselectionchartsform.cpp \
     selectforexportform.cpp \
     setprojectgroupimportanceform.cpp \
+    settingsform.cpp \
     solution.cpp \
     solutiondb.cpp \
     startupconfigform.cpp
@@ -44,19 +41,16 @@ SOURCES += \
 HEADERS += \
     aboutprogramform.h \
     asynccalculation.h \
-    calculateasyncwiththreadpool.h \
     chartsform.h \
     dataprocessing.h \
-    fileloadingdialog.h \
     info.h \
     io.h \
-    loadingform.h \
     mainwindow.h \
-    multi_threading_methods.h \
     openprojectslistform.h \
     preselectionchartsform.h \
     selectforexportform.h \
     setprojectgroupimportanceform.h \
+    settingsform.h \
     solution.h \
     solutiondb.h \
     startupconfigform.h
@@ -65,12 +59,12 @@ FORMS += \
     aboutprogramform.ui \
     chartsform.ui \
     info.ui \
-    loadingform.ui \
     mainwindow.ui \
     openprojectslistform.ui \
     preselectionchartsform.ui \
     selectforexportform.ui \
     setprojectgroupimportanceform.ui \
+    settingsform.ui \
     startupconfigform.ui
 
 # Default rules for deployment.

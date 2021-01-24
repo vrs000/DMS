@@ -92,9 +92,11 @@ private:
     int IndexOf(double* list, double value);
 
 public:
-    GenerateWeightsAndCalculateRatingsAsync();
-    GenerateWeightsAndCalculateRatingsAsync(int firstIterationIndex,  int lastIterationIndex, double step);
+     GenerateWeightsAndCalculateRatingsAsync();
+     GenerateWeightsAndCalculateRatingsAsync(int firstIterationIndex,  int lastIterationIndex, double step);
 
+     GenerateWeightsAndCalculateRatingsAsync(const GenerateWeightsAndCalculateRatingsAsync&);
+     GenerateWeightsAndCalculateRatingsAsync& operator=(const GenerateWeightsAndCalculateRatingsAsync);
 
     ~GenerateWeightsAndCalculateRatingsAsync();
 

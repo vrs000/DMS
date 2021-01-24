@@ -821,7 +821,7 @@ void IO::FillingTables(QTableWidget *input, QTableWidget *output)
         double step_dg = step * dg;
         double step_db = step * db;
 
-        qDebug() << 0 - posInTop*step_dr << 255 - posInTop*step_dg << 0 - posInTop*step_db;
+//        qDebug() << 0 - posInTop*step_dr << 255 - posInTop*step_dg << 0 - posInTop*step_db;
         return QColor(0 - posInTop*step_dr, 255 - posInTop*step_dg, 0 - posInTop*step_db, 180);
     };
 

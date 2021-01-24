@@ -18,9 +18,10 @@
 #include <preselectionchartsform.h>
 #include <selectforexportform.h>
 #include <aboutprogramform.h>
-//#include <loadingform.h>
 #include <QDialog>
 #include <QtConcurrent/QtConcurrent>
+#include <settingsform.h>
+
 
 class PreSelectionChartsForm;
 class DataProcessing;
@@ -36,6 +37,7 @@ class MainWindow;
 QT_END_NAMESPACE
 
 
+class SettingsForm;
 //class InfoForm;
 
 class MainWindow : public QMainWindow
@@ -67,32 +69,40 @@ private:
     template<typename FormType> void OpenForm(FormType* form);
     template<typename FormType> void OpenForm(FormType& form);
 
+protected:
+    void dropEvent(QDropEvent* event) override;
+    void dragEnterEvent(QDragEnterEvent *event) override;
 
     //forms
 private:
     StartupConfigForm* startupconfigform /*= new StartupConfigForm()*/;
 
     SelectForExportForm* selectforexportForm /*= new SelectForExportForm()*/;
-
+    std::unique_ptr<SettingsForm> settingsForm;
     std::unique_ptr<PreSelectionChartsForm> preselectionchartsform;
-    //PreSelectionChartsForm* preselectionchartsform = new PreSelectionChartsForm();
-//    PreSelectionChartsForm preselection;
+
     void* infoform = nullptr;
     AboutProgramForm* aboutProgramForm = new AboutProgramForm();
-    // LoadingForm* loadingForm = new LoadingForm();
+
+
+
 
 signals:
     void OpenedLoadingForm();
     void ClosedLoadingForm();
-
+    void NeedToOpenFileFromDrop(QString path);
 
 private slots:
+
+    void OpenFileFromDrop(QString path);
+
     void OpenLoadingForm();
     void CloseLoadingForm();
 
     void OpenAboutProgramForm();
 
     void OpenExportFileForm();
+    void OpenSettingsForm();
 
     void ToggleFullscreen();
 

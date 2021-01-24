@@ -114,25 +114,32 @@ Info::Info(QWidget *parent) :
         {
             QLabel *label;
 
+            if (projectsImportance[i].contains("="))
+            {
+                second = projectsImportance[i].split("=")[0].toInt();
+                first = projectsImportance[i].split("=")[1].toInt();
+                label = new QLabel(QString("%1 = %2").arg(IO::ProjectsNames[first]).arg(IO::ProjectsNames[second]));
+            }
+
             if (projectsImportance[i].contains("<"))
             {
                 second = projectsImportance[i].split("<")[0].toInt();
                 first = projectsImportance[i].split("<")[1].toInt();
-                label = new QLabel(QString("%1>%2").arg(IO::ProjectsNames[first]).arg(IO::ProjectsNames[second]));
+                label = new QLabel(QString("%1 > %2").arg(IO::ProjectsNames[first]).arg(IO::ProjectsNames[second]));
             }
 
             if (projectsImportance[i].contains("≥"))
             {
                 first = projectsImportance[i].split("≥")[0].toInt();
                 second = projectsImportance[i].split("≥")[1].toInt();
-                label = new QLabel(QString("%1≥%2").arg(IO::ProjectsNames[first]).arg(IO::ProjectsNames[second]));
+                label = new QLabel(QString("%1 ≥ %2").arg(IO::ProjectsNames[first]).arg(IO::ProjectsNames[second]));
             }
 
             if (projectsImportance[i].contains(">"))
             {
                 first = projectsImportance[i].split(">")[0].toInt();
                 second = projectsImportance[i].split(">")[1].toInt();
-                label = new QLabel(QString("%1≥%2").arg(IO::ProjectsNames[first]).arg(IO::ProjectsNames[second]));
+                label = new QLabel(QString("%1 > %2").arg(IO::ProjectsNames[first]).arg(IO::ProjectsNames[second]));
             }
 
             ui->layout->addWidget(label);
@@ -146,6 +153,14 @@ Info::Info(QWidget *parent) :
         for (int i = 0; i < indicatorsImportance.size(); i++)            
         {
             QLabel *label;
+
+            if (indicatorsImportance[i].contains("="))
+            {
+                first = indicatorsImportance[i].split("=")[0].toInt();
+                second = indicatorsImportance[i].split("=")[1].toInt();
+                label = new QLabel(QString("%1 = %2").arg(IO::IndicatorsNames[first]).arg(IO::IndicatorsNames[second]));
+            }
+
             if (indicatorsImportance[i].contains("<"))
             {
                 second = indicatorsImportance[i].split("<")[0].toInt();
@@ -157,14 +172,14 @@ Info::Info(QWidget *parent) :
             {
                 first = indicatorsImportance[i].split(">")[0].toInt();
                 second = indicatorsImportance[i].split(">")[1].toInt();
-                label = new QLabel(QString("%1>%2").arg(IO::IndicatorsNames[first]).arg(IO::IndicatorsNames[second]));
+                label = new QLabel(QString("%1 > %2").arg(IO::IndicatorsNames[first]).arg(IO::IndicatorsNames[second]));
             }
 
             if (indicatorsImportance[i].contains("≥"))
             {
                 first = indicatorsImportance[i].split("≥")[0].toInt();
                 second = indicatorsImportance[i].split("≥")[1].toInt();
-                label = new QLabel(QString("%1≥%2").arg(IO::IndicatorsNames[first]).arg(IO::IndicatorsNames[second]));
+                label = new QLabel(QString("%1 ≥ %2").arg(IO::IndicatorsNames[first]).arg(IO::IndicatorsNames[second]));
             }
 
 

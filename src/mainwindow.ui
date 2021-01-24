@@ -660,7 +660,7 @@ text-align: left;</string>
      <x>0</x>
      <y>0</y>
      <width>921</width>
-     <height>18</height>
+     <height>23</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -712,6 +712,7 @@ QMenu{
     </widget>
     <addaction name="OpenFileAction"/>
     <addaction name="menu_6"/>
+    <addaction name="OpenSettingsAction"/>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
@@ -875,6 +876,11 @@ QMenu{
   <action name="AboutProgramAction">
    <property name="text">
     <string>О программе</string>
+   </property>
+  </action>
+  <action name="OpenSettingsAction">
+   <property name="text">
+    <string>Настройки</string>
    </property>
   </action>
  </widget>

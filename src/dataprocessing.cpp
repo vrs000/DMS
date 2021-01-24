@@ -5,6 +5,8 @@ int DataProcessing::UsedThreadCount = 0;
 int DataProcessing::TimeElapsed = 0;
 QString DataProcessing::timeElapsedParsed = "";
 
+int DataProcessing::MaxThreadCount = QThread::idealThreadCount();
+int DataProcessing::CurrentThreadCount = -1;
 
 MainWindow* DataProcessing::mainWindow = nullptr;
 
@@ -41,14 +43,7 @@ int DataProcessing::CurrentIterationCount = 0;
 
 QTime DataProcessing::time = QTime();
 
-CalculateRatingsAsync* DataProcessing::thread1 = nullptr;
-CalculateRatingsAsync* DataProcessing::thread2 = nullptr;
-CalculateRatingsAsync* DataProcessing::thread3 = nullptr;
-CalculateRatingsAsync* DataProcessing::thread4 = nullptr;
-CalculateRatingsAsync* DataProcessing::thread5 = nullptr;
-CalculateRatingsAsync* DataProcessing::thread6 = nullptr;
-CalculateRatingsAsync* DataProcessing::thread7 = nullptr;
-CalculateRatingsAsync* DataProcessing::thread8 = nullptr;
+
 
 GenerateWeightsAndCalculateRatingsAsync* DataProcessing::th1 = nullptr;
 GenerateWeightsAndCalculateRatingsAsync* DataProcessing::th2 = nullptr;
@@ -59,7 +54,8 @@ GenerateWeightsAndCalculateRatingsAsync* DataProcessing::th6 = nullptr;
 GenerateWeightsAndCalculateRatingsAsync* DataProcessing::th7 = nullptr;
 GenerateWeightsAndCalculateRatingsAsync* DataProcessing::th8 = nullptr;
 
-CalculateAsyncWithThreadPool* DataProcessing::tp = nullptr;
+QList<GenerateWeightsAndCalculateRatingsAsync*> DataProcessing::threadInstances;
+
 
 int DataProcessing::Count1 = -1;
 int DataProcessing::Count2 = -1;
@@ -69,8 +65,11 @@ int DataProcessing::Count5 = -1;
 int DataProcessing::Count6 = -1;
 int DataProcessing::Count7 = -1;
 int DataProcessing::Count8 = -1;
+int DataProcessing::TotalStepsCount = -1;
+
 
 int DataProcessing::NumberOfTriggring = 0;
+
 
 int DataProcessing::ProjectsCount = 0;
 int DataProcessing::IndicatorsCount = 0;
@@ -190,9 +189,9 @@ void DataProcessing::FindParettoSet()
     }
 
 
-     for (int i = 0; i < IO::ProjectsNames.size(); i++)
-         if (!WorstProjectIndexes.contains(i))
-             ParettoSetProjects << IO::ProjectsNames[i];
+    for (int i = 0; i < IO::ProjectsNames.size(); i++)
+        if (!WorstProjectIndexes.contains(i))
+            ParettoSetProjects << IO::ProjectsNames[i];
 }
 
 void DataProcessing::FindMaxMinIndicators(QVector<QVector<double> > BaseTable)
@@ -300,34 +299,34 @@ QString DataProcessing::GetTheDigitsOfNumber(QString number, QString splitter)
 }
 
 
-void DataProcessing::GetNextNum(QVector<double>& currentSet, int maxN, int curPosIndex)
-{
-    if (curPosIndex < maxN - 1)
-    {
-        double lim = 1  - Sum(currentSet, curPosIndex);
-        for (double i = 0; i <= lim + 0.00001; i += CrushingStep)
-        {
-            currentSet[curPosIndex] = i;
-            GetNextNum(currentSet, maxN, curPosIndex + 1);
-        }
-    }
-    else
-        if (curPosIndex == maxN - 1)
-        {
-            double rest = 1 - Sum(currentSet, curPosIndex);
-            if (rest < 0.00001)
-                rest = 0;
+//void DataProcessing::GetNextNum(QVector<double>& currentSet, int maxN, int curPosIndex)
+//{
+//    if (curPosIndex < maxN - 1)
+//    {
+//        double lim = 1  - Sum(currentSet, curPosIndex);
+//        for (double i = 0; i <= lim + 0.00001; i += CrushingStep)
+//        {
+//            currentSet[curPosIndex] = i;
+//            GetNextNum(currentSet, maxN, curPosIndex + 1);
+//        }
+//    }
+//    else
+//        if (curPosIndex == maxN - 1)
+//        {
+//            double rest = 1 - Sum(currentSet, curPosIndex);
+//            if (rest < 0.00001)
+//                rest = 0;
 
-            if (fabs(static_cast<double>(rest - CrushingStep)) < 0.00001)
-                rest = CrushingStep;
+//            if (fabs(static_cast<double>(rest - CrushingStep)) < 0.00001)
+//                rest = CrushingStep;
 
 
-            currentSet[curPosIndex] = rest;
+//            currentSet[curPosIndex] = rest;
 
-            WeightsTable.append(currentSet);
-        }
+//            WeightsTable.append(currentSet);
+//        }
 
-}
+//}
 
 void DataProcessing::GetNextNum(double currentSet[], int maxN, int curPosIndex)
 {
@@ -440,14 +439,21 @@ void DataProcessing::UpdateProgressBar()
 
     int res = 0;
 
-    if (Count1 != -1) res += Count1;
-    if (Count2 != -1) res += Count2;
-    if (Count3 != -1) res += Count3;
-    if (Count4 != -1) res += Count4;
-    if (Count5 != -1) res += Count5;
-    if (Count6 != -1) res += Count6;
-    if (Count7 != -1) res += Count7;
-    if (Count8 != -1) res += Count8;
+
+    foreach (auto thread, threadInstances)
+    {
+        res += thread->GetCount();
+    }
+
+//    qDebug() << res;
+    //    if (Count1 != -1) res += Count1;
+    //    if (Count2 != -1) res += Count2;
+    //    if (Count3 != -1) res += Count3;
+    //    if (Count4 != -1) res += Count4;
+    //    if (Count5 != -1) res += Count5;
+    //    if (Count6 != -1) res += Count6;
+    //    if (Count7 != -1) res += Count7;
+    //    if (Count8 != -1) res += Count8;
 
 
     bar->setValue(res);
@@ -485,6 +491,13 @@ void DataProcessing::UpdateCount7(int count)
 void DataProcessing::UpdateCount8(int count)
 {
     Count8 = count;
+}
+
+void DataProcessing::UpdateTotalStepCount(int count)
+{
+
+    TotalStepsCount++;
+//    qDebug()<<TotalStepsCount;
 }
 
 void DataProcessing::Finished1Threads()
@@ -826,48 +839,85 @@ void DataProcessing::Finished8Threads()
         }
 }
 
-
-void DataProcessing::ThreadPoolFinished()
+void DataProcessing::FinishedAllThreads()
 {
+    bool isAllFinished = true;
 
-
-    bar->setValue(bar->maximum());
-
-    auto hard = tp->hardRatingPart;
-    auto soft = tp->softRatingPart;
-
-    int WeightCount = tp->count;
-
-    for (int i = 0; i < IO::ProjectsNames.size(); i++)
+    foreach (auto thread, threadInstances)
     {
-        hard[i] *= 1.0 / (WeightCount - missed_variation);
-        soft[i] *= 1.0 / (WeightCount - missed_variation);
+        isAllFinished = isAllFinished && thread->isFinished();
     }
 
-    HardRatings = hard;
-    SoftRatings = soft;
+    if ((NumberOfTriggring == 0) && isAllFinished)
+    {
+        NumberOfTriggring++;
+        TimeElapsed = time.elapsed();
 
-    IO::FillingTables(inputTable, outputTable);
-
-    Solution solution(
-                OpenedSolutionName, DataProcessing::CrushingStep,
-                IO::IndicatorsNames, IO::ProjectsNames,
-                IO::BaseTable, DataProcessing::NormalizedTable,
-                DataProcessing::HardRatings, DataProcessing::SoftRatings,
-                DataProcessing::PriorityList,
-                DataProcessing::PrefferedMetrics, DataProcessing::RejectedMetrics
-                );
+        bar->setValue(bar->maximum());
 
 
-    if (SolutionDB::IsContained(OpenedSolutionName))
-        SolutionDB::UpdateSolution(SolutionDB::GetSolution(OpenedSolutionName),
-                                   solution);
-    else
-        SolutionDB::AddSolution(solution);
+        QVector<double> hardRatings(threadInstances.first()->GetHardRatings().size(), 0);
+        QVector<double> softRatings(threadInstances.first()->GetSoftRatings().size(), 0);
 
+        QVector<double> partOfHardRating;
+        QVector<double> partOfSoftRating;
 
-    delete tp;
+        int MissedCount = 0;
+
+        foreach (auto thread, threadInstances)
+        {
+            MissedCount += thread->missed;
+
+            partOfHardRating = thread->GetHardRatings();
+            partOfSoftRating = thread->GetSoftRatings();
+
+            for (int i=0; i < ProjectsCount; i++)
+            {
+                hardRatings[i] += partOfHardRating[i];
+                softRatings[i] += partOfSoftRating[i];
+            }
+        }
+
+        double count = Sum(hardRatings, hardRatings.size());
+
+        for (int i = 0; i < ProjectsCount; i++)
+        {
+            hardRatings[i] *= 1.0 / count;
+            softRatings[i] *= 1.0 / count;
+        }
+
+        missed_variation = MissedCount;
+
+        HardRatings = hardRatings;
+        SoftRatings = softRatings;
+
+        IO::FillingTables(inputTable, outputTable);
+
+        timeElapsedParsed = GetPassedTimeElapsed(TimeElapsed);
+
+        Solution solution(
+                    OpenedSolutionName, CrushingStep,
+                    IO::IndicatorsNames, IO::ProjectsNames,
+                    IO::BaseTable, NormalizedTable,
+                    HardRatings, SoftRatings,
+                    PriorityList,
+                    NotParsedImportanceGroupOfProjects, NotParsedImportanceGroupOfIndicators,
+                    timeElapsedParsed,
+                    ParettoSetProjects);
+
+        NormalizedTable.clear();
+        if (SolutionDB::IsContained(OpenedSolutionName))
+            SolutionDB::UpdateSolution(SolutionDB::GetSolution(OpenedSolutionName),
+                                       solution);
+        else
+            SolutionDB::AddSolution(solution);
+
+        DeleteThreadInstances();
+        SetMainWindowTitle(SolutionDB::currentSolutionName);
+    }
+
 }
+
 
 //CHANGED!!!!!!!!!!!!!!!!!
 void DataProcessing::GenerateWeightsList()
@@ -897,278 +947,6 @@ void DataProcessing::SetProjectsPriorities(QVector<QString> Preferred, QVector<Q
     RejectedProjects = Rejected;
 }
 
-void DataProcessing::CalculateRatings()
-{
-    bar->setValue(bar->maximum());
-
-    bool isSuitable;
-    QVector<double> hardRatings(IO::ProjectsNames.size());
-    QVector<double> softRatings(IO::ProjectsNames.size());
-    missed_variation = 0;
-
-
-
-    auto getMax = [](QVector<double> list)
-    {
-        double max = list[0];
-        for (int i = 0; i < list.size(); i++)
-            max = list[i] > max ? list[i] : max;
-        return max;
-    };
-    auto getMin = [](QVector<double> list)
-    {
-        double min = list[0];
-        for (int i = 0; i < list.size(); i++)
-            min = list[i] < min ? list[i] : min;
-        return min;
-    };
-
-
-
-
-    for (int count = 0; count < WeightsTable.size(); count++)
-    {
-        auto res = GetLinearConvolutionResult(WeightsTable[count]);
-
-        //Проверка метрик
-        if ((PrefferedMetrics.size() != 0) && (RejectedMetrics.size() != 0))
-        {
-
-            isSuitable = true;
-            for (int i = 0; i < PrefferedMetrics.size(); i++)
-                for (int j = 0; j < RejectedMetrics.size(); j++)
-                {
-                    isSuitable = isSuitable &&
-                            (WeightsTable[count][PrefferedMetrics[i]] > WeightsTable[count][RejectedMetrics[j]]);
-
-                }
-            if (!isSuitable)
-            {
-                missed_variation++;
-                continue;
-            }
-        }
-
-
-        //Мягкий рейтинг
-        for (int i = 0; i < IO::ProjectsNames.size(); i++)
-            softRatings[i] += res[i] / (1.0 - getMin(res));
-
-
-
-
-        //Жёсткий рейтинг
-        if (res.count(getMax(res))>1)
-        {
-            int q = res.count(getMax(res));
-            for (int i = 0; i < res.size(); i++)
-                hardRatings[i] += (res[i] == getMax(res)) ? 1.0/q : 0;
-        }
-        else
-            hardRatings[res.indexOf(getMax(res))]++;
-
-
-    }
-
-
-
-    for (int i = 0; i < softRatings.size(); i++)
-    {
-        hardRatings[i] *= 1.0 / (WeightsTable.size() - missed_variation);
-        softRatings[i] *= 1.0 / (WeightsTable.size() - missed_variation);
-    }
-
-
-
-    HardRatings = hardRatings;
-    SoftRatings = softRatings;
-
-    IO::FillingTables(inputTable, outputTable);
-
-    Solution solution(
-                OpenedSolutionName, DataProcessing::CrushingStep,
-                IO::IndicatorsNames, IO::ProjectsNames,
-                IO::BaseTable, DataProcessing::NormalizedTable,
-                DataProcessing::HardRatings, DataProcessing::SoftRatings,
-                DataProcessing::PriorityList,
-                DataProcessing::PrefferedMetrics, DataProcessing::RejectedMetrics
-                );
-
-
-    if (SolutionDB::IsContained(OpenedSolutionName))
-        SolutionDB::UpdateSolution(SolutionDB::GetSolution(OpenedSolutionName),
-                                   solution);
-    else
-        SolutionDB::AddSolution(solution);
-}
-void DataProcessing::CalculateRatingsIn2Threads()
-{
-    missed_variation = 0;
-    ResetCounts();
-    Count1 = 0;
-    Count2 = 0;
-
-    // DataProcessing* dp = new DataProcessing;
-
-    thread1 = new CalculateRatingsAsync(0, WeightsTable.size()/2);
-    thread2 = new CalculateRatingsAsync(WeightsTable.size()/2 + 1, WeightsTable.size()-1);
-
-
-    connect(thread1, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
-    connect(thread2, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
-
-
-    connect(thread1, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount1(int)));
-    connect(thread2, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount2(int)));
-
-
-    connect(thread1, SIGNAL(finished()), instance, SLOT(Finished2Threads()));
-    connect(thread2, SIGNAL(finished()), instance, SLOT(Finished2Threads()));
-
-    thread1->start();
-    thread2->start();
-}
-void DataProcessing::CalculateRatingsIn4Threads()
-{
-    missed_variation = 0;
-    ResetCounts();
-    Count1 = 0;
-    Count2 = 0;
-    Count3 = 0;
-    Count4 = 0;
-
-
-    int a1 = 0;
-    int b1 = WeightsTable.size() / 4;
-
-    int a2 = b1 + 1;
-    int b2 =  WeightsTable.size() / 4 * 2;
-
-    int a3 = b2 + 1;
-    int b3 =  WeightsTable.size() / 4 * 3;
-
-    int a4 = b3 + 1;
-    int b4 = WeightsTable.size() - 1;
-
-
-    thread1 = new CalculateRatingsAsync(a1, b1);
-    thread2 = new CalculateRatingsAsync(a2, b2);
-    thread3 = new CalculateRatingsAsync(a3, b3);
-    thread4 = new CalculateRatingsAsync(a4, b4);
-
-
-    connect(thread1, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
-    connect(thread2, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
-    connect(thread3, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
-    connect(thread4, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
-
-
-    connect(thread1, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount1(int)));
-    connect(thread2, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount2(int)));
-    connect(thread3, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount3(int)));
-    connect(thread4, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount4(int)));
-
-
-    connect(thread1, SIGNAL(finished()), instance, SLOT(Finished4Threads()));
-    connect(thread2, SIGNAL(finished()), instance, SLOT(Finished4Threads()));
-    connect(thread3, SIGNAL(finished()), instance, SLOT(Finished4Threads()));
-    connect(thread4, SIGNAL(finished()), instance, SLOT(Finished4Threads()));
-
-
-    thread1->start();
-    thread2->start();
-    thread3->start();
-    thread4->start();
-
-}
-void DataProcessing::CalculateRatingsIn8Threads()
-{
-    missed_variation = 0;
-    ResetCounts();
-    Count1 = 0;
-    Count2 = 0;
-    Count3 = 0;
-    Count4 = 0;
-    Count5 = 0;
-    Count6 = 0;
-    Count7 = 0;
-    Count8 = 0;
-
-    int a1 = 0;
-    int b1 = WeightsTable.size() / 8;
-
-    int a2 = b1 + 1;
-    int b2 =  WeightsTable.size() /8 * 2;
-
-    int a3 = b2 + 1;
-    int b3 =  WeightsTable.size() / 8 * 3;
-
-    int a4 = b3 + 1;
-    int b4 = WeightsTable.size() /8 * 4;
-
-    int a5 = b4 + 1;
-    int b5 = WeightsTable.size() /8 * 5;
-
-    int a6 = b5 + 1;
-    int b6 = WeightsTable.size() /8 * 6;
-
-    int a7 = b6 + 1;
-    int b7 = WeightsTable.size() /8 * 7;
-
-    int a8 = b7 + 1;
-    int b8 = WeightsTable.size() - 1;
-
-
-    thread1 = new CalculateRatingsAsync(a1, b1);
-    thread2 = new CalculateRatingsAsync(a2, b2);
-    thread3 = new CalculateRatingsAsync(a3, b3);
-    thread4 = new CalculateRatingsAsync(a4, b4);
-    thread5 = new CalculateRatingsAsync(a5, b5);
-    thread6 = new CalculateRatingsAsync(a6, b6);
-    thread7 = new CalculateRatingsAsync(a7, b7);
-    thread8 = new CalculateRatingsAsync(a8, b8);
-
-
-    connect(thread1, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
-    connect(thread2, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
-    connect(thread3, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
-    connect(thread4, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
-    connect(thread5, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
-    connect(thread6, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
-    connect(thread7, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
-    connect(thread8, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
-
-
-    connect(thread1, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount1(int)));
-    connect(thread2, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount2(int)));
-    connect(thread3, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount3(int)));
-    connect(thread4, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount4(int)));
-    connect(thread5, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount5(int)));
-    connect(thread6, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount6(int)));
-    connect(thread7, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount7(int)));
-    connect(thread8, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount8(int)));
-
-
-    connect(thread1, SIGNAL(finished()), instance, SLOT(Finished8Threads()));
-    connect(thread2, SIGNAL(finished()), instance, SLOT(Finished8Threads()));
-    connect(thread3, SIGNAL(finished()), instance, SLOT(Finished8Threads()));
-    connect(thread4, SIGNAL(finished()), instance, SLOT(Finished8Threads()));
-    connect(thread5, SIGNAL(finished()), instance, SLOT(Finished8Threads()));
-    connect(thread6, SIGNAL(finished()), instance, SLOT(Finished8Threads()));
-    connect(thread7, SIGNAL(finished()), instance, SLOT(Finished8Threads()));
-    connect(thread8, SIGNAL(finished()), instance, SLOT(Finished8Threads()));
-
-
-    thread1->start();
-    thread2->start();
-    thread3->start();
-    thread4->start();
-    thread5->start();
-    thread6->start();
-    thread7->start();
-    thread8->start();
-
-}
 
 void DataProcessing::CalculateRatingsIn1ThreadsWithWeights()
 {
@@ -1387,26 +1165,81 @@ void DataProcessing::CalculateRatingsIn8ThreadsWithWeights()
     th8->start();
 }
 
-void DataProcessing::CalculateRatingsInAllThreadsWithWeights()
+QList<GenerateWeightsAndCalculateRatingsAsync*> DataProcessing::getThreadsList(int ThreadCount, int MaxThreadCount)
 {
+    QList<GenerateWeightsAndCalculateRatingsAsync*> threads;
 
-}
+    auto setListOfThreads = [&](int ThreadsCount){
+        UsedThreadCount = ThreadsCount;
 
-void DataProcessing::CalculateRatingsWithPool()
-{
-    missed_variation = 0;
+        int step = CurrentIterationCount/ThreadsCount;
+        int a = 1;
+        //        int b = a + step;
+        int b = ThreadsCount==1 ? CurrentIterationCount : a+step;
+//        qDebug() << a << b;
+        for (int i=0; i<ThreadsCount; i++)
+        {
+            threads <<new GenerateWeightsAndCalculateRatingsAsync(a,b, CrushingStep);
 
-    ResetCounts();
-    Count1 = 0;
+            connect(threads.last(), SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
+            connect(threads.last(), SIGNAL(CountChanged(int)), instance, SLOT(UpdateTotalStepCount(int)));
+            connect(threads.last(), SIGNAL(finished()), instance, SLOT(FinishedAllThreads()));
 
-    tp = new CalculateAsyncWithThreadPool();
-    tp->start();
+            a = b + 1;
+            //            b = b + step <= CurrentIterationCount ? b + step : CurrentIterationCount;
 
-    connect(tp, SIGNAL(CountChanged(int)), instance, SLOT(UpdateProgressBar()));
-    connect(tp, SIGNAL(CountChanged(int)), instance, SLOT(UpdateCount1(int)));
-    connect(tp, SIGNAL(finished()), instance, SLOT(ThreadPoolFinished()));
+            //            if (i==ThreadsCount-2)
+            //                b=CurrentIterationCount;
+
+            b = i==ThreadsCount-1 ? CurrentIterationCount : b+step;
+
+//            qDebug() << a << b;
+        }
+    };
+
+    //Если не задано количество потоков в которых нужно призвести вычисления
+    if (ThreadCount == -1)
+    {
+        const unsigned int AlgorithmComplexity =  CurrentIterationCount * IO::ProjectsNames.size() * IO::IndicatorsNames.size();
+        const int AvailableThreadCount = QThread::idealThreadCount();
 
 
+        if ((AlgorithmComplexity < 500000) || (AvailableThreadCount == 1))
+        {
+            setListOfThreads(1);
+            return threads;
+        }
+
+
+        if ((AlgorithmComplexity >= 500000 && AlgorithmComplexity < 1000000 && AvailableThreadCount >= 2)
+                || (AlgorithmComplexity >= 1000000 && AvailableThreadCount == 2))
+        {
+            setListOfThreads(2);
+            return threads;
+
+        }
+
+
+        if ((AlgorithmComplexity >= 1000000 && AlgorithmComplexity < 2000000 && AvailableThreadCount >= 4)
+                || (AlgorithmComplexity >= 2000000 && AvailableThreadCount == 4))
+        {
+            setListOfThreads(4);
+            return threads;
+
+        }
+
+
+        if ((AlgorithmComplexity >= 2000000 && AvailableThreadCount >= 8))
+        {
+            setListOfThreads(MaxThreadCount);
+            return threads;
+        }
+    }
+
+    if (ThreadCount != -1)
+        setListOfThreads(ThreadCount);
+
+    return threads;
 }
 
 
@@ -1449,6 +1282,8 @@ double* DataProcessing::GetLinearConvolutionResult(double *weights)
 
 void DataProcessing::ResetCounts()
 {
+    TotalStepsCount = -1;
+
     Count1 = -1;
     Count2 = -1;
     Count3 = -1;
@@ -1486,45 +1321,19 @@ void DataProcessing::MakeCalculations(QVector<QString> priorityList,
         CalculateNormalizedTable(IO::BaseTable);
     }
 
-
     WeightsTable.clear();
     DataProcessing::CurrentIterationCount = GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), CrushingStep);
 
-
-    const unsigned int AlgorithmComplexity =  CurrentIterationCount * IO::ProjectsNames.size() * IO::IndicatorsNames.size();
-    const int AvailableThreadCount = QThread::idealThreadCount();
-
-
     time.start();
 
+    threadInstances = getThreadsList(CurrentThreadCount, MaxThreadCount);
 
-    if ((AlgorithmComplexity < 500000) || (AvailableThreadCount == 1))
-    {
-        CalculateRatingsIn1ThreadsWithWeights();
-        return;
-    }
+    for (int i=0; i<threadInstances.size(); i++)
+        threadInstances[i]->start();
 
 
-    if ((AlgorithmComplexity >= 500000 && AlgorithmComplexity < 1000000 && AvailableThreadCount >= 2)
-            || (AlgorithmComplexity >= 1000000 && AvailableThreadCount == 2))
-    {
-        CalculateRatingsIn2ThreadsWithWeights();
-        return;
-    }
-
-
-    if ((AlgorithmComplexity >= 1000000 && AlgorithmComplexity < 2000000 && AvailableThreadCount >= 4)
-            || (AlgorithmComplexity >= 2000000 && AvailableThreadCount == 4))
-    {
-        CalculateRatingsIn4ThreadsWithWeights();
-        return;
-    }
-
-
-    if ((AlgorithmComplexity >= 2000000 && AvailableThreadCount >= 8))
-    {
-        CalculateRatingsIn8ThreadsWithWeights();
-        return;
-    }
-
+//        CalculateRatingsIn1ThreadsWithWeights();
+//        CalculateRatingsIn2ThreadsWithWeights();
+//        CalculateRatingsIn4ThreadsWithWeights();
+//        CalculateRatingsIn8ThreadsWithWeights();
 }

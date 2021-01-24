@@ -82,6 +82,19 @@ GenerateWeightsAndCalculateRatingsAsync::GenerateWeightsAndCalculateRatingsAsync
 
     for (int i=0; i < IndicatorsGroupCount; i++)
     {
+        if (IndicatorsGroups[i].contains("="))
+        {
+            auto numbs = IndicatorsGroups[i].split("=");
+
+
+            PrefferedMetricsV2[i] = numbs[0].toInt();
+            RejectedMetricsV2[i] = numbs[1].toInt();
+            IndicatorsRelation[i] = '=';
+
+            continue;
+        }
+
+
         if (IndicatorsGroups[i].contains(">"))
         {
             auto numbs = IndicatorsGroups[i].split(">");
@@ -130,6 +143,17 @@ GenerateWeightsAndCalculateRatingsAsync::GenerateWeightsAndCalculateRatingsAsync
 
     for (int i=0; i < ProjectsGroupCount; i++)
     {
+        if (ProjectsGroups[i].contains("="))
+        {
+            auto numbs = ProjectsGroups[i].split("=");
+
+            PrefferedProjectsV2[i] = numbs[0].toInt();
+            RejectedProjectsV2[i] = numbs[1].toInt();
+            ProjectsRelation[i] = '=';
+
+            continue;
+        }
+
         if (ProjectsGroups[i].contains(">"))
         {
             auto numbs = ProjectsGroups[i].split(">");
@@ -219,6 +243,12 @@ GenerateWeightsAndCalculateRatingsAsync::GenerateWeightsAndCalculateRatingsAsync
     //################################################################################
 }
 
+GenerateWeightsAndCalculateRatingsAsync::GenerateWeightsAndCalculateRatingsAsync(const GenerateWeightsAndCalculateRatingsAsync &)
+{
+
+}
+
+
 GenerateWeightsAndCalculateRatingsAsync::~GenerateWeightsAndCalculateRatingsAsync()
 {
     delete [] PrefferedMetrics;
@@ -252,9 +282,7 @@ void GenerateWeightsAndCalculateRatingsAsync::Calculate(double currentSet[], int
 {
     if((curPosIndex < maxN - 1))
     {
-
         double lim = 1 - sum(currentSet, curPosIndex);
-
 
 
         for(double i = 0; i <= lim + 0.00001; i += h)
@@ -298,6 +326,13 @@ void GenerateWeightsAndCalculateRatingsAsync::Calculate(double currentSet[], int
             {
                 for (int i = 0; i < ProjectsGroupCount; i++)
                 {
+                    if (ProjectsRelation[i] == '=')
+                        if (!(res[PrefferedProjectsV2[i]] == res[RejectedProjectsV2[i]]))
+                        {
+                            IsSuitable = false;
+                            break;
+                        }
+
                     if (ProjectsRelation[i] == '>')
                         if (!(res[PrefferedProjectsV2[i]] > res[RejectedProjectsV2[i]]))
                         {
@@ -323,6 +358,13 @@ void GenerateWeightsAndCalculateRatingsAsync::Calculate(double currentSet[], int
             {
                 for (int i = 0; i < IndicatorsGroupCount; i++)
                 {
+                    if (IndicatorsRelation[i] == '=')
+                        if (!(currentSet[PrefferedMetricsV2[i]] == currentSet[RejectedMetricsV2[i]]))
+                        {
+                            IsSuitable = false;
+                            break;
+                        }
+
                     if (IndicatorsRelation[i] == '>')
                         if (!(currentSet[PrefferedMetricsV2[i]] > currentSet[RejectedMetricsV2[i]]))
                         {
@@ -392,5 +434,5 @@ void GenerateWeightsAndCalculateRatingsAsync::run()
     for (int i = 0; i < IO::IndicatorsNames.size(); i++)
         set1[i] = 0;
 
-    Calculate(set1, IO::IndicatorsNames.size(), 0);
+    Calculate(set1, IO::IndicatorsNames.size(), 0);    
 }

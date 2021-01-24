@@ -22,5 +22,6 @@
         <file>icons/down.png</file>
         <file>icons/up.png</file>
         <file>icons/up1.png</file>
+        <file>icons/speedometer.png</file>
     </qresource>
 </RCC>

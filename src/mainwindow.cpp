@@ -9,14 +9,14 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     ui->ListButton->hide();
-
+    setAcceptDrops(true);
 
 
     DataProcessing::mainWindow = this;
 
     startupconfigform = new StartupConfigForm;
     selectforexportForm = new SelectForExportForm(this);
-
+    //    settingsForm = new SettingsForm(this);
 
     ui->InfoButton->setEnabled(false);
     ui->ConfiugreButton->setEnabled(false);
@@ -52,14 +52,17 @@ MainWindow::MainWindow(QWidget *parent)
     ui->PlusButton->hide();
     ui->MinusButton->hide();
 
-
+    //Actions connecting
     //--------------------------------------------------------------------------------------------
+    connect(this, SIGNAL(NeedToOpenFileFromDrop(QString)), this, SLOT(OpenFileFromDrop(QString)));
     connect(this, SIGNAL(OpenedLoadingForm()), this, SLOT(OpenLoadingForm()));
     connect(this, SIGNAL(ClosedLoadingForm()), this, SLOT(CloseLoadingForm()));
 
     connect(ui->AboutProgramAction, SIGNAL(triggered()), this, SLOT(OpenAboutProgramForm()));
 
     connect(ui->ExportToExcelAction, SIGNAL(triggered()), this, SLOT(OpenExportFileForm()));
+
+    connect(ui->OpenSettingsAction, SIGNAL(triggered()), this, SLOT(OpenSettingsForm()));
 
     connect(ui->OpenFileAction, SIGNAL(triggered()), this, SLOT(OpenFileDialog()));
     connect(ui->DeleteAllAction, SIGNAL(triggered()), this, SLOT(DeleteAllAction()));
@@ -129,6 +132,7 @@ void MainWindow::on_MinusButton_clicked()
 
 void MainWindow::on_ExploreButton_clicked()
 {
+    //ui->SideBarContext->setMaximumWidth(0);
 
     if (ui->SideBarContext->width() == 0)
     {
@@ -138,6 +142,8 @@ void MainWindow::on_ExploreButton_clicked()
         ui->SideBarContext->setMinimumWidth(0);
         ui->SideBarContext->setMaximumWidth(99999);
     }
+    else
+        ui->SideBarContext->setMaximumWidth(0);
 
 }
 
@@ -284,6 +290,26 @@ void MainWindow::UpdateOpenMenu(const QString solutionName)
     connect(action, SIGNAL(triggered()), this, SLOT(OpenAction()));
 }
 
+void MainWindow::dropEvent(QDropEvent *event)
+{
+    const QString filePath = event->mimeData()->urls().first().toLocalFile();
+    OpenSolution(filePath);
+
+//    emit NeedToOpenFileFromDrop(filePath);
+//    std::thread th([&](){OpenSolution(filePath);});
+
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *event)
+{
+    event->acceptProposedAction();
+}
+
+void MainWindow::OpenFileFromDrop(QString path)
+{
+    OpenSolution(path);
+}
+
 void MainWindow::OpenLoadingForm()
 {
     //    FileLoadingDialog* loadingFileDialog = new FileLoadingDialog("fileName");
@@ -321,6 +347,26 @@ void MainWindow::OpenExportFileForm()
     //    selectforexportForm = new SelectForExportForm();
     //    selectforexportForm->show();
     //    selectforexportForm->activateWindow();
+}
+
+void MainWindow::OpenSettingsForm()
+{
+    //    preselectionchartsform = std::unique_ptr<PreSelectionChartsForm>(new PreSelectionChartsForm);
+    //    //preselectionchartsform = new PreSelectionChartsForm();
+
+    //    preselectionchartsform->setModal(true);
+    //    preselectionchartsform->exec();
+
+
+    settingsForm = std::unique_ptr<SettingsForm>(new SettingsForm);
+    settingsForm->setModal(true);
+    settingsForm->exec();
+
+
+    //    delete settingsForm;
+    //    settingsForm = new SettingsForm();
+    //    settingsForm->setModal(true);
+    //    settingsForm->exec();
 }
 
 void MainWindow::ToggleFullscreen()
@@ -537,8 +583,8 @@ void MainWindow::OpenSolution(const QString fileName)
 
         QString newSolName = QString("%1_%2").arg(solutionName).arg(n);
 
-//        UpdateDeleteMenu(newSolName);
-//        UpdateOpenMenu(newSolName);
+        //        UpdateDeleteMenu(newSolName);
+        //        UpdateOpenMenu(newSolName);
 
         OpenStartupConfigForm(newSolName);
 
@@ -575,8 +621,8 @@ void MainWindow::OpenSolution(const QString fileName)
 
         IO::OpenExelFile1(fileName);
 
-//        UpdateDeleteMenu(solutionName);
-//        UpdateOpenMenu(solutionName);
+        //        UpdateDeleteMenu(solutionName);
+        //        UpdateOpenMenu(solutionName);
 
         ui->InfoButton->setEnabled(true);
         ui->ConfiugreButton->setEnabled(true);

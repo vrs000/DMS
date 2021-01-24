@@ -7,12 +7,12 @@
 #include <io.h>
 #include <QDebug>
 
-#include <multi_threading_methods.h>
+
 #include <asynccalculation.h>
 #include <QProgressBar>
 #include <QProgressDialog>
 #include <mainwindow.h>
-#include <calculateasyncwiththreadpool.h>
+
 
 
 
@@ -77,6 +77,9 @@ public:
     static int IndicatorsCount;
 
 public:
+    static int MaxThreadCount;
+    static int CurrentThreadCount;
+
 
     static double Fact(double value);
     static unsigned long f(int n);
@@ -88,18 +91,9 @@ public:
     static void CalculateNormalizedTable( QVector<QVector<double>> BaseTable);
     static void GenerateWeightsList();
 
-    static void CalculateRatings();
-    static void CalculateRatingsIn2Threads();
-    static void CalculateRatingsIn4Threads();
-    static void CalculateRatingsIn8Threads();
 
-    static void CalculateRatingsIn1ThreadsWithWeights();
-    static void CalculateRatingsIn2ThreadsWithWeights();
-    static void CalculateRatingsIn4ThreadsWithWeights();
-    static void CalculateRatingsIn8ThreadsWithWeights();
-    static void CalculateRatingsInAllThreadsWithWeights();
 
-    static void CalculateRatingsWithPool();
+
 
     static void SetMetrics(QVector<int> Preferred, QVector<int> Rejected);
     static void SetProjectsPriorities(QVector<QString> Preferred, QVector<QString> Rejected);
@@ -118,16 +112,23 @@ public:
     static double* GetLinearConvolutionResult(double *weights);
 
 
-    static CalculateRatingsAsync* thread1;
-    static CalculateRatingsAsync* thread2;
-    static CalculateRatingsAsync* thread3;
-    static CalculateRatingsAsync* thread4;
-    static CalculateRatingsAsync* thread5;
-    static CalculateRatingsAsync* thread6;
-    static CalculateRatingsAsync* thread7;
-    static CalculateRatingsAsync* thread8;
+    //OLD
+    //---------------------------------------------------
+    static void CalculateRatingsIn1ThreadsWithWeights();
+    static void CalculateRatingsIn2ThreadsWithWeights();
+    static void CalculateRatingsIn4ThreadsWithWeights();
+    static void CalculateRatingsIn8ThreadsWithWeights();
+    //---------------------------------------------------
 
 
+    // Возращает список экземпляров потоков
+    // Либо в количестве равном ThreadCount
+    // Либо в зависимосте от вычислетиельной сложности алгоритма
+    static QList<GenerateWeightsAndCalculateRatingsAsync*> getThreadsList(int ThreadCount = -1, int MaxThreadCount = QThread::idealThreadCount());
+
+
+    //OLD
+    //---------------------------------------------------
     static GenerateWeightsAndCalculateRatingsAsync* th1;
     static GenerateWeightsAndCalculateRatingsAsync* th2;
     static GenerateWeightsAndCalculateRatingsAsync* th3;
@@ -136,11 +137,14 @@ public:
     static GenerateWeightsAndCalculateRatingsAsync* th6;
     static GenerateWeightsAndCalculateRatingsAsync* th7;
     static GenerateWeightsAndCalculateRatingsAsync* th8;
+    //---------------------------------------------------
 
+    static QList<GenerateWeightsAndCalculateRatingsAsync*> threadInstances; // Список экземпляров создаваемых потоков
 
-    static CalculateAsyncWithThreadPool* tp;
+    static int TotalStepsCount;
 
-
+    //OLD
+    //------------------
     static int Count1;
     static int Count2;
     static int Count3;
@@ -149,13 +153,14 @@ public:
     static int Count6;
     static int Count7;
     static int Count8;
+    //------------------
 
     static int NumberOfTriggring;
 
     static void ResetCounts();
 
 private:
-    static void GetNextNum(QVector<double>& currentSet, int maxN, int curPosIndex);
+//    static void GetNextNum(QVector<double>& currentSet, int maxN, int curPosIndex);
     static void GetNextNum(double currentSet[], int maxN, int curPosIndex);
 
     static void SetMainWindowTitle(QString title);
@@ -171,6 +176,8 @@ private slots:
     void UpdateProgressBar();
 
 
+    //OLD
+    //-----------------------------
     void UpdateCount1(int count);
     void UpdateCount2(int count);
     void UpdateCount3(int count);
@@ -179,15 +186,20 @@ private slots:
     void UpdateCount6(int count);
     void UpdateCount7(int count);
     void UpdateCount8(int count);
+    //-----------------------------
 
 
+    void UpdateTotalStepCount(int count);
+
+    //OLD
+    //-----------------------
     void Finished1Threads();
     void Finished2Threads();
     void Finished4Threads();
     void Finished8Threads();
+    //-----------------------
 
-
-    void ThreadPoolFinished();
+    void FinishedAllThreads();
 };
 
 

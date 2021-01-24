@@ -62,6 +62,7 @@ void SetProjectGroupImportanceForm::on_AddGroupButton_clicked()
         QComboBox* combobox = new QComboBox(this);
         combobox->addItem(">");
         combobox->addItem("≥");
+        combobox->addItem("=");
         combobox->addItem(";");
         comboxes << combobox;
         ui->GroupsLayout->addWidget(combobox);
