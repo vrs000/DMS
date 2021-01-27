@@ -365,7 +365,7 @@ void DataProcessing::GetNextNum(double currentSet[], int maxN, int curPosIndex)
 
 void DataProcessing::SetMainWindowTitle(QString title)
 {
-    mainWindow->setWindowTitle(QString("Система принятия решений | %1   %2").arg(title).arg(timeElapsedParsed));
+    mainWindow->setWindowTitle(QString("Система поддержки принятия решений | %1   %2").arg(title).arg(timeElapsedParsed));
 
     double sum = 0;
 
@@ -445,7 +445,6 @@ void DataProcessing::UpdateProgressBar()
         res += thread->GetCount();
     }
 
-//    qDebug() << res;
     //    if (Count1 != -1) res += Count1;
     //    if (Count2 != -1) res += Count2;
     //    if (Count3 != -1) res += Count3;
@@ -497,7 +496,6 @@ void DataProcessing::UpdateTotalStepCount(int count)
 {
 
     TotalStepsCount++;
-//    qDebug()<<TotalStepsCount;
 }
 
 void DataProcessing::Finished1Threads()
@@ -587,10 +585,6 @@ void DataProcessing::Finished2Threads()
 
             auto hard2 = th2->GetHardRatings();
             auto soft2 = th2->GetSoftRatings();
-
-
-            //            qDebug() << hard1;
-            //            qDebug() << hard2;
 
 
             QVector<double> hardRatings(hard1.size(), 0);
@@ -1176,7 +1170,7 @@ QList<GenerateWeightsAndCalculateRatingsAsync*> DataProcessing::getThreadsList(i
         int a = 1;
         //        int b = a + step;
         int b = ThreadsCount==1 ? CurrentIterationCount : a+step;
-//        qDebug() << a << b;
+
         for (int i=0; i<ThreadsCount; i++)
         {
             threads <<new GenerateWeightsAndCalculateRatingsAsync(a,b, CrushingStep);
@@ -1193,7 +1187,7 @@ QList<GenerateWeightsAndCalculateRatingsAsync*> DataProcessing::getThreadsList(i
 
             b = i==ThreadsCount-1 ? CurrentIterationCount : b+step;
 
-//            qDebug() << a << b;
+
         }
     };
 

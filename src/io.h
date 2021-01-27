@@ -37,6 +37,9 @@ public:
     static QVector<QString> IndicatorsNames;
     static QVector<QString> ProjectsNames;
 
+    static bool isReadableDataValid;
+    static QString DataValidationMsgError;
+
     static bool IsPaint;
     static bool IsBuild;
 

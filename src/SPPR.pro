@@ -3,6 +3,8 @@ QT += charts
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+#win32: RC_ICONS = $$PWD/icons/Logo-resized.ico
+#://icons/Logo-resized.png
 CONFIG += c++11
 CONFIG  += qaxcontainer
 

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Система принятия решений</string>
+   <string>Система поддержки принятия решений</string>
   </property>
   <property name="windowIcon">
    <iconset resource="icons.qrc">

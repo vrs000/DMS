@@ -8,9 +8,13 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+//    setWindowIcon(QIcon(":/icons/Logo-resized.png"));
+//    setWindowIcon(QIcon(":/icons/Logo.ico"));
+//    setWindowIcon(QIcon("qrc:/icons/Logo.ico"));
+
+
     ui->ListButton->hide();
     setAcceptDrops(true);
-
 
     DataProcessing::mainWindow = this;
 
@@ -295,8 +299,8 @@ void MainWindow::dropEvent(QDropEvent *event)
     const QString filePath = event->mimeData()->urls().first().toLocalFile();
     OpenSolution(filePath);
 
-//    emit NeedToOpenFileFromDrop(filePath);
-//    std::thread th([&](){OpenSolution(filePath);});
+    //    emit NeedToOpenFileFromDrop(filePath);
+    //    std::thread th([&](){OpenSolution(filePath);});
 
 }
 
@@ -431,7 +435,7 @@ void MainWindow::DeleteAction()
     const QString solutionName = action->text();
 
     if (solutionName == SolutionDB::currentSolutionName)
-        setWindowTitle(QString("Система принятия решений"));
+        setWindowTitle(QString("Система поддержки принятия решений"));
 
     //remove from OpenMenu
     for (int i = 0; i < OpenMenuActions.size(); i++)
@@ -481,17 +485,15 @@ void MainWindow::OpenAction()
     QAction* action = qobject_cast<QAction*>(QObject::sender());
     const QString solutionName = action->text();
     SolutionDB::LoadSolution(solutionName);
-    setWindowTitle(QString("Система принятия решений | %1   %2").arg(solutionName).arg(DataProcessing::timeElapsedParsed));
+    setWindowTitle(QString("Система поддержки принятия решений | %1   %2").arg(solutionName).arg(DataProcessing::timeElapsedParsed));
     IO::FillingTables(ui->InputTable, ui->OutputTable);
-
-
 }
 
 void MainWindow::DeleteAllAction()
 {
     //Remove from DB
     SolutionDB::DB.clear();
-    setWindowTitle(QString("Система принятия решений"));
+    setWindowTitle(QString("Система поддержки принятия решений"));
 
     //Hide buttons
     ui->InfoButton->setEnabled(false);
@@ -617,19 +619,25 @@ void MainWindow::OpenSolution(const QString fileName)
 
     if (!SolutionDB::IsContained(solutionName))
     {
-        //IO::OpenExelFile(fileName);
 
         IO::OpenExelFile1(fileName);
+
 
         //        UpdateDeleteMenu(solutionName);
         //        UpdateOpenMenu(solutionName);
 
-        ui->InfoButton->setEnabled(true);
-        ui->ConfiugreButton->setEnabled(true);
-        ui->GraphicsButton->setEnabled(true);
 
 
-        OpenStartupConfigForm(solutionName);
+        if (IO::isReadableDataValid)
+        {
+            ui->InfoButton->setEnabled(true);
+            ui->ConfiugreButton->setEnabled(true);
+            ui->GraphicsButton->setEnabled(true);
+            OpenStartupConfigForm(solutionName);
+        }
+
+        else
+            QMessageBox::critical(this, tr("Некорректный формат данных"), IO::DataValidationMsgError);
     }
 }
 

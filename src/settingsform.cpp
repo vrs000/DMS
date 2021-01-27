@@ -61,8 +61,6 @@ void SettingsForm::on_OkButton_clicked()
     DataProcessing::MaxThreadCount = MaxCount;
     DataProcessing::CurrentThreadCount = CurrentCount ? CurrentCount : -1;
 
-    qDebug() << "max" << DataProcessing::MaxThreadCount;
-    qDebug() << "current" << DataProcessing::CurrentThreadCount;
 
     close();
 }

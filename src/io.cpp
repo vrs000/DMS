@@ -9,6 +9,9 @@ QVector<QString> IO::ProjectsNames;
 bool IO::IsBuild = true;
 bool IO::IsPaint = true;
 
+bool IO::isReadableDataValid = true;
+QString IO::DataValidationMsgError = "";
+
 void IO::OpenExelFile(QString Path)
 {
     QAxObject* excel = new QAxObject("Excel.Application", 0);
@@ -168,6 +171,7 @@ void IO::OpenExelFile1(QString Path)
     QVector<QString> projectsNames;
     QVector<QVector<double>> table;
 
+    const QString alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     //Чтение показателей
     for (int x = 2; x<=RangeX; x++)
@@ -188,10 +192,51 @@ void IO::OpenExelFile1(QString Path)
         {
             auto a = xlsx.cellAt(y,x)->value();
 
+
+            int digits  = 0;
+            int letters = 0;
+            int spaces  = 0;
+            int puncts  = 0;
+
+
             if (strcmp(a.typeName(), "QString") == 0)
             {
                 double value;
                 QString A = a.toString();
+
+                //Data validation
+                //-----------------------------------------------------------------------------------------------------------
+                if (A.size() == 0) throw QString("Have an empty cell (x:%1  y:%2)").arg(x).arg(y);
+
+                foreach(QChar s, A)
+                {
+                    if (s.isDigit()) digits++;
+                    if (s.isPunct()) puncts++;
+                    if (s.isLetter()) letters++;
+                    if (s.isSpace()) spaces++;
+                }
+
+
+
+                //Если считанное значение не соответсвует формату числа
+                if (!(digits!=0 && ((puncts == 1 && A.contains(',')) || puncts == 0)  && spaces == 0 && letters == 0))
+                {
+                    isReadableDataValid = false;
+
+                    if (letters)
+                        DataValidationMsgError = QString("Имеются символы в ячейке '%1%2'").arg(alphabet[x-1]).arg(y);
+
+                    if (spaces)
+                        DataValidationMsgError = QString("Имеются пробелы в ячейке '%1%2'").arg(alphabet[x-1]).arg(y);
+
+                    if (digits!=0 && puncts == 1 && A.contains('.') && spaces == 0 && letters == 0)
+                        DataValidationMsgError = QString("Использовано '.' вместо ',' в качестве разделителя дробной части в ячейке '%1%2'").arg(alphabet[x-1]).arg(y);
+
+                    return;
+                }
+
+                //-----------------------------------------------------------------------------------------------------------
+
                 A.replace(',', '.');
                 value =  A.toDouble();
                 table.last() << value;
@@ -203,9 +248,38 @@ void IO::OpenExelFile1(QString Path)
     }
 
 
+    //Identical columns validation
+    //---------------------------------------
+
+    bool isIdentical = true;
+    int value;
+
+    for (int column=0; column < table.first().size(); column++)
+    {
+        isIdentical = true;
+        value = table[0][column];
+
+        for (int row=0; row < table.size(); row++)
+            isIdentical = isIdentical && table[row][column] == value;
+
+        if (isIdentical)
+        {
+            isReadableDataValid = false;
+
+            DataValidationMsgError = QString("Имеется столбец одинаковых значений показателя '%1'").arg(indicatorsNames[column]);
+
+            return;
+        }
+    }
+
+    //---------------------------------------
+
+
     IndicatorsNames = indicatorsNames;
     ProjectsNames = projectsNames;
     BaseTable = table;
+
+    isReadableDataValid = true;
 }
 
 
@@ -690,9 +764,13 @@ void IO::SaveExcelFile(QList<Solution> solutionsList)
             legendFormat.setFontBold(true);
             legendFormat.setHorizontalAlignment(QXlsx::Format::AlignLeft);
 
+            //="%1."&" "&A%2
+
+//            for (int i = 0; i < projects.size(); i++)
+//                xlsx.write(row + 1 + i, col, QString("%1. %2").arg(i + 1).arg(projects[i]), legendFormat);
 
             for (int i = 0; i < projects.size(); i++)
-                xlsx.write(row + 1 + i, col, QString("%1. %2").arg(i + 1).arg(projects[i]), legendFormat);
+                xlsx.write(row + 1 + i, col, QString("=\"%1.\"&\" \"&A%2").arg(i + 1).arg(row+1+i-projects.size()-1), legendFormat);
             //---------------------------------------------------------------------------------------------
         }
         //======================================================================================================
@@ -821,7 +899,7 @@ void IO::FillingTables(QTableWidget *input, QTableWidget *output)
         double step_dg = step * dg;
         double step_db = step * db;
 
-//        qDebug() << 0 - posInTop*step_dr << 255 - posInTop*step_dg << 0 - posInTop*step_db;
+
         return QColor(0 - posInTop*step_dr, 255 - posInTop*step_dg, 0 - posInTop*step_db, 180);
     };
 

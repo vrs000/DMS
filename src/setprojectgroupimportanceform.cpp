@@ -175,7 +175,7 @@ void SetProjectGroupImportanceForm::on_OkButton_clicked()
     case Projects:
 
         StartupConfigForm::NotParsedImportanceGroupOfProjects = GetImportanceGroupString();
-//        qDebug() << GetImportanceGroupString().split("≥");
+
         if (StartupConfigForm::NotParsedImportanceGroupOfProjects != "")
             btnProjects->setStyleSheet("color: rgb(0, 195, 13);");
         else
