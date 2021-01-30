@@ -759,18 +759,14 @@ void IO::SaveExcelFile(QList<Solution> solutionsList)
             //---------------------------------------------------------------------------------------------
             auto projects = sol.IsParettoCriterionUsed ? sol.ParettoSetProjects : sol.ProjectsNames;
 
-            Format legendFormat;
-            legendFormat.setPatternBackgroundColor(QColor(253, 233, 217));
-            legendFormat.setFontBold(true);
-            legendFormat.setHorizontalAlignment(QXlsx::Format::AlignLeft);
+//            Format legendFormat;
+//            legendFormat.setPatternBackgroundColor(QColor(253, 233, 217));
+//            legendFormat.setFontBold(true);
+//            legendFormat.setHorizontalAlignment(QXlsx::Format::AlignLeft);
 
-            //="%1."&" "&A%2
 
 //            for (int i = 0; i < projects.size(); i++)
-//                xlsx.write(row + 1 + i, col, QString("%1. %2").arg(i + 1).arg(projects[i]), legendFormat);
-
-            for (int i = 0; i < projects.size(); i++)
-                xlsx.write(row + 1 + i, col, QString("=\"%1.\"&\" \"&A%2").arg(i + 1).arg(row+1+i-projects.size()-1), legendFormat);
+//                xlsx.write(row + 1 + i, col, QString("=\"%1.\"&\" \"&A%2").arg(i + 1).arg(row+1+i-projects.size()-1), legendFormat);
             //---------------------------------------------------------------------------------------------
         }
         //======================================================================================================
