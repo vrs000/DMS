@@ -17,6 +17,8 @@ SettingsForm::SettingsForm(QWidget *parent) :
 
     ui->TextLabel->hide();
     ui->TextLabel_2->hide();
+
+    ui->MaxIterCountEdit->setText(QString::number(DataProcessing::MaxIterCountForLogging));
 }
 
 SettingsForm::~SettingsForm()
@@ -56,11 +58,19 @@ void SettingsForm::on_OkButton_clicked()
 {
     int MaxCount = ui->MaxThreadCountSlider->value();
     int CurrentCount = ui->CurrentThreadCountSlider->value();
-
+    int itercount = ui->MaxIterCountEdit->text().toInt();
 
     DataProcessing::MaxThreadCount = MaxCount;
     DataProcessing::CurrentThreadCount = CurrentCount ? CurrentCount : -1;
-
+    DataProcessing::MaxIterCountForLogging = itercount;
+    DataProcessing::IsLoggingUsed = ui->LoggingCheckBox->isChecked();
 
     close();
+}
+
+void SettingsForm::on_LoggingCheckBox_stateChanged(int arg1)
+{
+    if (arg1 == 2) ui->MaxIterCountEdit->setEnabled(true);
+    if (arg1 == 0) ui->MaxIterCountEdit->setEnabled(false);
+
 }

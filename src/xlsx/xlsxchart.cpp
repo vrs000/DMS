@@ -122,27 +122,12 @@ void Chart::addSeries(const CellRange &range, AbstractSheet *sheet)
             axDataSouruce_numRef = sheetName + QLatin1String("!") + subRange.toString(true, true);
         }
 
-        //MY
-        CellRange subRangeForXLabels(range.firstRow(), range.firstColumn()-1, range.lastRow(), range.firstColumn()-1);
-
         for (int col = firstDataColumn; col <= range.lastColumn(); ++col) {
             CellRange subRange(range.firstRow(), col, range.lastRow(), col);
             QSharedPointer<XlsxSeries> series = QSharedPointer<XlsxSeries>(new XlsxSeries);
             series->axDataSource_numRef = axDataSouruce_numRef;
             series->numberDataSource_numRef =
                 sheetName + QLatin1String("!") + subRange.toString(true, true);
-
-            //############################################
-            //MY
-
-            series->axDataSource_numRef = sheetName + QLatin1String("!") + subRangeForXLabels.toString(true, true);
-            //series->axDataSource_numRef = "'FCP Demo1'!$A$23:$A$40";
-            //qDebug() << sheetName + QLatin1String("!") + subRangeForXLabels.toString(true, true);
-            //qDebug() << series->numberDataSource_numRef;
-            //qDebug() << series->axDataSource_numRef;
-
-            //############################################
-
             d->seriesList.append(series);
         }
 

@@ -10,6 +10,7 @@
         <file>icons/minus.png</file>
         <file>icons/plus.png</file>
         <file>icons/close (2).png</file>
+        <file>icons/Logo.ico</file>
         <file>icons/Logo.png</file>
         <file>icons/WaitBar.gif</file>
         <file>icons/WaitBar1.gif</file>
@@ -22,6 +23,6 @@
         <file>icons/up.png</file>
         <file>icons/up1.png</file>
         <file>icons/speedometer.png</file>
-        <file>icons/Logo-resized.ico</file>
+        <file>icons/logging.png</file>
     </qresource>
 </RCC>

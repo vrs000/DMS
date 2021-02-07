@@ -341,13 +341,12 @@ void GenerateWeightsAndCalculateRatingsAsync::Calculate(double currentSet[], int
                         }
 
                     if (ProjectsRelation[i] == 'b')
-                        if (!(res[PrefferedProjectsV2[i]] >= res[RejectedProjectsV2[i]]))
+                        if (!(res[PrefferedProjectsV2[i]] >= res[RejectedProjectsV2[i]]))                           
                         {
                             IsSuitable = false;
                             break;
                         }
                 }
-
             }
             //---------------------------------------------------------------------------
 

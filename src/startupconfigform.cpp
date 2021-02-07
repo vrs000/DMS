@@ -329,5 +329,6 @@ void StartupConfigForm::on_ParettoOnBtn_clicked()
     foreach (auto project, DataProcessing::ParettoSetProjects)
         DataProcessing::ParettoSetProjectsIndexes << IO::ProjectsNames.indexOf(project);
 
+    //    qDebug() << DataProcessing::ParettoSetProjectsIndexes;
     //-----------------------------------------------------------------------------------
 }

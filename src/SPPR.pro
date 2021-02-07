@@ -3,17 +3,11 @@ QT += charts
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-#win32: RC_ICONS = $$PWD/icons/Logo-resized.ico
-#://icons/Logo-resized.png
 CONFIG += c++11
 CONFIG  += qaxcontainer
 
 
 include(xlsx/qtxlsx.pri)
-
-
-
-
 
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings

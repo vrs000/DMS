@@ -29,6 +29,8 @@ private slots:
 
     void on_OkButton_clicked();
 
+    void on_LoggingCheckBox_stateChanged(int arg1);
+
 private:
     Ui::SettingsForm *ui;
 };

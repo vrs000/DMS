@@ -13,7 +13,8 @@
 #include <QProgressDialog>
 #include <mainwindow.h>
 
-
+#include <xlsxrichstring.h>
+#include <xlsxconditionalformatting.h>
 
 
 class CalculateRatingsAsync;
@@ -31,6 +32,30 @@ public:
 
     static QString NotParsedImportanceGroupOfProjects;
     static QString NotParsedImportanceGroupOfIndicators;
+
+    //Logging
+    //---------------------------------
+    static QList<QList<double>> weights;
+    static QList<QList<double>> hard;
+    static QList<QList<double>> soft;
+    static QList<QList<double>> LinearConv;
+
+
+    static int MaxIterCountForLogging;
+    static int Generetaed_count;
+    static bool IsLoggingUsed;
+    static void MakeLogsAsXlsx();
+
+    static void GetNextNum(double currentSet[], int maxN, int curPosIndex,
+                           int *preffered_Project, int *rejected_Project, char *sign_Project, int p_count,
+                           int *preffered_Indicator, int *rejected_Indicator, char *sign_Indicator, int i_count
+                           );
+
+
+    static double getMax(double *list);
+    static int COUNT(double* list, double value);
+    static int IndexOf(double* list, double value);
+    //---------------------------------
 
     static QVector<QString> PriorityList;
     static QVector<double> MaximumIndicators;
@@ -90,9 +115,6 @@ public:
     static void FindMaxMinIndicators( QVector<QVector<double>> BaseTable);
     static void CalculateNormalizedTable( QVector<QVector<double>> BaseTable);
     static void GenerateWeightsList();
-
-
-
 
 
     static void SetMetrics(QVector<int> Preferred, QVector<int> Rejected);

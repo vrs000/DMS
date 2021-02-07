@@ -8,13 +8,9 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-//    setWindowIcon(QIcon(":/icons/Logo-resized.png"));
-//    setWindowIcon(QIcon(":/icons/Logo.ico"));
-//    setWindowIcon(QIcon("qrc:/icons/Logo.ico"));
-
-
     ui->ListButton->hide();
     setAcceptDrops(true);
+
 
     DataProcessing::mainWindow = this;
 
@@ -487,6 +483,8 @@ void MainWindow::OpenAction()
     SolutionDB::LoadSolution(solutionName);
     setWindowTitle(QString("Система поддержки принятия решений | %1   %2").arg(solutionName).arg(DataProcessing::timeElapsedParsed));
     IO::FillingTables(ui->InputTable, ui->OutputTable);
+
+
 }
 
 void MainWindow::DeleteAllAction()

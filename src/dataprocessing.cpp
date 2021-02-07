@@ -5,6 +5,17 @@ int DataProcessing::UsedThreadCount = 0;
 int DataProcessing::TimeElapsed = 0;
 QString DataProcessing::timeElapsedParsed = "";
 
+
+QList<QList<double>> DataProcessing::weights;
+QList<QList<double>> DataProcessing::LinearConv;
+QList<QList<double>> DataProcessing::hard;
+QList<QList<double>> DataProcessing::soft;
+
+
+int DataProcessing::MaxIterCountForLogging = 200;
+bool DataProcessing::IsLoggingUsed = true;
+int DataProcessing::Generetaed_count = 0;
+
 int DataProcessing::MaxThreadCount = QThread::idealThreadCount();
 int DataProcessing::CurrentThreadCount = -1;
 
@@ -82,6 +93,611 @@ QTableWidget* DataProcessing::outputTable = nullptr;
 QString DataProcessing::OpenedSolutionName = "";
 
 DataProcessing* DataProcessing::instance = new DataProcessing;
+
+void DataProcessing::MakeLogsAsXlsx()
+{
+    weights.clear();
+    LinearConv.clear();
+    hard.clear();
+    soft.clear();
+
+
+    Generetaed_count = 0;
+
+    //CONSTANTS
+    //-----------------------------------------------------------------------------------
+    const QString DirName = "./logs";
+    const QString filePath = QString("%1/%2.xlsx")
+            .arg(DirName)
+            .arg(OpenedSolutionName + "_" + QTime().currentTime().toString("hh_mm_ss"));
+
+    const int StartColForInfo = 1;
+    const int StartRowForInfo = 1;
+    //-----------------------------------------------------------------------------------
+
+    if (!QDir(DirName).exists())
+        QDir().mkdir(DirName);
+
+
+    Document xlsx;
+
+    RichString rich_text;
+
+    //FORMATS
+    //----------------------------------------------------
+    Format format;
+    format.setFont(QFont("Times New Roman"));
+    format.setFontSize(14);
+    format.setFontItalic(true);
+
+    Format index_format;
+    index_format.setFont(QFont("Times New Roman"));
+    index_format.setFontSize(9);
+    index_format.setFontItalic(true);
+
+    Format center;
+    center.setHorizontalAlignment(Format::AlignHCenter);
+
+    Format HVcenter;
+    HVcenter.setHorizontalAlignment(Format::AlignHCenter);
+    HVcenter.setVerticalAlignment(Format::AlignVCenter);
+    HVcenter.setFontName("Times New Roman");
+    HVcenter.setFontSize(14);
+    HVcenter.setTextWarp(true);
+    HVcenter.setTopBorderStyle(Format::BorderMedium);
+
+    Format upper_board;
+    upper_board.setTopBorderStyle(Format::BorderMedium);
+    upper_board.setHorizontalAlignment(Format::AlignHCenter);
+
+
+    Format lower_board;
+    lower_board.setBottomBorderStyle(Format::BorderMedium);
+    lower_board.setHorizontalAlignment(Format::AlignHCenter);
+    //----------------------------------------------------
+
+
+
+
+    xlsx.setColumnWidth(CellRange(StartRowForInfo, StartColForInfo,
+                                  StartRowForInfo, StartColForInfo+PriorityList.size()), 16);
+
+    //Trends
+    for (int i=0; i<PriorityList.size(); i++)
+    {
+        rich_text = RichString();
+        rich_text.addFragment("x", format);
+        rich_text.addFragment(tr("i%1").arg(i+1), index_format);
+        rich_text.addFragment(tr(" → %1").arg(PriorityList[i]), format);
+        xlsx.write(StartRowForInfo, StartColForInfo+i, rich_text, center);
+    }
+
+    //Importance indicator groups
+    if (NotParsedImportanceGroupOfIndicators != "")
+    {
+        QStringList pairs = NotParsedImportanceGroupOfIndicators.split(",");
+
+        for (int i=0; i<pairs.size(); i++)
+        {
+            QString first, second, sign;
+
+            if (pairs[i].contains("≥"))
+            {
+                first = pairs[i].split("≥").first();
+                sign = "≥";
+                second = pairs[i].split("≥").last();
+            }
+
+            if (pairs[i].contains(">"))
+            {
+                first = pairs[i].split(">").first();
+                sign = ">";
+                second = pairs[i].split(">").last();
+            }
+
+            if (pairs[i].contains("="))
+            {
+                first = pairs[i].split("=").first();
+                sign = "=";
+                second = pairs[i].split("=").last();
+            }
+
+
+            rich_text = RichString();
+            rich_text.addFragment("a", format);
+            rich_text.addFragment(tr("%1l").arg(first.toInt()+1), index_format);
+            rich_text.addFragment(tr(" %1 ").arg(sign), format);
+            rich_text.addFragment("a", format);
+            rich_text.addFragment(tr("%1l").arg(second.toInt()+1), index_format);
+            xlsx.write(StartRowForInfo+1, StartColForInfo+i, rich_text, center);
+        }
+    }
+
+    //Importance projects groups
+    if (NotParsedImportanceGroupOfProjects != "")
+    {
+        QStringList pairs = NotParsedImportanceGroupOfProjects.split(",");
+
+
+        for (int i=0; i<pairs.size(); i++)
+        {
+            QString first, second, sign;
+
+            if (pairs[i].contains("≥"))
+            {
+                first = pairs[i].split("≥").first();
+                sign = "≥";
+                second = pairs[i].split("≥").last();
+            }
+
+            if (pairs[i].contains(">"))
+            {
+                first = pairs[i].split(">").first();
+                sign = ">";
+                second = pairs[i].split(">").last();
+            }
+
+            if (pairs[i].contains("="))
+            {
+                first = pairs[i].split("=").first();
+                sign = "=";
+                second = pairs[i].split("=").last();
+            }
+
+
+            rich_text = RichString();
+            rich_text.addFragment("F(x)", format);
+            rich_text.addFragment(tr("%1").arg(first.toInt()+1), index_format);
+            rich_text.addFragment(tr(" %1 ").arg(sign), format);
+            rich_text.addFragment("F(x)", format);
+            rich_text.addFragment(tr("%1").arg(second.toInt()+1), index_format);
+            xlsx.write(StartRowForInfo+2, StartColForInfo+i, rich_text, center);
+        }
+    }
+
+
+    const int startX = StartColForInfo;
+    const int startY= StartRowForInfo + 5;
+
+    //start Filling
+
+
+    // Заголовки таблицы
+
+    // l
+    //--------------------------------------------------------------
+    xlsx.mergeCells(CellRange(startY, startX, startY+1, startX));
+    HVcenter.setFontItalic(true);
+    HVcenter.setFontSize(18);
+    xlsx.write(startY, startX, "l", HVcenter);
+    //--------------------------------------------------------------
+
+    // Проекты
+    //--------------------------------------------------------------
+    xlsx.mergeCells(CellRange(startY, startX+1, startY+1, startX+1));
+    HVcenter.setFontItalic(false);
+    HVcenter.setFontSize(11);
+    xlsx.write(startY, startX+1, "Проекты", HVcenter);
+    xlsx.write(startY+1, startX+1, "Проекты", lower_board);
+    //--------------------------------------------------------------
+
+
+    // Исходные данные
+    //--------------------------------------------------------------
+    xlsx.mergeCells(CellRange(startY, startX+2, startY, startX+2 + PriorityList.size()-1));
+    xlsx.write(startY, startX+2, "Исходные данные", HVcenter);
+    xlsx.write(startY, startX+3, "", upper_board);
+    //--------------------------------------------------------------
+
+
+    // Нормированные данные
+    //--------------------------------------------------------------
+    xlsx.mergeCells(CellRange(startY, startX+2+PriorityList.size(), startY, startX+1+2*PriorityList.size()));
+    xlsx.write(startY, startX+2+PriorityList.size(), "Нормированные данные", HVcenter);
+    xlsx.write(startY, startX+2+PriorityList.size()+1, "", upper_board);
+    //--------------------------------------------------------------
+
+
+    // Коэффициенты линейной свертки
+    //--------------------------------------------------------------
+    xlsx.mergeCells(CellRange(startY, startX+2+2*PriorityList.size(), startY, startX+1+3*PriorityList.size()));
+    xlsx.write(startY, startX+2+2*PriorityList.size(), "Коэффициенты линейной свертки", HVcenter);
+    xlsx.write(startY, startX+2+2*PriorityList.size()+1, "", upper_board);
+    //--------------------------------------------------------------
+
+
+    // X ij  и a ij
+    //--------------------------------------------------------------------
+    for (int i=0; i<PriorityList.size(); i++)
+    {
+        if (i>=1)
+        {
+            xlsx.write(startY, startX+2+i, "", upper_board);
+            xlsx.write(startY, startX+2+PriorityList.size()+i, "", upper_board);
+            xlsx.write(startY, startX+2+2*PriorityList.size()+i, "", upper_board);
+        }
+        rich_text = RichString();
+        rich_text.addFragment("x", format);
+        rich_text.addFragment(tr("i%1").arg(i+1), index_format);
+        xlsx.write(startY+1, startX+2+i, rich_text, lower_board);
+        xlsx.write(startY+1, startX+2+PriorityList.size()+i, rich_text, lower_board);
+
+        rich_text = RichString();
+        rich_text.addFragment("a", format);
+        rich_text.addFragment(tr("%1l").arg(i+1), index_format);
+        xlsx.write(startY+1, startX+2+2*PriorityList.size()+i, rich_text, lower_board);
+    }
+    //--------------------------------------------------------------------
+
+
+    // F(x)
+    //--------------------------------------------------------------------
+    xlsx.mergeCells(CellRange(startY, startX+2+3*PriorityList.size(), startY+1, startX+2+3*PriorityList.size()));
+    xlsx.write(startY, startX+2+3*PriorityList.size(), "F(x)", HVcenter);
+    xlsx.write(startY+1, startX+2+3*PriorityList.size(), "", lower_board);
+    //--------------------------------------------------------------------
+
+
+    // Выигрыш
+    //--------------------------------------------------------------------
+    xlsx.mergeCells(CellRange(startY, startX+2+3*PriorityList.size()+1, startY+1, startX+2+3*PriorityList.size()+1));
+    xlsx.write(startY, startX+2+3*PriorityList.size()+1, "Выигрыш", HVcenter);
+    xlsx.write(startY+1, startX+2+3*PriorityList.size()+1, "", lower_board);
+    //--------------------------------------------------------------------
+
+
+    // F(x)/F(x)max
+    //----------------------------------------------------------------------------------------------------------------
+    HVcenter.setRightBorderStyle(Format::BorderMedium);
+    lower_board.setRightBorderStyle(Format::BorderMedium);
+
+    xlsx.mergeCells(CellRange(startY, startX+2+3*PriorityList.size()+2, startY+1, startX+2+3*PriorityList.size()+2));
+    xlsx.write(startY, startX+2+3*PriorityList.size()+2, "F(x)/F(x)max", HVcenter);
+    xlsx.write(startY+1, startX+2+3*PriorityList.size()+2, "", lower_board);
+
+    HVcenter.setRightBorderStyle(Format::BorderNone);
+    lower_board.setRightBorderStyle(Format::BorderNone);
+    //----------------------------------------------------------------------------------------------------------------
+
+    int pr_groups = NotParsedImportanceGroupOfProjects.split(",").size();
+    int ind_groups = NotParsedImportanceGroupOfIndicators.split(",").size();
+
+    auto IndicatorsGroups = NotParsedImportanceGroupOfIndicators.split(",");
+    auto ProjectsGroups = NotParsedImportanceGroupOfProjects.split(",");
+
+    int *prefferedProject = new int[pr_groups];
+    int *rejectedProejct = new int[pr_groups];
+    char *signProject = new char[pr_groups];
+
+    int *prefferedIndicator = new int[ind_groups];
+    int *rejectedIndicator = new int[ind_groups];
+    char *signIndicator = new char[ind_groups];
+
+
+    if (NotParsedImportanceGroupOfProjects != "")
+    {
+        for (int i=0; i<ProjectsGroups.size(); i++)
+        {
+
+            if (ProjectsGroups[i].contains("="))
+            {
+                auto numbs = ProjectsGroups[i].split("=");
+
+                prefferedProject[i] = numbs[0].toInt();
+                rejectedProejct[i] = numbs[1].toInt();
+                signProject[i] = '=';
+
+                continue;
+            }
+
+
+            if (ProjectsGroups[i].contains(">"))
+            {
+                auto numbs = ProjectsGroups[i].split(">");
+
+                prefferedProject[i] = numbs[0].toInt();
+                rejectedProejct[i] = numbs[1].toInt();
+                signProject[i] = '>';
+
+                continue;
+            }
+
+
+            if (ProjectsGroups[i].contains("≥"))
+            {
+                auto numbs = ProjectsGroups[i].split("≥");
+
+                prefferedProject[i] = numbs[0].toInt();
+                rejectedProejct[i] = numbs[1].toInt();
+                signProject[i] = 'b';
+
+                continue;
+            }
+        }
+
+    }
+
+    if (NotParsedImportanceGroupOfIndicators!= "")
+    {
+
+        for (int i=0; i<IndicatorsGroups.size(); i++)
+        {
+
+            if (IndicatorsGroups[i].contains("="))
+            {
+                auto numbs = IndicatorsGroups[i].split("=");
+
+                prefferedIndicator[i] = numbs[0].toInt();
+                rejectedIndicator[i] = numbs[1].toInt();
+                signIndicator[i] = '=';
+
+                continue;
+            }
+
+
+            if (IndicatorsGroups[i].contains(">"))
+            {
+                auto numbs = IndicatorsGroups[i].split(">");
+
+                prefferedIndicator[i] = numbs[0].toInt();
+                rejectedIndicator[i] = numbs[1].toInt();
+                signIndicator[i] = '>';
+
+                continue;
+            }
+
+
+            if (IndicatorsGroups[i].contains("≥"))
+            {
+                auto numbs = IndicatorsGroups[i].split("≥");
+
+                prefferedIndicator[i] = numbs[0].toInt();
+                rejectedIndicator[i] = numbs[1].toInt();
+                signIndicator[i] = 'b';
+
+                continue;
+            }
+        }
+    }
+
+    double *set = new double(IndicatorsCount);
+
+    for (int i=0; i<IndicatorsCount; i++)
+        set[i]=0;
+
+    GetNextNum(set, IndicatorsCount, 0,
+               prefferedProject, rejectedProejct, signProject, pr_groups,
+               prefferedIndicator, rejectedIndicator, signIndicator, ind_groups);
+
+
+
+    int RealCount = MaxIterCountForLogging > CurrentIterationCount ? CurrentIterationCount : MaxIterCountForLogging;
+    int startRow = startY+2;
+    int startCol = startX;
+
+
+
+    // заполнение итераций по блокам
+    for (int i=0; i<weights.size(); i++)
+    {
+        // Iter number
+        //--------------------------------------------------------------------
+        xlsx.mergeCells(CellRange(startRow, startCol, startRow+ProjectsCount-1, startCol));
+        if (i==weights.size()-1)
+            xlsx.write(startRow+ProjectsCount-1, startCol, "", lower_board);
+
+        xlsx.write(startRow, startCol, i+1, HVcenter);
+        //--------------------------------------------------------------------
+
+
+        //Project names
+        //--------------------------------------------------------------------
+        for (int index=0; index<ProjectsCount; index++)
+        {
+            if (index == 0)
+            {
+                upper_board.setHorizontalAlignment(Format::AlignLeft);
+                xlsx.write(startRow+index, startCol+1, ParettoSetProjectsIndexes.size() ? ParettoSetProjects[index] : IO::ProjectsNames[index], upper_board);
+                upper_board.setHorizontalAlignment(Format::AlignHCenter);
+            }
+            else
+                xlsx.write(startRow+index, startCol+1, ParettoSetProjectsIndexes.size() ? ParettoSetProjects[index] : IO::ProjectsNames[index]);
+
+            if (index == ProjectsCount-1 && i == weights.size()-1)
+            {
+                lower_board.setHorizontalAlignment(Format::AlignLeft);
+                xlsx.write(startRow+index, startCol+1, ParettoSetProjectsIndexes.size() ? ParettoSetProjects[index] : IO::ProjectsNames[index], lower_board);
+                lower_board.setHorizontalAlignment(Format::AlignHCenter);
+            }
+
+        }
+        //--------------------------------------------------------------------
+
+
+        // исходные и нормированные значения
+        //--------------------------------------------------------------------
+        int r = 0;
+        for (int row=0; row < ProjectsCount; row++)
+        {
+            for (int col=0; col < IndicatorsCount; col++)
+            {
+                if (row == 0)
+                {
+                    if (ParettoSetProjectsIndexes.size() != 0)
+                    {
+                        xlsx.write(startRow+row, startCol+2+col, IO::BaseTable[ParettoSetProjectsIndexes[row]][col], upper_board);
+                        xlsx.write(startRow+row, startCol+2+PriorityList.size()+col, NormalizedTable[ParettoSetProjectsIndexes[row]][col], upper_board);
+                    }
+                    else
+                    {
+                        xlsx.write(startRow+row, startCol+2+col, IO::BaseTable[row][col], upper_board);
+                        xlsx.write(startRow+row, startCol+2+PriorityList.size()+col, NormalizedTable[row][col], upper_board);
+                    }
+
+                }
+                else
+                {
+                    if (ParettoSetProjectsIndexes.size() != 0)
+                    {
+                        xlsx.write(startRow+row, startCol+2+col, IO::BaseTable[ParettoSetProjectsIndexes[row]][col], center);
+                        xlsx.write(startRow+row, startCol+2+PriorityList.size()+col, NormalizedTable[ParettoSetProjectsIndexes[row]][col], center);
+                    }
+                    else
+                    {
+                        xlsx.write(startRow+row, startCol+2+col, IO::BaseTable[row][col], center);
+                        xlsx.write(startRow+row, startCol+2+PriorityList.size()+col, NormalizedTable[row][col], center);
+                    }
+                }
+
+
+                if (row == ProjectsCount-1 && i == weights.size()-1)
+                {
+                    if (ParettoSetProjectsIndexes.size() != 0)
+                    {
+                        xlsx.write(startRow+row, startCol+2+col, IO::BaseTable[ParettoSetProjectsIndexes[row]][col], lower_board);
+                        xlsx.write(startRow+row, startCol+2+PriorityList.size()+col, NormalizedTable[ParettoSetProjectsIndexes[row]][col], lower_board);
+                    }
+                    else
+                    {
+                        xlsx.write(startRow+row, startCol+2+col, IO::BaseTable[row][col], lower_board);
+                        xlsx.write(startRow+row, startCol+2+PriorityList.size()+col, NormalizedTable[row][col], lower_board);
+                    }
+                }
+            }
+
+            r++;
+        }
+        //--------------------------------------------------------------------
+
+
+        startRow += ProjectsCount;
+    }
+
+
+    startRow = startY+2;
+    startCol = startX+2;
+
+
+    for (int i=0; i<weights.size(); i++)
+    {
+        // коэффициэнты линейной свертки
+        for (int pr=0; pr < ProjectsCount; pr++)
+            for (int j=0; j<weights[i].size(); j++)
+            {
+                if (pr == 0)
+                    xlsx.write(startRow+pr, startCol+2*IndicatorsCount+j, weights[i][j], upper_board);
+                else
+                    xlsx.write(startRow+pr, startCol+2*IndicatorsCount+j, weights[i][j], center);
+
+
+                if (pr == ProjectsCount-1 && i == weights.size()-1)
+                    xlsx.write(startRow+pr, startCol+2*IndicatorsCount+j, weights[i][j], lower_board);
+            }
+
+        // F(x)
+        for (int pr=0; pr < ProjectsCount; pr++)
+        {
+            if (pr == 0)
+                xlsx.write(startRow+pr, startCol+3*IndicatorsCount, LinearConv[i][pr], upper_board);
+            else
+                xlsx.write(startRow+pr, startCol+3*IndicatorsCount, LinearConv[i][pr], center);
+
+            if (pr == ProjectsCount-1 && i == weights.size()-1)
+                xlsx.write(startRow+pr, startCol+3*IndicatorsCount, LinearConv[i][pr], lower_board);
+
+        }
+
+        // Хард
+        for (int pr=0; pr < ProjectsCount; pr++)
+        {
+            if (pr == 0)
+            xlsx.write(startRow+pr, startCol+3*IndicatorsCount+1, hard[i][pr], upper_board);
+            else
+            xlsx.write(startRow+pr, startCol+3*IndicatorsCount+1, hard[i][pr], center);
+
+
+            if (pr == ProjectsCount-1 && i == weights.size()-1)
+            xlsx.write(startRow+pr, startCol+3*IndicatorsCount+1, hard[i][pr], lower_board);
+        }
+        // F(x)/F(x)max
+        for (int pr=0; pr < ProjectsCount; pr++)
+        {
+            upper_board.setRightBorderStyle(Format::BorderMedium);
+            center.setRightBorderStyle(Format::BorderMedium);
+
+            if (pr == 0)
+                xlsx.write(startRow+pr, startCol+3*IndicatorsCount+2, soft[i][pr], upper_board);
+            else
+                xlsx.write(startRow+pr, startCol+3*IndicatorsCount+2, soft[i][pr], center);
+
+
+            if (pr == ProjectsCount-1 && i == weights.size()-1)
+            {
+                center.setBottomBorderStyle(Format::BorderMedium);
+                xlsx.write(startRow+pr, startCol+3*IndicatorsCount+2, soft[i][pr], center);
+                center.setBottomBorderStyle(Format::BorderNone);
+            }
+
+            upper_board.setRightBorderStyle(Format::BorderNone);
+            center.setRightBorderStyle(Format::BorderNone);
+
+
+
+        }
+
+        startRow += ProjectsCount;
+    }
+
+
+
+
+//    startRow += ProjectsCount + 2;
+    startRow = startY + 1;
+    startCol = 3+3*IndicatorsCount+3+1;
+
+    xlsx.mergeCells(CellRange(startRow-1, startCol, startRow, startCol));
+    xlsx.mergeCells(CellRange(startRow-1, startCol+1, startRow, startCol+1));
+
+
+    HVcenter.setFontBold(true);
+    HVcenter.setFontSize(14);
+
+    HVcenter.setBorderStyle(Format::BorderDouble);
+
+    xlsx.write(startRow-1, startCol, "HR", HVcenter);
+    xlsx.write(startRow-1, startCol+1, "SR", HVcenter);
+
+    xlsx.write(startRow, startCol, "", HVcenter);
+    xlsx.write(startRow, startCol+1, "", HVcenter);
+
+
+    double HR = 0;
+    double SR = 0;
+
+    center.setBorderStyle(Format::BorderThin);
+
+    for (int i=0; i<ProjectsCount; i++)
+    {
+        HR = 0;
+        SR = 0;
+
+
+        for (int l=0; l<hard.size(); l++)
+        {
+            HR += hard[l][i];
+            SR += soft[l][i];
+        }
+
+        HR *= 1.0/hard.size();
+        SR *= 1.0/soft.size();
+
+        xlsx.write(startRow+1+i, startCol, HR, center);
+        xlsx.write(startRow+1+i, startCol+1, SR, center);
+    }
+
+
+    xlsx.saveAs(filePath);
+}
 
 QString DataProcessing::GetPassedTimeElapsed(int ms)
 {
@@ -299,36 +915,9 @@ QString DataProcessing::GetTheDigitsOfNumber(QString number, QString splitter)
 }
 
 
-//void DataProcessing::GetNextNum(QVector<double>& currentSet, int maxN, int curPosIndex)
-//{
-//    if (curPosIndex < maxN - 1)
-//    {
-//        double lim = 1  - Sum(currentSet, curPosIndex);
-//        for (double i = 0; i <= lim + 0.00001; i += CrushingStep)
-//        {
-//            currentSet[curPosIndex] = i;
-//            GetNextNum(currentSet, maxN, curPosIndex + 1);
-//        }
-//    }
-//    else
-//        if (curPosIndex == maxN - 1)
-//        {
-//            double rest = 1 - Sum(currentSet, curPosIndex);
-//            if (rest < 0.00001)
-//                rest = 0;
-
-//            if (fabs(static_cast<double>(rest - CrushingStep)) < 0.00001)
-//                rest = CrushingStep;
-
-
-//            currentSet[curPosIndex] = rest;
-
-//            WeightsTable.append(currentSet);
-//        }
-
-//}
-
-void DataProcessing::GetNextNum(double currentSet[], int maxN, int curPosIndex)
+void DataProcessing::GetNextNum(double currentSet[], int maxN, int curPosIndex,
+                                int *preffered_Project, int *rejected_Project, char *sign_Project, int p_count,
+                                int *preffered_Indicator, int *rejected_Indicator, char *sign_Indicator, int i_count)
 {
     if (curPosIndex < maxN - 1)
     {
@@ -336,7 +925,9 @@ void DataProcessing::GetNextNum(double currentSet[], int maxN, int curPosIndex)
         for (double i = 0; i <= lim + 0.00001; i += CrushingStep)
         {
             currentSet[curPosIndex] = i;
-            GetNextNum(currentSet, maxN, curPosIndex + 1);
+            GetNextNum(currentSet, maxN, curPosIndex + 1,
+                       preffered_Project, rejected_Project, sign_Project, p_count,
+                       preffered_Indicator, rejected_Indicator, sign_Indicator, i_count);
         }
     }
     else
@@ -352,15 +943,153 @@ void DataProcessing::GetNextNum(double currentSet[], int maxN, int curPosIndex)
 
             currentSet[curPosIndex] = rest;
 
-            QVector<double> s;
-            for (int i=0; i<maxN; i++)
+            Generetaed_count++;
+
+            if (Generetaed_count <= MaxIterCountForLogging)
             {
-                s << currentSet[i];
+                double *res = GetLinearConvolutionResult(currentSet);
+                bool isSuitable = true;
+
+                // Проверка проектов
+                //----------------------------------
+                if (NotParsedImportanceGroupOfProjects != "")
+                {
+                    for (int i=0; i<p_count; i++)
+                    {
+                        if (sign_Project[i] == '=')
+                            if (!(res[preffered_Project[i]] == res[rejected_Project[i]]))
+                            {
+                                isSuitable = false;
+                                break;
+                            }
+
+                        if (sign_Project[i] == '>')
+                            if (!(res[preffered_Project[i]] > res[rejected_Project[i]]))
+                            {
+                                isSuitable = false;
+                                break;
+                            }
+
+                        if (sign_Project[i] == 'b')
+                            if (!(res[preffered_Project[i]] >= res[rejected_Project[i]]))
+                            {
+                                isSuitable = false;
+                                break;
+                            }
+                    }
+                }
+                //----------------------------------
+
+                // Проверка показателей
+                //----------------------------------
+                if (NotParsedImportanceGroupOfIndicators != "")
+                {
+                    for (int i = 0; i < i_count; i++)
+                    {
+                        if (sign_Indicator[i] == '=')
+                            if (!(currentSet[preffered_Indicator[i]] == currentSet[rejected_Indicator[i]]))
+                            {
+                                isSuitable = false;
+                                break;
+                            }
+
+                        if (sign_Indicator[i] == '>')
+                            if (!(currentSet[preffered_Indicator[i]] > currentSet[rejected_Indicator[i]]))
+                            {
+                                isSuitable = false;
+                                break;
+                            }
+
+                        if (sign_Indicator[i] == 'b')
+                            if (!(currentSet[preffered_Indicator[i]] >= currentSet[rejected_Indicator[i]]))
+                            {
+                                isSuitable = false;
+                                break;
+                            }
+                    }
+                }
+                //----------------------------------
+
+
+                if (isSuitable)
+                {
+                    QVector<double> softRatings(ProjectsCount, 0);
+                    QVector<double> hardRatings(ProjectsCount, 0);
+
+                    //Мягкий рейтинг
+                    //-----------------------------------------------
+                    for (int i = 0; i < ProjectsCount; i++)
+                    {
+                        softRatings[i] = res[i] / (getMax(res));
+                        hardRatings[i] = 0;
+                    }
+                    //-----------------------------------------------
+
+
+                    //Жёсткий рейтинг
+                    //-----------------------------------------------------------
+                    if (COUNT(res, getMax(res)) > 1)
+                    {
+                        int q = COUNT(res, getMax(res));
+                        for (int i = 0; i < ProjectsCount; i++)
+                            hardRatings[i] = (res[i] == getMax(res)) ? 1.0/q : 0;
+                    }
+                    else
+                    {
+                        hardRatings[IndexOf(res, getMax(res))] = 1;
+                    }
+                    //-----------------------------------------------------------
+
+
+                    //Занесение результатов
+
+                    hard << hardRatings.toList();
+                    soft << softRatings.toList();
+
+                    QList<double> l, l1;
+                    for (int i=0; i < ProjectsCount; i++)
+                        l << res[i];
+                    LinearConv << l;
+
+                    for (int i=0; i < IndicatorsCount; i++)
+                        l1 << currentSet[i];
+                    weights << l1;
+
+                }
+
             }
 
-            WeightsTable.append(s);
-
         }
+}
+
+double DataProcessing::getMax(double *list)
+{
+    double max = list[0];
+
+    for (int i = 0; i < IO::ProjectsNames.size(); i++)
+        max = list[i] > max ? list[i] : max;
+
+    return max;
+
+}
+
+int DataProcessing::COUNT(double *list, double value)
+{
+    int k = 0;
+
+    for (int i = 0; i < IO::ProjectsNames.size(); i++)
+        if (list[i] == value) k++;
+
+    return k;
+
+}
+
+int DataProcessing::IndexOf(double *list, double value)
+{
+    for (int i = 0; i < IO::ProjectsNames.size() ; i++)
+        if (list[i] == value) return i;
+
+    return -1;
 }
 
 void DataProcessing::SetMainWindowTitle(QString title)
@@ -445,6 +1174,7 @@ void DataProcessing::UpdateProgressBar()
         res += thread->GetCount();
     }
 
+    //    qDebug() << res;
     //    if (Count1 != -1) res += Count1;
     //    if (Count2 != -1) res += Count2;
     //    if (Count3 != -1) res += Count3;
@@ -496,6 +1226,7 @@ void DataProcessing::UpdateTotalStepCount(int count)
 {
 
     TotalStepsCount++;
+    //    qDebug()<<TotalStepsCount;
 }
 
 void DataProcessing::Finished1Threads()
@@ -585,6 +1316,10 @@ void DataProcessing::Finished2Threads()
 
             auto hard2 = th2->GetHardRatings();
             auto soft2 = th2->GetSoftRatings();
+
+
+            //            qDebug() << hard1;
+            //            qDebug() << hard2;
 
 
             QVector<double> hardRatings(hard1.size(), 0);
@@ -926,7 +1661,7 @@ void DataProcessing::GenerateWeightsList()
 
 
     //    GetNextNum(arr, weight_count, 0);
-    GetNextNum(set, weight_count, 0);
+    //    GetNextNum(set, weight_count, 0);
 }
 
 void DataProcessing::SetMetrics(QVector<int> Preferred, QVector<int> Rejected)
@@ -1170,7 +1905,7 @@ QList<GenerateWeightsAndCalculateRatingsAsync*> DataProcessing::getThreadsList(i
         int a = 1;
         //        int b = a + step;
         int b = ThreadsCount==1 ? CurrentIterationCount : a+step;
-
+        //        qDebug() << a << b;
         for (int i=0; i<ThreadsCount; i++)
         {
             threads <<new GenerateWeightsAndCalculateRatingsAsync(a,b, CrushingStep);
@@ -1187,7 +1922,7 @@ QList<GenerateWeightsAndCalculateRatingsAsync*> DataProcessing::getThreadsList(i
 
             b = i==ThreadsCount-1 ? CurrentIterationCount : b+step;
 
-
+            //            qDebug() << a << b;
         }
     };
 
@@ -1318,6 +2053,8 @@ void DataProcessing::MakeCalculations(QVector<QString> priorityList,
     WeightsTable.clear();
     DataProcessing::CurrentIterationCount = GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), CrushingStep);
 
+    if (IsLoggingUsed) MakeLogsAsXlsx();
+
     time.start();
 
     threadInstances = getThreadsList(CurrentThreadCount, MaxThreadCount);
@@ -1326,8 +2063,8 @@ void DataProcessing::MakeCalculations(QVector<QString> priorityList,
         threadInstances[i]->start();
 
 
-//        CalculateRatingsIn1ThreadsWithWeights();
-//        CalculateRatingsIn2ThreadsWithWeights();
-//        CalculateRatingsIn4ThreadsWithWeights();
-//        CalculateRatingsIn8ThreadsWithWeights();
+    //        CalculateRatingsIn1ThreadsWithWeights();
+    //        CalculateRatingsIn2ThreadsWithWeights();
+    //        CalculateRatingsIn4ThreadsWithWeights();
+    //        CalculateRatingsIn8ThreadsWithWeights();
 }
