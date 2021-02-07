@@ -214,63 +214,86 @@ text-decoration: underline;</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_2">
+          <widget class="QCheckBox" name="LoggingCheckBox">
+           <property name="text">
+            <string>Включить протоколирование</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
            <item>
-            <widget class="QCheckBox" name="LoggingCheckBox">
+            <widget class="QLabel" name="label">
              <property name="text">
-              <string>Включить протоколирование</string>
+              <string>Количество итераций не больше</string>
              </property>
             </widget>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_4">
-             <item>
-              <widget class="QLabel" name="label">
-               <property name="text">
-                <string>Количество итераций не больше</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="MaxIterCountEdit">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="text">
-                <string>200</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
+            <widget class="QLineEdit" name="MaxIterCountEdit">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>200</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
            </item>
            <item>
-            <spacer name="verticalSpacer_2">
+            <spacer name="horizontalSpacer">
              <property name="orientation">
-              <enum>Qt::Vertical</enum>
+              <enum>Qt::Horizontal</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
-               <width>20</width>
-               <height>40</height>
+               <width>40</width>
+               <height>20</height>
               </size>
              </property>
             </spacer>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>167</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_2">
+           <item>
+            <widget class="QLabel" name="TextLabel_3">
+             <property name="styleSheet">
+              <string notr="true">color: rgb(255, 0, 0);
+font: 75 12pt &quot;MS Shell Dlg 2&quot;;
+text-decoration: underline;</string>
+             </property>
+             <property name="text">
+              <string>Внимание</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="TextLabel_4">
+             <property name="text">
+              <string>Использование функции веденения протоколирования может 
+негативно сказаться на быстродейcтвии</string>
+             </property>
+             <property name="textFormat">
+              <enum>Qt::AutoText</enum>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>

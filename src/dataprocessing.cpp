@@ -13,7 +13,7 @@ QList<QList<double>> DataProcessing::soft;
 
 
 int DataProcessing::MaxIterCountForLogging = 200;
-bool DataProcessing::IsLoggingUsed = true;
+bool DataProcessing::IsLoggingUsed = false;
 int DataProcessing::Generetaed_count = 0;
 
 int DataProcessing::MaxThreadCount = QThread::idealThreadCount();
@@ -125,6 +125,7 @@ void DataProcessing::MakeLogsAsXlsx()
 
     //FORMATS
     //----------------------------------------------------
+
     Format format;
     format.setFont(QFont("Times New Roman"));
     format.setFontSize(14);
@@ -149,7 +150,6 @@ void DataProcessing::MakeLogsAsXlsx()
     Format upper_board;
     upper_board.setTopBorderStyle(Format::BorderMedium);
     upper_board.setHorizontalAlignment(Format::AlignHCenter);
-
 
     Format lower_board;
     lower_board.setBottomBorderStyle(Format::BorderMedium);
@@ -460,7 +460,7 @@ void DataProcessing::MakeLogsAsXlsx()
         }
     }
 
-    double *set = new double(IndicatorsCount);
+    double *set = new double[IndicatorsCount];
 
     for (int i=0; i<IndicatorsCount; i++)
         set[i]=0;
@@ -470,11 +470,9 @@ void DataProcessing::MakeLogsAsXlsx()
                prefferedIndicator, rejectedIndicator, signIndicator, ind_groups);
 
 
-
     int RealCount = MaxIterCountForLogging > CurrentIterationCount ? CurrentIterationCount : MaxIterCountForLogging;
     int startRow = startY+2;
     int startCol = startX;
-
 
 
     // заполнение итераций по блокам
@@ -569,6 +567,65 @@ void DataProcessing::MakeLogsAsXlsx()
         }
         //--------------------------------------------------------------------
 
+        // коэффициэнты линейной свертки
+        for (int pr=0; pr < ProjectsCount; pr++)
+            for (int j=0; j<weights[i].size(); j++)
+            {
+                if (pr == 0)
+                    xlsx.write(startRow+pr, startCol+2+2*IndicatorsCount+j, weights[i][j], upper_board);
+                else
+                    xlsx.write(startRow+pr, startCol+2+2*IndicatorsCount+j, weights[i][j], center);
+
+
+                if (pr == ProjectsCount-1 && i == weights.size()-1)
+                    xlsx.write(startRow+pr, startCol+2+2*IndicatorsCount+j, weights[i][j], lower_board);
+            }
+
+        // F(x)
+        for (int pr=0; pr < ProjectsCount; pr++)
+        {
+            if (pr == 0)
+                xlsx.write(startRow+pr, startCol+2+3*IndicatorsCount, LinearConv[i][pr], upper_board);
+            else
+                xlsx.write(startRow+pr, startCol+2+3*IndicatorsCount, LinearConv[i][pr], center);
+
+            if (pr == ProjectsCount-1 && i == weights.size()-1)
+                xlsx.write(startRow+pr, startCol+2+3*IndicatorsCount, LinearConv[i][pr], lower_board);
+        }
+
+        // Хард
+        for (int pr=0; pr < ProjectsCount; pr++)
+        {
+            if (pr == 0)
+            xlsx.write(startRow+pr, startCol+2+3*IndicatorsCount+1, hard[i][pr], upper_board);
+            else
+            xlsx.write(startRow+pr, startCol+2+3*IndicatorsCount+1, hard[i][pr], center);
+
+            if (pr == ProjectsCount-1 && i == weights.size()-1)
+            xlsx.write(startRow+pr, startCol+2+3*IndicatorsCount+1, hard[i][pr], lower_board);
+        }
+
+        // F(x)/F(x)max
+        for (int pr=0; pr < ProjectsCount; pr++)
+        {
+            upper_board.setRightBorderStyle(Format::BorderMedium);
+            center.setRightBorderStyle(Format::BorderMedium);
+
+            if (pr == 0)
+                xlsx.write(startRow+pr, startCol+2+3*IndicatorsCount+2, soft[i][pr], upper_board);
+            else
+                xlsx.write(startRow+pr, startCol+2+3*IndicatorsCount+2, soft[i][pr], center);
+
+            if (pr == ProjectsCount-1 && i == weights.size()-1)
+            {
+                center.setBottomBorderStyle(Format::BorderMedium);
+                xlsx.write(startRow+pr, startCol+2+3*IndicatorsCount+2, soft[i][pr], center);
+                center.setBottomBorderStyle(Format::BorderNone);
+            }
+
+            upper_board.setRightBorderStyle(Format::BorderNone);
+            center.setRightBorderStyle(Format::BorderNone);
+        }
 
         startRow += ProjectsCount;
     }
@@ -577,91 +634,85 @@ void DataProcessing::MakeLogsAsXlsx()
     startRow = startY+2;
     startCol = startX+2;
 
+    startRow += weights.size()*ProjectsCount;
 
-    for (int i=0; i<weights.size(); i++)
-    {
-        // коэффициэнты линейной свертки
-        for (int pr=0; pr < ProjectsCount; pr++)
-            for (int j=0; j<weights[i].size(); j++)
-            {
-                if (pr == 0)
-                    xlsx.write(startRow+pr, startCol+2*IndicatorsCount+j, weights[i][j], upper_board);
-                else
-                    xlsx.write(startRow+pr, startCol+2*IndicatorsCount+j, weights[i][j], center);
-
-
-                if (pr == ProjectsCount-1 && i == weights.size()-1)
-                    xlsx.write(startRow+pr, startCol+2*IndicatorsCount+j, weights[i][j], lower_board);
-            }
-
-        // F(x)
-        for (int pr=0; pr < ProjectsCount; pr++)
-        {
-            if (pr == 0)
-                xlsx.write(startRow+pr, startCol+3*IndicatorsCount, LinearConv[i][pr], upper_board);
-            else
-                xlsx.write(startRow+pr, startCol+3*IndicatorsCount, LinearConv[i][pr], center);
-
-            if (pr == ProjectsCount-1 && i == weights.size()-1)
-                xlsx.write(startRow+pr, startCol+3*IndicatorsCount, LinearConv[i][pr], lower_board);
-
-        }
-
-        // Хард
-        for (int pr=0; pr < ProjectsCount; pr++)
-        {
-            if (pr == 0)
-            xlsx.write(startRow+pr, startCol+3*IndicatorsCount+1, hard[i][pr], upper_board);
-            else
-            xlsx.write(startRow+pr, startCol+3*IndicatorsCount+1, hard[i][pr], center);
+//    for (int i=0; i<weights.size(); i++)
+//    {
+//        // коэффициэнты линейной свертки
+//        for (int pr=0; pr < ProjectsCount; pr++)
+//            for (int j=0; j<weights[i].size(); j++)
+//            {
+//                if (pr == 0)
+//                    xlsx.write(startRow+pr, startCol+2*IndicatorsCount+j, weights[i][j], upper_board);
+//                else
+//                    xlsx.write(startRow+pr, startCol+2*IndicatorsCount+j, weights[i][j], center);
 
 
-            if (pr == ProjectsCount-1 && i == weights.size()-1)
-            xlsx.write(startRow+pr, startCol+3*IndicatorsCount+1, hard[i][pr], lower_board);
-        }
-        // F(x)/F(x)max
-        for (int pr=0; pr < ProjectsCount; pr++)
-        {
-            upper_board.setRightBorderStyle(Format::BorderMedium);
-            center.setRightBorderStyle(Format::BorderMedium);
+//                if (pr == ProjectsCount-1 && i == weights.size()-1)
+//                    xlsx.write(startRow+pr, startCol+2*IndicatorsCount+j, weights[i][j], lower_board);
+//            }
 
-            if (pr == 0)
-                xlsx.write(startRow+pr, startCol+3*IndicatorsCount+2, soft[i][pr], upper_board);
-            else
-                xlsx.write(startRow+pr, startCol+3*IndicatorsCount+2, soft[i][pr], center);
+//        // F(x)
+//        for (int pr=0; pr < ProjectsCount; pr++)
+//        {
+//            if (pr == 0)
+//                xlsx.write(startRow+pr, startCol+3*IndicatorsCount, LinearConv[i][pr], upper_board);
+//            else
+//                xlsx.write(startRow+pr, startCol+3*IndicatorsCount, LinearConv[i][pr], center);
+
+//            if (pr == ProjectsCount-1 && i == weights.size()-1)
+//                xlsx.write(startRow+pr, startCol+3*IndicatorsCount, LinearConv[i][pr], lower_board);
+//        }
+
+//        // Хард
+//        for (int pr=0; pr < ProjectsCount; pr++)
+//        {
+//            if (pr == 0)
+//            xlsx.write(startRow+pr, startCol+3*IndicatorsCount+1, hard[i][pr], upper_board);
+//            else
+//            xlsx.write(startRow+pr, startCol+3*IndicatorsCount+1, hard[i][pr], center);
+
+//            if (pr == ProjectsCount-1 && i == weights.size()-1)
+//            xlsx.write(startRow+pr, startCol+3*IndicatorsCount+1, hard[i][pr], lower_board);
+//        }
+
+//        // F(x)/F(x)max
+//        for (int pr=0; pr < ProjectsCount; pr++)
+//        {
+//            upper_board.setRightBorderStyle(Format::BorderMedium);
+//            center.setRightBorderStyle(Format::BorderMedium);
+
+//            if (pr == 0)
+//                xlsx.write(startRow+pr, startCol+3*IndicatorsCount+2, soft[i][pr], upper_board);
+//            else
+//                xlsx.write(startRow+pr, startCol+3*IndicatorsCount+2, soft[i][pr], center);
+
+//            if (pr == ProjectsCount-1 && i == weights.size()-1)
+//            {
+//                center.setBottomBorderStyle(Format::BorderMedium);
+//                xlsx.write(startRow+pr, startCol+3*IndicatorsCount+2, soft[i][pr], center);
+//                center.setBottomBorderStyle(Format::BorderNone);
+//            }
+
+//            upper_board.setRightBorderStyle(Format::BorderNone);
+//            center.setRightBorderStyle(Format::BorderNone);
+//        }
+
+//        startRow += ProjectsCount;
+//    }
 
 
-            if (pr == ProjectsCount-1 && i == weights.size()-1)
-            {
-                center.setBottomBorderStyle(Format::BorderMedium);
-                xlsx.write(startRow+pr, startCol+3*IndicatorsCount+2, soft[i][pr], center);
-                center.setBottomBorderStyle(Format::BorderNone);
-            }
+    startRow += 2;
+    startCol = 1;
 
-            upper_board.setRightBorderStyle(Format::BorderNone);
-            center.setRightBorderStyle(Format::BorderNone);
-
-
-
-        }
-
-        startRow += ProjectsCount;
-    }
-
-
-
-
-//    startRow += ProjectsCount + 2;
-    startRow = startY + 1;
-    startCol = 3+3*IndicatorsCount+3+1;
+//    startRow = startY + 1;
+//    startCol = 3+3*IndicatorsCount+3+1;
 
     xlsx.mergeCells(CellRange(startRow-1, startCol, startRow, startCol));
     xlsx.mergeCells(CellRange(startRow-1, startCol+1, startRow, startCol+1));
 
-
     HVcenter.setFontBold(true);
     HVcenter.setFontSize(14);
-
     HVcenter.setBorderStyle(Format::BorderDouble);
 
     xlsx.write(startRow-1, startCol, "HR", HVcenter);
@@ -681,7 +732,6 @@ void DataProcessing::MakeLogsAsXlsx()
         HR = 0;
         SR = 0;
 
-
         for (int l=0; l<hard.size(); l++)
         {
             HR += hard[l][i];
@@ -694,7 +744,6 @@ void DataProcessing::MakeLogsAsXlsx()
         xlsx.write(startRow+1+i, startCol, HR, center);
         xlsx.write(startRow+1+i, startCol+1, SR, center);
     }
-
 
     xlsx.saveAs(filePath);
 }
@@ -943,10 +992,10 @@ void DataProcessing::GetNextNum(double currentSet[], int maxN, int curPosIndex,
 
             currentSet[curPosIndex] = rest;
 
-            Generetaed_count++;
+//            Generetaed_count++;
 
-            if (Generetaed_count <= MaxIterCountForLogging)
-            {
+//            if (Generetaed_count <= MaxIterCountForLogging)
+
                 double *res = GetLinearConvolutionResult(currentSet);
                 bool isSuitable = true;
 
@@ -1011,8 +1060,10 @@ void DataProcessing::GetNextNum(double currentSet[], int maxN, int curPosIndex,
                 //----------------------------------
 
 
-                if (isSuitable)
+                if (isSuitable && Generetaed_count < MaxIterCountForLogging)
                 {
+                    Generetaed_count++;
+
                     QVector<double> softRatings(ProjectsCount, 0);
                     QVector<double> hardRatings(ProjectsCount, 0);
 
@@ -1057,7 +1108,6 @@ void DataProcessing::GetNextNum(double currentSet[], int maxN, int curPosIndex,
 
                 }
 
-            }
 
         }
 }
@@ -2053,7 +2103,10 @@ void DataProcessing::MakeCalculations(QVector<QString> priorityList,
     WeightsTable.clear();
     DataProcessing::CurrentIterationCount = GetTheoreticalWeightsCount(IO::IndicatorsNames.size(), CrushingStep);
 
+    qDebug() << "Before MakeLogsAsXlsx()";
     if (IsLoggingUsed) MakeLogsAsXlsx();
+    qDebug() << "After MakeLogsAsXlsx()";
+
 
     time.start();
 
@@ -2062,9 +2115,5 @@ void DataProcessing::MakeCalculations(QVector<QString> priorityList,
     for (int i=0; i<threadInstances.size(); i++)
         threadInstances[i]->start();
 
-
-    //        CalculateRatingsIn1ThreadsWithWeights();
-    //        CalculateRatingsIn2ThreadsWithWeights();
-    //        CalculateRatingsIn4ThreadsWithWeights();
-    //        CalculateRatingsIn8ThreadsWithWeights();
+    qDebug() << "Threads created";
 }

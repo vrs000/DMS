@@ -19,6 +19,18 @@ SettingsForm::SettingsForm(QWidget *parent) :
     ui->TextLabel_2->hide();
 
     ui->MaxIterCountEdit->setText(QString::number(DataProcessing::MaxIterCountForLogging));
+    ui->LoggingCheckBox->setChecked(DataProcessing::IsLoggingUsed);
+
+    if (ui->LoggingCheckBox->isChecked())
+    {
+        ui->TextLabel_3->show();
+        ui->TextLabel_4->show();
+    }
+    else
+    {
+        ui->TextLabel_3->hide();
+        ui->TextLabel_4->hide();
+    }
 }
 
 SettingsForm::~SettingsForm()
@@ -70,7 +82,18 @@ void SettingsForm::on_OkButton_clicked()
 
 void SettingsForm::on_LoggingCheckBox_stateChanged(int arg1)
 {
-    if (arg1 == 2) ui->MaxIterCountEdit->setEnabled(true);
-    if (arg1 == 0) ui->MaxIterCountEdit->setEnabled(false);
+    if (arg1 == 2)
+    {
+        ui->MaxIterCountEdit->setEnabled(true);
+        ui->TextLabel_3->show();
+        ui->TextLabel_4->show();
+    }
 
+
+    if (arg1 == 0)
+    {
+        ui->MaxIterCountEdit->setEnabled(false);
+        ui->TextLabel_3->hide();
+        ui->TextLabel_4->hide();
+    }
 }
