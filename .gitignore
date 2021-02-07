@@ -1,5 +1,6 @@
 *.PRO.*
 ./src/SPPR.pro.user
 src/SPPR.pro.user
+"./src/SPPR.pro.user"
 SPPR.pro.user
 logs
