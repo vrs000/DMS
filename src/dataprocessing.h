@@ -1,6 +1,9 @@
 #ifndef DATAPROCESSING_H
 #define DATAPROCESSING_H
 
+#include <thread>
+
+
 #include <QVector>
 #include <QList>
 #include <math.h>
