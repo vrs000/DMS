@@ -654,11 +654,13 @@ void DataProcessing::MakeLogsAsXlsx()
     startRow += weights.size()*ProjectsCount;
 
     startRow += 2;
-    startCol = 1;
+    startCol = 2;
 
 //    startRow = startY + 1;
 //    startCol = 3+3*IndicatorsCount+3+1;
 
+
+    xlsx.mergeCells(CellRange(startRow-1, startCol-1, startRow, startCol-1));
     xlsx.mergeCells(CellRange(startRow-1, startCol, startRow, startCol));
     xlsx.mergeCells(CellRange(startRow-1, startCol+1, startRow, startCol+1));
 
@@ -666,9 +668,13 @@ void DataProcessing::MakeLogsAsXlsx()
     HVcenter.setFontSize(14);
     HVcenter.setBorderStyle(Format::BorderDouble);
 
+
+    xlsx.write(startRow-1, startCol-1, "Проекты", HVcenter);
     xlsx.write(startRow-1, startCol, "HR", HVcenter);
     xlsx.write(startRow-1, startCol+1, "SR", HVcenter);
 
+
+    xlsx.write(startRow, startCol-1, "", HVcenter);
     xlsx.write(startRow, startCol, "", HVcenter);
     xlsx.write(startRow, startCol+1, "", HVcenter);
 
@@ -692,6 +698,8 @@ void DataProcessing::MakeLogsAsXlsx()
         HR *= 1.0/hard.size();
         SR *= 1.0/soft.size();
 
+
+        xlsx.write(startRow+1+i, startCol-1, IO::ProjectsNames[i], center);
         xlsx.write(startRow+1+i, startCol, HR, center);
         xlsx.write(startRow+1+i, startCol+1, SR, center);
     }
