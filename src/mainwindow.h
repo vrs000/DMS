@@ -19,8 +19,8 @@
 #include <selectforexportform.h>
 #include <aboutprogramform.h>
 #include <QDialog>
-#include <QtConcurrent/QtConcurrent>
 #include <settingsform.h>
+
 
 
 class PreSelectionChartsForm;

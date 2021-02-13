@@ -198,6 +198,13 @@ void IO::OpenExelFile1(QString Path)
             int puncts  = 0;
 
 
+            if (a == QVariant())
+            {
+                isReadableDataValid = false;
+                DataValidationMsgError = QString("Имеется пустая ячейка '%1%2'").arg(alphabet[x-1]).arg(y);
+                return;
+            }
+
             if (strcmp(a.typeName(), "QString") == 0)
             {
                 double value;
@@ -205,7 +212,6 @@ void IO::OpenExelFile1(QString Path)
 
                 //Data validation
                 //-----------------------------------------------------------------------------------------------------------
-                if (A.size() == 0) throw QString("Have an empty cell (x:%1  y:%2)").arg(x).arg(y);
 
                 foreach(QChar s, A)
                 {

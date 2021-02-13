@@ -1643,14 +1643,17 @@ void DataProcessing::FinishedAllThreads()
                     timeElapsedParsed,
                     ParettoSetProjects);
 
-        NormalizedTable.clear();
+
         if (SolutionDB::IsContained(OpenedSolutionName))
             SolutionDB::UpdateSolution(SolutionDB::GetSolution(OpenedSolutionName),
                                        solution);
         else
             SolutionDB::AddSolution(solution);
 
+
+        QThreadPool::globalInstance()->waitForDone();
         DeleteThreadInstances();
+        NormalizedTable.clear();
         SetMainWindowTitle(SolutionDB::currentSolutionName);
     }
 
@@ -2053,6 +2056,7 @@ void DataProcessing::MakeCalculations(QVector<QString> priorityList,
     SetPriorityList(priority);
 
 
+    qDebug() << IO::BaseTable;
     if (NormalizedTable.size() == 0)
     {
         FindMaxMinIndicators(IO::BaseTable);
@@ -2065,9 +2069,7 @@ void DataProcessing::MakeCalculations(QVector<QString> priorityList,
     if (IsLoggingUsed)
     {
         QThreadPool::globalInstance()->start(MakeLogsAsXlsx);
-//        MakeLogsAsXlsx();
     }
-
 
     time.start();
 
