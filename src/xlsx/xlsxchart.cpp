@@ -122,12 +122,17 @@ void Chart::addSeries(const CellRange &range, AbstractSheet *sheet)
             axDataSouruce_numRef = sheetName + QLatin1String("!") + subRange.toString(true, true);
         }
 
+        CellRange subRangeForXlabels(range.firstRow(), range.firstColumn()-1,range.lastRow(),range.firstColumn()-1);
+
         for (int col = firstDataColumn; col <= range.lastColumn(); ++col) {
             CellRange subRange(range.firstRow(), col, range.lastRow(), col);
             QSharedPointer<XlsxSeries> series = QSharedPointer<XlsxSeries>(new XlsxSeries);
             series->axDataSource_numRef = axDataSouruce_numRef;
             series->numberDataSource_numRef =
-                sheetName + QLatin1String("!") + subRange.toString(true, true);
+                    sheetName + QLatin1String("!") + subRange.toString(true, true);
+            series->axDataSource_numRef =
+                    sheetName+QLatin1String("!")+subRangeForXlabels.toString(true,true);
+
             d->seriesList.append(series);
         }
 
@@ -142,12 +147,15 @@ void Chart::addSeries(const CellRange &range, AbstractSheet *sheet)
             axDataSouruce_numRef = sheetName + QLatin1String("!") + subRange.toString(true, true);
         }
 
+
         for (int row = firstDataRow; row <= range.lastRow(); ++row) {
             CellRange subRange(row, range.firstColumn(), row, range.lastColumn());
             QSharedPointer<XlsxSeries> series = QSharedPointer<XlsxSeries>(new XlsxSeries);
             series->axDataSource_numRef = axDataSouruce_numRef;
             series->numberDataSource_numRef =
                 sheetName + QLatin1String("!") + subRange.toString(true, true);
+
+
             d->seriesList.append(series);
         }
     }
