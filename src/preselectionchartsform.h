@@ -41,7 +41,6 @@ private:
     void OpenCharts();
     QList<QCheckBox*> checkBoxes;
 
-
     QList<ChartsForm*> l;
     std::unique_ptr<ChartsForm> chartsFormPtr;
 

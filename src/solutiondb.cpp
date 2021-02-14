@@ -88,11 +88,15 @@ void SolutionDB::LoadSolution(const QString solutionName)
         {
             currentSolutionName = sol.SolutionName;
 
+
             IO::IndicatorsNames = sol.IndicatorsNames;
             IO::ProjectsNames = sol.ProjectsNames;
             IO::BaseTable = sol.BaseTable;
 
+
             DataProcessing::timeElapsedParsed = sol.TimeElapsed;
+            DataProcessing::TimeElapsed = sol.TimeElapsedInMS;
+            DataProcessing::UsedThreadCount = sol.ThreadUsed;
 
             DataProcessing::CrushingStep = sol.CrushingStep;
 

@@ -30,9 +30,17 @@ public:
              QVector<double> hardRatings, QVector<double> softRatings,
              QVector<QString> priorityList,
              QString projectsImportanceNotParsed, QString indicatorsImportanceNotParsed,
-             QString timeElapsed, QVector<QString> parettoSetProjects);
+             QString timeElapsed, int timeElapsedInMS, int threadUsed,
+             QVector<QString> parettoSetProjects);
 
+
+    //performance
+    //-----------------------
     QString TimeElapsed;
+    int TimeElapsedInMS;
+    int ThreadUsed;
+    //-----------------------
+
 
     QString SolutionName;
 

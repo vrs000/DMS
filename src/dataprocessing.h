@@ -215,13 +215,6 @@ private slots:
 
     void UpdateTotalStepCount(int count);
 
-    //OLD
-    //-----------------------
-    void Finished1Threads();
-    void Finished2Threads();
-    void Finished4Threads();
-    void Finished8Threads();
-    //-----------------------
 
     void FinishedAllThreads();
 };

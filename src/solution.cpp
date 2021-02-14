@@ -63,12 +63,15 @@ Solution::Solution(QString solutionName, double crushingStep,
                    QVector<double> hardRatings, QVector<double> softRatings,
                    QVector<QString> priorityList,
                    QString projectsImportanceNotParsed, QString indicatorsImportanceNotParsed,
-                   QString timeElapsed,
+                   QString timeElapsed, int timeElapsedInMS, int threadUsed,
                    QVector<QString> parettoSetProjects)
 {
     SolutionName = solutionName;
     CrushingStep = crushingStep;
+
     TimeElapsed = timeElapsed;
+    TimeElapsedInMS = timeElapsedInMS;
+    ThreadUsed = threadUsed;
 
     IndicatorsNames = indicatorsNames;
     ProjectsNames = projectsNames;

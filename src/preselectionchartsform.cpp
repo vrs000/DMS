@@ -73,8 +73,9 @@ void PreSelectionChartsForm::OpenCharts()
 //    form->SelectedSolutions = solutions;
 //    form->top = topOut;
 //    form->show();
-//    form->FillingCharts();
+    //    form->FillingCharts();
 }
+
 
 void PreSelectionChartsForm::on_CancelButton_clicked()
 {
