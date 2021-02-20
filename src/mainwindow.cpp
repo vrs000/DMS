@@ -557,86 +557,32 @@ void MainWindow::OpenSolution(const QString fileName)
             UpdateDeleteMenu(solName);
             UpdateOpenMenu(solName);
         }
-
-        //        if (startupconfigform->getResult() == WindowResult::WindowSuccess)
-        //        {
-
-        //        }
-        //        startupconfigform->show();
-        //        startupconfigform->activateWindow();
     };
 
-    //Если содержит, загрузить входные данные с БД
+    //Если содержит,
     //Задать имя в формате {Name}_n, где n - цел
 
-    if (SolutionDB::IsContained(solutionName))
+    IO::OpenExelFile1(fileName);
+
+    if (IO::isReadableDataValid)
     {
-        while (SolutionDB::IsContained(QString("%1_%2").arg(solutionName).arg(n)))
-            n++;
+        ui->InfoButton->setEnabled(true);
+        ui->ConfiugreButton->setEnabled(true);
+        ui->GraphicsButton->setEnabled(true);
 
-        Solution old = SolutionDB::GetSolution(solutionName);
-
-        IO::BaseTable = old.BaseTable;
-        IO::IndicatorsNames = old.IndicatorsNames;
-        IO::ProjectsNames = old.ProjectsNames;
-
-
-        QString newSolName = QString("%1_%2").arg(solutionName).arg(n);
-
-        //        UpdateDeleteMenu(newSolName);
-        //        UpdateOpenMenu(newSolName);
-
-        OpenStartupConfigForm(newSolName);
-
-        //        QMessageBox messageBox(QMessageBox::Question,
-        //                               tr("Файл уже открыт"),
-        //                               tr("Открыть заново ?"),
-        //                               QMessageBox::Yes | QMessageBox::No,
-        //                               this);
-
-        //        messageBox.setButtonText(QMessageBox::Yes, tr("Да"));
-        //        messageBox.setButtonText(QMessageBox::No, tr("Нет"));
-
-        //        int result = messageBox.exec();
-
-
-        //        if (result == QMessageBox::Yes)
-        //        {
-        //            SolutionDB::LoadSolution(solutionName);
-        //            OpenStartupConfigForm();
-        //        }
-
-        //        if (result == QMessageBox::No)
-        //        {
-        //            SolutionDB::LoadSolution(solutionName);
-        //            IO::FillingTables(ui->InputTable, ui->OutputTable);
-        //        }
-
-
-    }
-
-    if (!SolutionDB::IsContained(solutionName))
-    {
-
-        IO::OpenExelFile1(fileName);
-
-
-        //        UpdateDeleteMenu(solutionName);
-        //        UpdateOpenMenu(solutionName);
-
-
-
-        if (IO::isReadableDataValid)
+        if (SolutionDB::IsContained(solutionName))
         {
-            ui->InfoButton->setEnabled(true);
-            ui->ConfiugreButton->setEnabled(true);
-            ui->GraphicsButton->setEnabled(true);
-            OpenStartupConfigForm(solutionName);
+            while (SolutionDB::IsContained(QString("%1_%2").arg(solutionName).arg(n)))
+                n++;
+
+           solutionName = QString("%1_%2").arg(solutionName).arg(n);
         }
 
-        else
-            QMessageBox::critical(this, tr("Некорректный формат данных"), IO::DataValidationMsgError);
+        OpenStartupConfigForm(solutionName);
     }
+    else
+        QMessageBox::critical(this, tr("Некорректный формат данных"), IO::DataValidationMsgError);
+
 }
 
 template<typename FormType>
